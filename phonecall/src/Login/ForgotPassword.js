@@ -10,9 +10,9 @@ import {
 } from 'react-native';
 import { React, useState, useEffect } from 'react';
 const { width,height } = Dimensions.get('window')
-import voizLogo from '../Assets/voizcall_logo.png';
-import icicon from '../Assets/voizcall_icon.png';
-import icUser from '../Assets/ic_user.png';
+import voizLogo from '../../Assets/voizcall_logo.png';
+import icicon from '../../Assets/voizcall_icon.png';
+import icUser from '../../Assets/ic_user.png';
 
 const ForgotPassword = ({ navigation }) => {
   return (

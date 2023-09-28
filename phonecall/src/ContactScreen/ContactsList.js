@@ -5,7 +5,6 @@ import { PermissionsAndroid } from 'react-native';
 import ListItem from './ListItem';
 import Avatar from './Avatar';
 import ContactDetailScreen from './ContactDetailScreen';
-import { Contactstore } from '../redux/LoginDateStore';
 import SQLite from 'react-native-sqlite-storage';
 
 const db = SQLite.openDatabase(
@@ -21,8 +20,6 @@ const ContactsList = ({ navigation }) => {
   let [contacts, setContacts] = useState([]);
   const headerArray = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
   const [refreshing, setRefreshing] = useState(false);
-  const [isExist, setisExist] = useState(false);
-  const [allcontacts, setallcontacts] = useState([]);
 
   const fetchData = () => {
     setTimeout(() => {
@@ -35,7 +32,6 @@ const ContactsList = ({ navigation }) => {
     setRefreshing(true);
     fetchData();
   };
-
 
   const getData = () => {
     let contactsarray = []
@@ -52,24 +48,29 @@ const ContactsList = ({ navigation }) => {
       if (currContacs.length > 0) {
         currContacs.sort((a, b) => JSON.stringify(a.givenName).localeCompare(JSON.stringify(b.givenName)));
         obj.data = currContacs
-      
-        // setContactUpdateTableData(obj.data)
-
-        // if (isExist == true) {
-        // }else{
-        //   setContactTableData(obj)
-        // }
-       
         contactsarray.push(obj)
       }
     }
-    Contactstore("list_contact", contactsarray)
     return contactsarray
   }
 
-  useEffect(() => {
-    getContactTableData()
-   
+  const createContactTable = () => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        'CREATE TABLE IF NOT EXISTS ContactList (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, number TEXT,recordid TEXT, thumbnail TEXT, thumbnailpath TEXT,isfavourite TEXT)',
+        [],
+        () => { 
+          console.log('Table created successfully.'); 
+        setContactUpdateTableData(item)
+      },
+        (error) => { console.error('Error creating table:', error); }
+      );
+    });
+  }
+
+
+  useEffect(() => {   
+    createContactTable()
     if (Platform.OS === 'android') {
       PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.READ_CONTACTS, {
@@ -139,83 +140,6 @@ const ContactsList = ({ navigation }) => {
     navigation.navigate('ContactDetailScreen', { data: contact });
   };
 
-  const createContactTable = () => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'CREATE TABLE IF NOT EXISTS ContactList (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, number TEXT,recordid TEXT, thumbnail TEXT, thumbnailpath TEXT,isfavourite TEXT)',
-        [],
-        () => { console.log('Table created successfully.'); },
-        (error) => { console.error('Error creating table:', error); }
-      );
-    });
-  }
-
-  const setContactTableData = async (contactDetail) => {
-    const name = `${contactDetail.data[0].givenName} ${contactDetail.data[0].familyName}`
-    const phonenumber = contactDetail.data[0].phoneNumbers[0].number
-    const RecordID = contactDetail.data[0].recordID
-    const HasThumbnail = contactDetail.data[0].hasThumbnail
-    const ThumbnailPath = contactDetail.data[0].thumbnailPath
-    const Favourite = ""
-
-    try {
-      await db.transaction(async (tx) => {
-        tx.executeSql(
-          "INSERT INTO ContactList (name, number,recordid,thumbnail,thumbnailpath,isfavourite) VALUES (?,?,?,?,?,?)",
-          [name, phonenumber, RecordID, HasThumbnail, ThumbnailPath,Favourite],
-          () => { console.log('Data inserted successfully.'); },
-          (error) => { console.error('Error inserting data:', error); }
-        );
-      })
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  const getContactTableData = () => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'SELECT * FROM ContactList',
-        [],
-        (tx, results) => {
-          const rows = results.rows;
-          const users = [];
-          for (let i = 0; i < rows.length; i++) {
-            const user = rows.item(i);
-            users.push(user);
-          }
-          setallcontacts(users)
-          setisExist(true)
-          console.log('Data retrieved successfully:', users);
-        },
-        (error) => { 
-          createContactTable()
-          console.error('Error retrieving data:', error); 
-        }
-      );
-    });
-  }
-
-  const setContactUpdateTableData = async (contactDetail) => {
-    const RecordID = contactDetail.data[0].recordID
-    const name = `${contactDetail.data[0].givenName} ${contactDetail.data[0].familyName}`
-    const phonenumber = contactDetail.data[0].phoneNumbers[0].number
-    const HasThumbnail = contactDetail.data[0].hasThumbnail
-    const ThumbnailPath = contactDetail.data[0].thumbnailPath
-
-    let sql = 'UPDATE ContactList SET name = ?, number = ?, thumbnail = ?,thumbnailpath = ? WHERE recordid = ?';
-    let params = [name, phonenumber,HasThumbnail,ThumbnailPath, RecordID];
-    db.executeSql(sql, params, (resultSet) => {
-        console.log('Record updated successfully')
-    }, (error) => {
-        setContactTableData(contactDetail)
-        console.log(error);
-    });
-
-
-  }
-
-
 
 
   return (
@@ -233,7 +157,6 @@ const ContactsList = ({ navigation }) => {
             style={styles.searchBar}
           />
           <SectionList
-
             sections={getData()}
             renderItem={(contact) => {
               return (
@@ -257,8 +180,6 @@ const ContactsList = ({ navigation }) => {
     </SafeAreaView>
   );
 };
-
-
 
 export default ContactsList;
 

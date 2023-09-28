@@ -5,32 +5,26 @@ import {
   TextInput,
   TouchableOpacity,
   Text,
-  LogBox,
   ScrollView
 } from 'react-native';
 import { React, useEffect, useState } from 'react';
-import voizLogo from '../Assets/voizcall_logo.png'
-import icUser from '../Assets/ic_user.png';
-import ickey from '../Assets/ic_key.png';
-import icqr from '../Assets/ic_qr.png';
-import icicon from '../Assets/voizcall_icon.png';
+import voizLogo from '../../Assets/voizcall_logo.png'
+import icUser from '../../Assets/ic_user.png';
+import ickey from '../../Assets/ic_key.png';
+import icqr from '../../Assets/ic_qr.png';
+import icicon from '../../Assets/voizcall_icon.png';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateSipState } from '../src/redux/sipSlice';
-import { CallDataStore, LoginUser } from './redux/LoginDateStore';
+import { updateSipState } from '../redux/sipSlice';
+import { CallDataStore,LoginUser } from '../redux/LoginDateStore';
 
-LogBox.ignoreLogs(['Warning: ...']);
-LogBox.ignoreAllLogs();
 const HomeScreen = ({ navigation }) => {
 
   const dispatch = useDispatch()
 
   const [username, setusername] = useState("1382941496")
   const [userpassword, setuserpassword] = useState("5Jk$$#t@")
-  // const [username, setusername] = useState("9876543210")
-  // const [userpassword, setuserpassword] = useState("123456")
   const [server, setserver] = useState("s2.netcitrus.com")
   const [port, setport] = useState("7443")
-
 
   const userDataRemvoe = async () => {
     try {

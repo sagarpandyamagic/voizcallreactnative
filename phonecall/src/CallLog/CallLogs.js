@@ -4,26 +4,35 @@ import {
   Image,
   Text,
   TouchableOpacity,
-  Dimensions,
-  Linking,
   Modal, Pressable, FlatList
 } from 'react-native';
 import { React, useEffect, useState } from 'react';
-import { SectionList } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import { format } from 'date-fns';
 import { timeDifferenceCalculator } from 'time-difference-calculator';
-import usecreateUA from './hook/usecreateUA';
 import { useSelector } from 'react-redux';
-import CallLogTimeFistLetterFind from './CallLogTimeFistLetterFind';
+import Contacts from 'react-native-contacts';
+
 import CallLogTimeNameFind from './CallLogTimeNameFind';
+import usecreateUA from '../hook/usecreateUA';
+import CallLogTimeFistLetterFind from './CallLogTimeFistLetterFind';
 
+import ic_Block from '../../Assets/ic_next_arrow.png'
+import ic_call from '../../Assets/ic_call.png';
+import ic_add_new_contact from '../../Assets/ic_add_new_contact.png';
+import ic_delete from '../../Assets/ic_delete.png';
+import { getCallLogTableDate } from './DBCallLog';
+import SQLite from 'react-native-sqlite-storage';
 
-import ic_Block from '../Assets/ic_next_arrow.png';
-import ic_call from '../Assets/ic_call.png';
-import ic_add_new_contact from '../Assets/ic_add_new_contact.png';
-import ic_delete from '../Assets/ic_delete.png';
+const db = SQLite.openDatabase(
+  {
+    name: 'myDatabase.db',
+    location: 'default',
+  },
+  () => { console.log('Database opened.'); },
+  error => { console.log(error) }
+);
+
 
 const getUiqueCallHistory = (allHistory) => {
   let numberMange = ""
@@ -34,9 +43,11 @@ const getUiqueCallHistory = (allHistory) => {
     if (numberMange != "" && numberMange != (his["number"])) {
       groupUser.push({ [numberMange]: d })
       console.log("groupUser", groupUser)
-      d = []
-      numberMange = (his["number"])
-      d.push(his)
+      if(his["number"] != "") {
+        d = []
+        numberMange = (his["number"])
+        d.push(his)
+      }
       console.log("d", d)
     } else {
       numberMange = (his["number"])
@@ -44,18 +55,19 @@ const getUiqueCallHistory = (allHistory) => {
       console.log("d", d)
     }
   })
+  if (numberMange != "") {
   groupUser.push({ [numberMange]: d })
   console.log("groupUser", groupUser)
+  }
   return groupUser
 }
-
 const CallLogs = ({ navigation }) => {
 
   const [logData, setlogData] = useState()
   const [logInfoModal, setlogInfoModal] = useState(false)
   const [logInfoName, setlogInfoName] = useState()
   const [logInfoNumber, setlogInfoNumber] = useState([])
-  const [logkey, setkey] = useState([])
+  const [logkey, setlogkey] = useState([])
   const { makeCall } = usecreateUA()
   const { newCallAdd } = useSelector((state) => state.sip)
   const [hideAddcontact, sethideAddcontact] = useState(false)
@@ -66,52 +78,75 @@ const CallLogs = ({ navigation }) => {
     });
   }, [navigation]);
 
+    
+
   const CallDataGet = async () => {
-    try {
-      const value = await AsyncStorage.getItem("callLog");
-      if (value !== null) {
-        console.warn(value)
-      }
-      let AllCallLogs = value
-      AllCallLogs = JSON.parse(AllCallLogs)
-      console.log("Alluserlog", AllCallLogs)
-      if (AllCallLogs.length > 0) {
-        const formateLog = getUiqueCallHistory(AllCallLogs)
-        setlogData(formateLog)
-      } else {
-        setlogData([])
-      }
-    } catch (e) {
-    }
+    db.transaction((tx) => {
+      tx.executeSql(
+        'SELECT * FROM CallLogList',
+        [],
+        (tx, results) => {
+          const rows = results.rows;
+          const users = [];
+          for (let i = 0; i < rows.length; i++) {
+            const user = rows.item(i);
+            users.push(user);
+          }
+          const formateLog = getUiqueCallHistory(users)
+          setlogData(formateLog)
+        },
+        (error) => { 
+          console.error('Error retrieving data:', error); 
+        }
+      );
+    });
+
   }
 
   const deleteCallHistory = async () => {
-    try {
-      const value = await AsyncStorage.getItem("callLog");
-      if (value !== null) {
-        console.warn(value)
-      }
-      console.log("value", value)
+    console.log("logkey", logkey.length);
 
-      let AllCallLogs = value
-      AllCallLogs = JSON.parse(AllCallLogs)
-      let reaminHistory = AllCallLogs.filter((his) => {
-        console.log("his", his)
-        if (!logkey.includes(his.id)) {
-          return his
-        }
-      })
-      console.log("reaminHistory", reaminHistory)
-
-      try {
-        await AsyncStorage.setItem("callLog", JSON.stringify(reaminHistory));
-        CallDataGet()
-        setlogInfoModal(!logInfoModal)
-      } catch (e) {
-        // saving error
-      }
-    } catch (e) {
+    for (let i = 0; i < logkey.length; i++) {
+      db.transaction((txn) => {
+        txn.executeSql('DELETE FROM CallLogList WHERE unicid = ?', [logkey[i]]
+        , () => {
+          console.log("deleted  Item",i);
+          if((logkey.length - 1) == i) {
+            setlogInfoModal(!logInfoModal)
+            CallDataGet()
+          }
+        }, (error) => {
+          console.log("Item delete error: " + error.message);
+        });
+      });
     }
+  }
+
+  const handleAddContact = ({ num }) => {
+
+    const newContact = {
+      familyName: '',
+      givenName: '',
+      phoneNumbers: [
+        {
+          label: 'mobile',
+          number: num,
+        },
+      ],
+    };
+
+    try {
+      Contacts.addContact(newContact, (err) => {
+        if (err) {
+          console.error(`Error: ${err}`);
+        } else {
+          console.log('Contact added successfully');
+        }
+      });
+    } catch (error) {
+      console.error(`Error: ${error.message}`);
+    }
+    
   }
 
   const ModelContactInfo = () => {
@@ -152,8 +187,7 @@ const CallLogs = ({ navigation }) => {
                   {
                     hideAddcontact == false && <Pressable
                       style={{ flexDirection: 'row', paddingTop: 15 }}
-                      onPress={() => setlogInfoModal(!logInfoModal)
-                      }>
+                      onPress={() =>  handleAddContact(logInfoNumber)}>
                       <View style={{ flex: 1, flexDirection: 'row', height: 40 }}>
                         <View style={{ paddingLeft: 10, paddingRight: 20 }}>
                           <Image source={ic_add_new_contact} style={{ height: 25, width: 35 }}></Image>
@@ -211,10 +245,12 @@ const CallLogs = ({ navigation }) => {
                       setlogInfoModal(true)
                       setlogInfoName(item[Object.keys(item)[0]][0]?.name)
                       let allkeys = []
+                      let count = 0
                       item[Object.keys(item)].map((key) => {
-                        allkeys.push(key.id)
+                        allkeys.push(item[Object.keys(item)[0]][count].unicid)
+                        count = count + 1
                       })
-                      setkey(allkeys)
+                      setlogkey(allkeys)
                       setlogInfoNumber(Object.keys(item)[0])
                     }
                     }>
@@ -222,7 +258,7 @@ const CallLogs = ({ navigation }) => {
                         <CallLogTimeFistLetterFind number={Object.keys(item)[0]} isFontSizeBig={25} />
                       </View>
                       <View style={{ flex: 1 }}>
-                        <CallLogTimeNameFind number={Object.keys(item)[0]} count={item[Object.keys(item)[0]].length > 1 && ` (${item[Object.keys(item)[0]].length})`}  />
+                        <CallLogTimeNameFind number={Object.keys(item)[0]} count={item[Object.keys(item)[0]].length > 1 && ` (${item[Object.keys(item)[0]].length})`} />
                         <Text style={{ fontSize: 12, color: 'black', marginTop: 5, marginLeft: 15, marginBottom: 10 }}>{Object.keys(item)[0]} </Text>
                       </View>
                       <View style={{ justifyContent: 'center', alignItems: 'center', marginRight: 5, height: 40, borderRadius: 20, resizeMode: 'contain', flexDirection: 'row' }}>

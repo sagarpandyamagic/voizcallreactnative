@@ -18,6 +18,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { format } from 'date-fns';
 import RNCallKeep from 'react-native-callkeep'
 import SQLite from 'react-native-sqlite-storage';
+import { createCallLogTable, setCallLogTable } from '../CallLog/DBCallLog';
 
 const reconnectionAttempts = 3
 // Number of seconds to wait between reconnection attempts
@@ -56,13 +57,14 @@ function usecreateUA() {
   const dispatch = useDispatch()
   const [recording, setRecording] = useState();
   const { TimerAction, callTimer, seconds } = useCallTimerContext()
-  const { userAgent, session, allSession, newCallAdd, UserName, Password, Server, Port, Caller_Name,phoneNumber } = useSelector((state) => state.sip)
+  const { userAgent, session, allSession, newCallAdd, UserName, Password, Server, Port, Caller_Name, phoneNumber } = useSelector((state) => state.sip)
   const data = new Date()
   let timeStore = ""
   const [callerName, setcallerName] = useState("Unknown");
 
   const connect = async () => {
     try {
+      createCallLogTable()
       const webSoket = `wss://${Server}:${Port}`
       const sip_aor = `sip:${UserName}@${Server}:${Port}` //`sip:${"101030"}@${"s1.netcitrus.com:5090"}`
       const registererOptions = {}
@@ -173,9 +175,9 @@ function usecreateUA() {
           console.log("incoming========", incoming)
 
 
-          dispatch(updateSipState({ key: "incomingcall", value: true }))
+          // dispatch(updateSipState({ key: "incomingcall", value: true }))
 
-        
+
           invitation.delegate = {
             //  Handle incoming onCancel request
             onRefer(referral) {
@@ -187,6 +189,9 @@ function usecreateUA() {
               dispatch(updateSipState({ key: "incomingcall", value: false }))
               dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
               dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
+
+              RNCallKeep.clearInitialEvents();
+
               if (invitation) {
                 invitation.dispose()
               }
@@ -209,7 +214,6 @@ function usecreateUA() {
                 TimerAction('start')
                 console.log('Incoming Session state Established')
                 setupRemoteMedia(invitation, false)
-                RNCallKeep.startCall(uuidv4(), "handle", "contactIdentifier", "handleType", false);
 
                 break
               case 'Terminating':
@@ -233,7 +237,10 @@ function usecreateUA() {
                 dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
                 dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
                 dispatch(updateSipState({ key: "phoneNumber", value: [] }))
+                dispatch(updateSipState({ key: "allSession", value: {} }))
+                RNCallKeep.endCall("cb499f3e-1521-4467-a51b-ceea76ee92b6")
 
+                delete uuids["cb499f3e-1521-4467-a51b-ceea76ee92b6"]
                 break
               default:
                 console.log('Unknow Incomming Session state')
@@ -266,10 +273,10 @@ function usecreateUA() {
 
   }
 
- 
+
 
   const getContactTableData = (userNumber) => {
-    console.log("userNumber",userNumber)
+    console.log("userNumber", userNumber)
     db.transaction((tx) => {
       tx.executeSql(
         'SELECT * FROM ContactList',
@@ -287,7 +294,7 @@ function usecreateUA() {
             const str = users[key].number.replace(/[^a-z0-9,. ]/gi, '');
             if (userNumber.includes(str.replace(/ /g, ''))) {
               dispatch(updateSipState({ key: "Caller_Name", value: users[key].name }))
-              console.log("key->", users[key].name)
+              // console.log("key->", users[key].name)
               setcallerName(users[key].name)
               nameAdd = true
             }
@@ -296,10 +303,10 @@ function usecreateUA() {
           if (nameAdd == false) {
             dispatch(updateSipState({ key: "Caller_Name", value: "Unknown" }))
           }
-          // console.log('Data retrieved successfully:', Caller_Name);
         },
         (error) => {
           console.error('Error retrieving data:', error);
+          dispatch(updateSipState({ key: "Caller_Name", value: "Unknown" }))
         }
       );
     });
@@ -354,6 +361,7 @@ function usecreateUA() {
           timeStore = data
           TimerAction('start')
           console.debug('Session is establishing')
+          RNCallKeep.startCall("cb499f3e-1521-4467-a51b-ceea76ee92b6", userNumber, userNumber, "number", false);
           break
         case SessionState.Established:
           setupRemoteMedia(session, false)
@@ -373,14 +381,15 @@ function usecreateUA() {
             "direction": "OutGoing",
             "duration": callDuration,
             "current_time": format(timeStore, 'yyyy-MM-dd kk:mm:ss'),
-            "name": callerName ,
+            "name": callerName,
             "id": `${new Date().getTime()}`
           }
 
           CallLogStore(callLog)
           dispatch(updateSipState({ key: "phoneNumber", value: [] }))
-          // dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
-          // dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
+          dispatch(updateSipState({ key: "allSession", value: {} }))
+          RNCallKeep.endCall("cb499f3e-1521-4467-a51b-ceea76ee92b6")
+
           break
         default:
           break
@@ -465,28 +474,9 @@ function usecreateUA() {
   }
 
   const CallLogStore = async (callLog) => {
-    try {
-      const value = await AsyncStorage.getItem("callLog");
-      if (value !== null) {
-        console.warn(value)
-      }
-      console.log("CallLoag:-", value)
-      let AllCallLogs = value
-      AllCallLogs = JSON.parse(AllCallLogs)
-      console.log("Alluserlog", AllCallLogs)
-      if (AllCallLogs && AllCallLogs.length > 0) {
-        AllCallLogs.push(callLog)
-        storeData(JSON.stringify(AllCallLogs))
-        console.log("Alluserlog", AllCallLogs)
-      }
-      if (value == null || AllCallLogs.length == 0) {
-        storeData(JSON.stringify([callLog]))
-        console.log("userlog", callLog)
-      }
-      dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
-      dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
-    } catch (e) {
-    }
+    setCallLogTable(callLog)
+    dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
+    dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
   }
 
 
@@ -670,8 +660,8 @@ function usecreateUA() {
   }
 
   const Callhangup = () => {
-    console.log("allSession",allSession)
-    if(allSession.length == 0) {
+    console.log("allSession", allSession)
+    if (allSession.length == null) {
 
       // const callLog = {
       //   "number": phoneNumber,
@@ -685,16 +675,17 @@ function usecreateUA() {
       // CallLogStore(callLog)
       // dispatch(updateSipState({ key: "phoneNumber", value: [] }))
 
-      
-      const session =  allSession
+      const session = allSession[Object.keys(allSession)];
       session.dispose()
-    }else{
+      // const session =  allSession
+      // session.dispose()
+    } else {
       Object.keys(allSession).map(async (key) => {
         const session = allSession[key];
         session.dispose()
       })
     }
-   
+
   }
   return { connect, makeCall, sendDTMF, blindTx, toggelHoldCall, CallRecoding, CallRecodingStop, Callhangup, holdUsedSwipTime, MuteCall }
 }

@@ -18,17 +18,12 @@ import {
   TouchableOpacity
 } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
-import HomeScreen from './src/HomeScreen';
-import ForgotPassword from './src/ForgotPassword';
 import { NavigationContainer } from '@react-navigation/native';
 import TabBar from './src/TabBar';
-import LoginWithOTP from './src/LoginWithOTP';
 import ContactDetailScreen from './src/ContactScreen/ContactDetailScreen';
 import BlockContact from './src/BlockContact';
 import ContactsList from './src/ContactScreen/ContactsList';
 import { CallTimerDuraionProvider } from './src/CallTimer';
-import CallLogDetails from './src/CallLogDetails';
-import CallLogs from './src/CallLogs';
 import uuid from 'uuid';
 import RNCallKeep from 'react-native-callkeep';
 import BackgroundTimer from 'react-native-background-timer';
@@ -36,13 +31,16 @@ import DeviceInfo from 'react-native-device-info';
 import PushNotificationIOS from "@react-native-community/push-notification-ios";
 import PushNotification from "react-native-push-notification";
 import VoipPushNotification from 'react-native-voip-push-notification';
-import NotifService from './src/NotifService';
 import usecreateUA from './src/hook/usecreateUA';
 import { useDispatch } from 'react-redux';
 import { updateSipState } from './src/redux/sipSlice';
 import { LoginUserExist } from './src/redux/LoginDateStore';
-import SplashScreen from './src/SplashScreen';
 import AddNewContact from './src/AddNewContact';
+import CallLogDetails from './src/CallLog/CallLogDetails';
+import SplashScreen from './src/SplashScreen/SplashScreen';
+import HomeScreen from './src/Login/HomeScreen';
+import ForgotPassword from './src/Login/ForgotPassword';
+import LoginWithOTP from './src/Login/LoginWithOTP';
 
 
 BackgroundTimer.start();

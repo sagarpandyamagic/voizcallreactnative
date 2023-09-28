@@ -17,17 +17,18 @@ import CallScreen from './CallScreen';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateSipState } from './redux/sipSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import DialpadTimeSearchContact from './ContactScreen/DialpadTimeSearchContact';
 
-const pinLength = 4
+const pinLength = 3
 const pinContainersize = width / 2;
 const pinMaxSize = pinContainersize / pinLength
-const pinSpacing = 10
-const pinSize = pinMaxSize - pinSpacing * 2
+const pinSpacing = 7
+const pinSize = pinMaxSize - pinSpacing * 1.8
 
 const dialPad = [1, 2, 3, 4, 5, 6, 7, 8, 9, '*', 0, '#', '', 'call', 'del']
 const dinlPadAlphabat = ['', 'A B C', "D E F", "G H I", "J K L", "M N O", "P Q R S", "T U V", "W X Y Z", "", "+", "", "", "", ""]
 const dialPadSize = width * .2
-const dialPadTextSize = dialPadSize * .4
+const dialPadTextSize = dialPadSize * .38
 const _spacing = 20;
 
 function Number({ onPress }: { onPress: (item: typeof dialPad[number]) => void }) {
@@ -82,6 +83,7 @@ const Dialpad = ({ navigation }) => {
     const { CallScreenOpen, soketConnect } = useSelector((state) => state.sip)
     const dispatch = useDispatch()
 
+
     useEffect(() => {
         connect();
     }, []);
@@ -91,6 +93,7 @@ const Dialpad = ({ navigation }) => {
         number.toString()
         console.log(number)
         makeCall(number)
+        dispatch(updateSipState({ key: "Caller_Name", value: number }))
         dispatch(updateSipState({ key: "CallScreenOpen", value: true }))
     };
 
@@ -105,16 +108,22 @@ const Dialpad = ({ navigation }) => {
                     style={{
                         flexDirection: 'row'
                         , gap: pinSpacing * 2
-                        , height: pinSize * 1.5
+                        , height: pinSize * 1
                         , justifyContent: 'center'
-                        , alignItems: 'center'
+                        , alignItems: 'center',
                     }}>
                     <Text style={{ fontSize: 20, }}>{code}</Text>
+                </View>
+                <View style={{flex:1}}>
+                <DialpadTimeSearchContact searchtext={code} setCode={setCode}/>
                 </View>
             </View>
 
             <View style={style.container}>
-                <View style={{ height: 20 }}></View>
+                <View style={{ height: 20 }}>
+
+                </View>
+                <View >
                 <Number code={code.length ? {} : code} onPress={(item) => {
                     if (item.toString() == 'del') {
                         const updatedWords = [...code];
@@ -128,14 +137,15 @@ const Dialpad = ({ navigation }) => {
                         setCode(newNumbers)
                     }
                 }} />
+                </View>
             </View>
-            <View>
+            {/* <View>
                 <IncomingCall nav={navigation} />
             </View>
 
             <View>
                 <CallScreen nav={navigation} />
-            </View>
+            </View> */}
 
         </View>
     )

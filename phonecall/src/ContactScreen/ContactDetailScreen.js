@@ -41,10 +41,9 @@ const db = SQLite.openDatabase(
 
 const ContactDetailScreen = ({ route, navigation }) => {
     const data = route.params?.data
-    const {connect, makeCall } = usecreateUA()
+    const { connect, makeCall } = usecreateUA()
     const [userBlock, setUserBlock] = useState(false)
     const [favourite, setfavourite] = useState(0)
-
 
     console.log(data.phoneNumbers[0].number)
 
@@ -52,12 +51,14 @@ const ContactDetailScreen = ({ route, navigation }) => {
         console.log("data", data.thumbnailPath)
 
         if (data.hasThumbnail == true) {
-        return  <Image style={{ overflow: 'hidden',
-                            justifyContent: 'center',
-                             height: 100,
-                             width: 100
-                             ,borderRadius: Math.round( 100 +  100) / 2}} 
-                             source={{uri: data.thumbnailPath}} />
+            return <Image style={{
+                overflow: 'hidden',
+                justifyContent: 'center',
+                height: 100,
+                width: 100
+                , borderRadius: Math.round(100 + 100) / 2
+            }}
+                source={{ uri: data.thumbnailPath }} />
         } else {
             let fullName = ""
             if (Platform.OS === 'android') {
@@ -116,6 +117,14 @@ const ContactDetailScreen = ({ route, navigation }) => {
                 {
                     text: 'Ok',
                     onPress: async () => {
+                        db.transaction((txn) => {
+                            txn.executeSql('DELETE FROM ContactList WHERE recordid = ?', [data.recordID]
+                                , () => {
+                                    console.log("deleted  Item");
+                                }, (error) => {
+                                    console.log("Item delete error: " + error.message);
+                                });
+                        });
                         const resp = await Contacts.deleteContact({ recordID: data.recordID });
                         navigation.pop(1)
                     },
@@ -228,7 +237,7 @@ const ContactDetailScreen = ({ route, navigation }) => {
     }
 
     useEffect(() => {
-        console.log("data.phoneNumbers[0].number",data.phoneNumbers[0].number)
+        console.log("data.phoneNumbers[0].number", data.phoneNumbers[0].number)
         getContactTableData(data.phoneNumbers[0].number)
         numberCheckBlockORNot()
     }, [])
@@ -294,8 +303,8 @@ const ContactDetailScreen = ({ route, navigation }) => {
     const setContactAddORRemoveInFavourite = () => {
         const RecordID = data.recordID
         let sql = 'UPDATE ContactList SET isfavourite = ? WHERE recordid = ?';
-        let params = [(favourite == 1)?0:1, RecordID];
-        setfavourite((favourite == 1)?0:1)
+        let params = [(favourite == 1) ? 0 : 1, RecordID];
+        setfavourite((favourite == 1) ? 0 : 1)
         db.executeSql(sql, params, (resultSet) => {
             console.log('Record updated successfully')
             showToast()
@@ -378,9 +387,9 @@ const ContactDetailScreen = ({ route, navigation }) => {
                     <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
                         <View style={{ backgroundColor: '#4F6EB4', height: 50, width: 50, justifyContent: 'center', borderRadius: 25 }}>
                             <View style={{ resizeMode: 'contain', justifyContent: 'center', alignItems: 'center' }}>
-                            <TouchableOpacity onPress={()  => setContactAddORRemoveInFavourite()}>
-                                <Image style={{ resizeMode: 'contain', height: 25, width: 100 }} tintColor={'#FFFFFF'} source={favourite == 1 ? ic_favourite_S : ic_Heart}  ></Image>
-                            </TouchableOpacity>
+                                <TouchableOpacity onPress={() => setContactAddORRemoveInFavourite()}>
+                                    <Image style={{ resizeMode: 'contain', height: 25, width: 100 }} tintColor={'#FFFFFF'} source={favourite == 1 ? ic_favourite_S : ic_Heart}  ></Image>
+                                </TouchableOpacity>
                             </View>
                         </View>
                         <Text>Favorite</Text>

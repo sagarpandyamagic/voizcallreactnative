@@ -17,7 +17,7 @@ import {
 
   
   const CallLogTimeNameFind = (props) => {
-    const {number,sethideAddcontact,count,hideCountForDetailSection} =props
+    const {number,sethideAddcontact,count,hideCountForDetailSection} = props
     const [name,setname] = useState()
 
     useEffect(()=>{

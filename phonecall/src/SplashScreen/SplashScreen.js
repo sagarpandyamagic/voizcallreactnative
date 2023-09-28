@@ -1,19 +1,13 @@
 import {
     View,
-    StyleSheet,
-    Image,
-    TextInput,
-    TouchableOpacity,
     Text,
-    ScrollView,
     LogBox
   } from 'react-native';
   import { React, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDispatch } from 'react-redux';
-import { updateSipState } from './redux/sipSlice';
+import { updateSipState } from '../redux/sipSlice';
 
-  
   LogBox.ignoreLogs(['Warning: ...']);
   LogBox.ignoreAllLogs();
 

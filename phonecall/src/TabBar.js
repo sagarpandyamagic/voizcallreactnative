@@ -1,9 +1,7 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import HomeScreen from './HomeScreen';
 import Setting from './Setting';
 import Dialpad from './Dialpad';
 import ContactsList from './ContactScreen/ContactsList';
-import CallLogs from './CallLogs';
 import { Button, Pressable, View ,Text,Image} from 'react-native';
 import { useSelector } from 'react-redux';
 
@@ -13,6 +11,7 @@ import ic_Dialpad from '../Assets/ic_Tab_DialPad.png'
 import ic_Setting from '../Assets/ic_Tab_setting.png'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect } from 'react';
+import CallLogs from './CallLog/CallLogs';
 
 
 

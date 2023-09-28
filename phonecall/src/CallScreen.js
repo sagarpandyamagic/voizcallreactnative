@@ -51,6 +51,9 @@ function CallScreen(props) {
     setMute(false)
     sethold(false)
     setswip(false)
+    if(session != {} && CallScreenOpen){
+      session&&session.accept()
+    }
   }, [CallScreenOpen]);
 
   return (

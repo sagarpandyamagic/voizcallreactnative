@@ -1,8 +1,8 @@
 // Access Device’s Contact List in React Native App
 // https://aboutreact.com/access-contact-list-react-native/
 
-import React, {memo, useEffect, useState} from 'react';
-import {View, TouchableOpacity, Text, StyleSheet} from 'react-native';
+import React, { memo, useEffect, useState } from 'react';
+import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 
 import PropTypes from 'prop-types';
 import Avatar from './Avatar';
@@ -31,16 +31,13 @@ const ListItem = (props) => {
   const shouldComponentUpdate = () => {
     return false;
   };
-  const {item, onPress} = props;
+  const { item, onPress } = props;
   const [isExist, setisExist] = useState(false);
   const [allcontacts, setallcontacts] = useState([]);
 
-  // console.log("item",item)
-
-  useEffect(()=>{
+  useEffect(() => {
     getContactTableData()
-    setContactUpdateTableData(item)
-  },[])
+  }, [])
 
   const getContactTableData = () => {
     db.transaction((tx) => {
@@ -56,34 +53,52 @@ const ListItem = (props) => {
           }
           setisExist(true)
           setallcontacts(users)
-          console.log('Data retrieved successfully:', users);
+          setContactUpdateTableData(item)
+
         },
-        (error) => { 
-          createContactTable()
-          console.error('Error retrieving data:', error); 
+        (error) => {
+          console.error('Error retrieving data:', error);
         }
       );
     });
   }
 
+
+
   const setContactUpdateTableData = async (contactDetail) => {
-    if (allcontacts.length > 0 ) {
-      const RecordID = contactDetail.recordID
-      const name = `${contactDetail.givenName} ${contactDetail.familyName}`
-      const phonenumber = contactDetail.phoneNumbers[0].number
-      const HasThumbnail = contactDetail.hasThumbnail
-      const ThumbnailPath = contactDetail.thumbnailPath
-      let sql = 'UPDATE ContactList SET name = ?, number = ?, thumbnail = ?,thumbnailpath = ? WHERE recordid = ?';
-      let params = [name, phonenumber,HasThumbnail,ThumbnailPath, RecordID];
-      db.executeSql(sql, params, (resultSet) => {
-          console.log('Record updated successfully')
-      }, (error) => {
+    const RecordID = contactDetail.recordID
+    const name = `${contactDetail.givenName} ${contactDetail.familyName}`
+    const phonenumber = contactDetail.phoneNumbers[0].number
+    const HasThumbnail = contactDetail.hasThumbnail
+    const ThumbnailPath = contactDetail.thumbnailPath
+    let sql = 'UPDATE ContactList SET name = ?, number = ?, thumbnail = ?,thumbnailpath = ? WHERE recordid = ?';
+    let params = [name, phonenumber, HasThumbnail, ThumbnailPath, RecordID];
+    // db.executeSql(sql, params, (resultSet) => {
+    //   console.log('Record updated successfully')
+    // }, (error) => {
+    //   setContactTableData(contactDetail)
+    //   console.log(error);
+    // });
+
+    db.transaction((tx) => {
+      tx.executeSql(
+        'UPDATE ContactList SET name = ?, number = ?, thumbnail = ?, thumbnailpath = ? WHERE recordid = ?',
+        [name, phonenumber, HasThumbnail, ThumbnailPath, RecordID],
+        (tx, results) => {
+          if (results.rowsAffected > 0) {
+            console.log('Update successful');
+          } else {
+            setContactTableData(contactDetail)
+            console.log('No rows updated');
+          }
+        },
+        (error) => {
           setContactTableData(contactDetail)
-          console.log(error);
-      });
-    }else{
-      setContactTableData(contactDetail)
-    }
+          console.error('Error updating contact:', error);
+        }
+      );
+    });
+
   }
 
   const setContactTableData = async (contactDetail) => {
@@ -98,8 +113,10 @@ const ListItem = (props) => {
       await db.transaction(async (tx) => {
         tx.executeSql(
           "INSERT INTO ContactList (name, number,recordid,thumbnail,thumbnailpath,isfavourite) VALUES (?,?,?,?,?,?)",
-          [name, phonenumber, RecordID, HasThumbnail, ThumbnailPath,Favourite],
-          () => { console.log('Data inserted successfully.'); },
+          [name, phonenumber, RecordID, HasThumbnail, ThumbnailPath, Favourite],
+          () => {
+            console.log('Data inserted successfully.');
+          },
           (error) => { console.error('Error inserting data:', error); }
         );
       })
@@ -108,9 +125,6 @@ const ListItem = (props) => {
     }
   }
 
-
-
-  // AllContact(item)
   return (
     <View>
       <TouchableOpacity onPress={() => onPress(item)}>
@@ -119,7 +133,7 @@ const ListItem = (props) => {
             <Avatar
               img={
                 item.hasThumbnail ?
-                  {uri: item.thumbnailPath} : undefined
+                  { uri: item.thumbnailPath } : undefined
               }
               placeholder={getAvatarInitials(
                 `${item.givenName} ${item.familyName}`,

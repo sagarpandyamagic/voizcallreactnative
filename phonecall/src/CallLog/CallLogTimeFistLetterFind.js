@@ -35,6 +35,8 @@ const CallLogTimeFistLetterFind = (number) => {
   }
 
   useEffect(() => {
+    setLetter("")
+    seThumbImage(false)
     getContactTableData(number.number)
   }, [])
 
@@ -61,9 +63,8 @@ const CallLogTimeFistLetterFind = (number) => {
               if (users[key].thumbnailpath == "") {
                 FistLetterFind(users[key].name)
                 seThumbImage(false)
-
               } else {
-                console.log("users[key].thumbnailpath", users[key].thumbnailpath)
+                console.log("users", users[key].thumbnailpath)
                 setLetter(`${users[key].thumbnailpath}`)
                 seThumbImage(true)
               }
@@ -83,11 +84,14 @@ const CallLogTimeFistLetterFind = (number) => {
         }
       );
     });
+
+    
     console.error('Letter', Letter)
   }
 
   return (
-    ThumbImage == true ? <Image style={{ overflow: 'hidden', justifyContent: 'center', height: number.isFontSizeBig, width: number.isFontSizeBig, borderRadius: Math.round(number.isFontSizeBig + number.isFontSizeBig) / 2 }} source={{ uri: Letter }} /> : <Text style={{ fontSize: number.isFontSizeBig, color: '#FFFF' }}>{Letter}</Text>
+    ThumbImage == true ? <Image style={{ overflow: 'hidden', justifyContent: 'center', height: number.isFontSizeBig+15, width: number.isFontSizeBig+15, borderRadius: Math.round(number.isFontSizeBig+15) / 2 }} source={{ uri: Letter }} /> 
+    : <Text style={{ fontSize: number.isFontSizeBig, color: '#FFFF' }}>{Letter}</Text>
   )
 }
 

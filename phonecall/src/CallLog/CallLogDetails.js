@@ -12,22 +12,20 @@ import { React, useState, useEffect } from 'react';
 const { width, height } = Dimensions.get('window')
 import { useRoute } from '@react-navigation/native';
 import { format } from 'date-fns';
-
-import ic_OutgoingCall from '../Assets/outgoing.png';
-import ic_IncomeingCall from '../Assets/incoming.png';
-import ic_MissedCall from '../Assets/missedCall.png';
-import ic_CallDirect from '../Assets/ic_call1.png';
-import usecreateUA from './hook/usecreateUA';
-import CallLogTimeNameFind from './CallLogTimeNameFind';
-import CallLogTimeFistLetterFind from './CallLogTimeFistLetterFind';
 import { tr } from 'date-fns/locale';
+import usecreateUA from '../hook/usecreateUA';
+import ic_OutgoingCall from '../../Assets/outgoing.png';
+import ic_IncomeingCall from '../../Assets/incoming.png';
+import ic_MissedCall from '../../Assets/missedCall.png';
+import ic_CallDirect from '../../Assets/ic_call1.png';
+import CallLogTimeFistLetterFind from './CallLogTimeFistLetterFind';
+import CallLogTimeNameFind from './CallLogTimeNameFind';
 
 const CallLogDetails = ({ navigation }) => {
     const route = useRoute();
     const { data } = route.params;
     console.log("data", data[Object.keys(data)[0]])
     const { makeCall } = usecreateUA()
-
 
     const DateFormateChange = (item) => {
         const date = new Date(item.item);
@@ -48,21 +46,6 @@ const CallLogDetails = ({ navigation }) => {
         }
     }
 
-    const FistLetter = () => {
-        let fullName = data[Object.keys(data)[0]][0].name
-        const nameParts = fullName.split(" ");
-        if (nameParts.length > 1) {
-            const surname = nameParts[nameParts.length - 1];
-            const surnameFirstLetter = fullName.charAt(0) + surname.charAt(0)
-            console.log("First letter of surname:", surnameFirstLetter);
-            return <Text style={{ color: '#FFFF', fontSize: 50 }}>{surnameFirstLetter}</Text>
-        } else {
-            const surnameFirstLetter = fullName.charAt(0);
-            console.log("No surname found.");
-            return <Text style={{ color: '#FFFF', fontSize: 50 }}>{surnameFirstLetter}</Text>
-        }
-    }
-
     const DurationSetForamte =(item) =>{
         const date = item.item;
         var myArray = date.split(':');
@@ -73,7 +56,6 @@ const CallLogDetails = ({ navigation }) => {
         <View style={style.mainViewContain}>
             <View style={style.viewInfo}>
                 <View style={{ backgroundColor: '#4F6EB4', height: 100, width: 100, alignItems: 'center', justifyContent: 'center', borderRadius: 100 / 2 }}>
-                    {/* <FistLetter /> */}
                     <CallLogTimeFistLetterFind number={Object.keys(data)[0]} isFontSizeBig={80}/>
                 </View>
             </View>

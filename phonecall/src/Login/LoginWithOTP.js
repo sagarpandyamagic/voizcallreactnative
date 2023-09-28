@@ -10,9 +10,9 @@ import {
     Button
   } from 'react-native';
   import { React } from 'react';
-  import voizLogo from '../Assets/voizcall_logo.png';
-  import icqr from '../Assets/ic_qr.png';
-  import icicon from '../Assets/voizcall_icon.png';
+  import voizLogo from '../../Assets/voizcall_logo.png';
+  import icqr from '../../Assets/ic_qr.png';
+  import icicon from '../../Assets/voizcall_icon.png';
   
   const LoginWithOTP = ({ navigation }) => {
     return (
