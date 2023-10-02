@@ -21,6 +21,7 @@ const initialState = {
   Server:"",
   Port:"",
   Caller_Name:"",
+  CallkeepCall:false
 }
 export let Callcount = 0
 
@@ -34,6 +35,7 @@ export const counterSlice = createSlice({
       if(key == "CallScreenOpen" && value == false){
         Callcount = 0
         newCallAdd = 0
+        CallkeepCall = false
       }
     },
     addSession:(state,action) =>{

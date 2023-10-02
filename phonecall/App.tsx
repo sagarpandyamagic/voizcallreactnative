@@ -27,65 +27,50 @@ import { CallTimerDuraionProvider } from './src/CallTimer';
 import uuid from 'uuid';
 import RNCallKeep from 'react-native-callkeep';
 import BackgroundTimer from 'react-native-background-timer';
-import DeviceInfo from 'react-native-device-info';
-import PushNotificationIOS from "@react-native-community/push-notification-ios";
 import PushNotification from "react-native-push-notification";
 import VoipPushNotification from 'react-native-voip-push-notification';
 import usecreateUA from './src/hook/usecreateUA';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { updateSipState } from './src/redux/sipSlice';
-import { LoginUserExist } from './src/redux/LoginDateStore';
-import AddNewContact from './src/AddNewContact';
 import CallLogDetails from './src/CallLog/CallLogDetails';
-import SplashScreen from './src/SplashScreen/SplashScreen';
-import HomeScreen from './src/Login/HomeScreen';
-import ForgotPassword from './src/Login/ForgotPassword';
 import LoginWithOTP from './src/Login/LoginWithOTP';
+import SplashScreen from './src/SplashScreen/SplashScreen';
+import ForgotPassword from './src/Login/ForgotPassword';
+import IncomingCall from './src/IncomingCall';
+import CallScreen from './src/CallScreen';
+import HomeScreen from './src/Login/HomeScreen';
+import { Notifications } from 'react-native-notifications';
+import { useNavigation } from '@react-navigation/native';
 
 
 BackgroundTimer.start();
 
 const hitSlop = { top: 10, left: 10, right: 10, bottom: 10 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    marginTop: 20,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  button: {
-    marginTop: 20,
-    marginBottom: 20,
-  },
-  callButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 30,
-    width: '100%',
-  },
-  logContainer: {
-    flex: 3,
-    width: '100%',
-    backgroundColor: '#D9D9D9',
-  },
-  log: {
-    fontSize: 10,
-  }
-});
 
-RNCallKeep.setup({
-  ios: {
-    appName: 'CallKeepDemo',
-  },
-  android: {
-    alertTitle: 'Permissions required',
-    alertDescription: 'This application needs to access your phone accounts',
-    cancelButton: 'Cancel',
-    okButton: 'ok',
-  },
-});
+
+function setupCallKeep() {
+  const options = {
+    android: {
+      alertTitle: 'Permissions Required',
+      alertDescription:
+        'This application needs to access your phone calling accounts to make calls',
+      cancelButton: 'Cancel',
+      okButton: 'ok',
+      imageName: 'ic_launcher',
+      // additionalPermissions: [PermissionsAndroid.PERMISSIONS.READ_CONTACTS],
+    },
+  };
+
+  try {
+    RNCallKeep.setup(options);
+    RNCallKeep.setAvailable(true); // Only used for Android, see doc above.
+  } catch (err) {
+    console.error('initializeCallKeep error:', err.message);
+  }
+}
+
+setupCallKeep();
 
 const getNewUuid = () => "cb499f3e-1521-4467-a51b-ceea76ee92b6"
 
@@ -97,224 +82,201 @@ const isIOS = Platform.OS === 'ios';
 
 console.log("uuid", uuid)
 
+const useLogger = (moduleName) => {
+  const info = (message, data = {}) => {
+    console.log(`[${moduleName}] INFO: ${message}`, data);
+  };
+
+  const error = (message, data = {}) => {
+    console.error(`[${moduleName}] ERROR: ${message}`, data);
+  };
+
+  return { info, error };
+};
+
 function App() {
-  const [logText, setLog] = useState('');
-  const [heldCalls, setHeldCalls] = useState({}); // callKeep uuid: held
-  const [mutedCalls, setMutedCalls] = useState({}); // callKeep uuid: muted
-  const [calls, setCalls] = useState({}); // callKeep uuid: number
-
+  const logger = useLogger('CallKeep');
   const dispatch = useDispatch()
-
-
-
-  const log = (text) => {
-    console.info(text);
-    setLog(logText + "\n" + text);
-  };
-
-  const addCall = (callUUID, number) => {
-    setHeldCalls({ ...heldCalls, [callUUID]: false });
-    setCalls({ ...calls, [callUUID]: number });
-  };
-
-  const removeCall = (callUUID) => {
-    const { [callUUID]: _, ...updated } = calls;
-    const { [callUUID]: __, ...updatedHeldCalls } = heldCalls;
-
-    setCalls(updated);
-    setHeldCalls(updatedHeldCalls);
-  };
-
-  const setCallHeld = (callUUID, held) => {
-    setHeldCalls({ ...heldCalls, [callUUID]: held });
-  };
-
-  const setCallMuted = (callUUID, muted) => {
-    setMutedCalls({ ...mutedCalls, [callUUID]: muted });
-  };
-
-  const displayIncomingCall = (number) => {
-    const callUUID = getNewUuid();
-    addCall(callUUID, number);
-
-    log(`[displayIncomingCall] ${format(callUUID)}, number: ${number}`);
-
-    RNCallKeep.displayIncomingCall(callUUID, number, number, 'number', false);
-  };
-
-  const displayIncomingCallNow = () => {
-    displayIncomingCall(getRandomNumber());
-  };
-
-  const displayIncomingCallDelayed = () => {
-    BackgroundTimer.setTimeout(() => {
-      displayIncomingCall(getRandomNumber());
-    }, 3000);
-  };
+  const { connect, makeCall ,Callhangup} = usecreateUA()
 
   const answerCall = ({ callUUID }) => {
-    const number = calls[callUUID];
-    log(`[answerCall] ${format(callUUID)}, number: ${number}`);
-
-    RNCallKeep.startCall(callUUID, number, number);
-
-    BackgroundTimer.setTimeout(() => {
-      log(`[setCurrentCallActive] ${format(callUUID)}, number: ${number}`);
-      RNCallKeep.setCurrentCallActive(callUUID);
-    }, 1000);
-  };
-
-  const didPerformDTMFAction = ({ callUUID, digits }) => {
-    const number = calls[callUUID];
-    log(`[didPerformDTMFAction] ${format(callUUID)}, number: ${number} (${digits})`);
-  };
-
-  const didReceiveStartCallAction = ({ handle }) => {
-    if (!handle) {
-      // @TODO: sometime we receive `didReceiveStartCallAction` with handle` undefined`
-      return;
+    logger.info("Call recieved, answering call...")
+    // AsyncStorage.setItem('currentCallUUID', callUUID);
+    try {
+      logger.info("Starting Callkeep call")
+      RNCallKeep.startCall(callUUID, '7728733596', "7728733596", 'number', false);
+      logger.info("Call started successfully")
+    } catch (e) {
+      logger.error("Failed to start callkeep call")
     }
-    const callUUID = getNewUuid();
-    addCall(callUUID, handle);
 
-    log(`[didReceiveStartCallAction] ${callUUID}, number: ${handle}`);
-
-    RNCallKeep.startCall(callUUID, handle, handle);
-
-    BackgroundTimer.setTimeout(() => {
-      log(`[setCurrentCallActive] ${format(callUUID)}, number: ${handle}`);
-      RNCallKeep.setCurrentCallActive(callUUID);
+    setTimeout(() => {
+      logger.info("Setting current active call...")
+      try {
+        RNCallKeep.setCurrentCallActive(callUUID);
+        dispatch(updateSipState({ key: "CallScreenOpen", value: true }))
+        dispatch(updateSipState({ key: "incomingcall", value: false }))
+        logger.info("Current active call set");
+      } catch (e) {
+        logger.error("Failed to set current call", { error: e });
+      }
     }, 1000);
-  };
+    logger.info("Call started successfully, setting active call")
 
-  const didPerformSetMutedCallAction = ({ muted, callUUID }) => {
-    const number = calls[callUUID];
-    log(`[didPerformSetMutedCallAction] ${format(callUUID)}, number: ${number} (${muted})`);
 
-    setCallMuted(callUUID, muted);
-  };
+    // On Android display the app when answering a video call
+    if (!isIOS) {
+      console.log('bringing app to foreground');
+      RNCallKeep.backToForeground();
+    }
 
-  const didToggleHoldCallAction = ({ hold, callUUID }) => {
-    const number = calls[callUUID];
-    log(`[didToggleHoldCallAction] ${format(callUUID)}, number: ${number} (${hold})`);
+    logger.info("Setting current call UUID")
+    // dispatch(setCurrentCallUUID(callUUID))
 
-    setCallHeld(callUUID, hold);
+    logger.info("Navigating to call screen")
+
+
   };
 
   const endCall = ({ callUUID }) => {
-    const handle = calls[callUUID];
-    log(`[endCall] ${format(callUUID)}, number: ${handle}`);
+    logger.info("Ending call")
+    logger.info("Test Ending call")
 
-    removeCall(callUUID);
-  };
-
-  const hangup = (callUUID) => {
-    RNCallKeep.endCall(callUUID);
-    removeCall(callUUID);
-  };
-
-  const setOnHold = (callUUID, held) => {
-    const handle = calls[callUUID];
-    RNCallKeep.setOnHold(callUUID, held);
-    log(`[setOnHold: ${held}] ${format(callUUID)}, number: ${handle}`);
-
-    setCallHeld(callUUID, held);
-  };
-
-  const setOnMute = (callUUID, muted) => {
-    const handle = calls[callUUID];
-    RNCallKeep.setMutedCall(callUUID, muted);
-    log(`[setMutedCall: ${muted}] ${format(callUUID)}, number: ${handle}`);
-
-    setCallMuted(callUUID, muted);
-  };
-
-  const updateDisplay = (callUUID) => {
-    const number = calls[callUUID];
-    // Workaround because Android doesn't display well displayName, se we have to switch ...
-    if (isIOS) {
-      RNCallKeep.updateDisplay(callUUID, 'New Name', number);
-    } else {
-      RNCallKeep.updateDisplay(callUUID, number, 'New Name');
+    try {
+      // dispatch(endCallWithUUID(callUUID));
+      dispatch(updateSipState({ key: "CallkeepCall", value: true }))
+      RNCallKeep.endAllCalls();
+      logger.info("Call ended")
+    } catch (e) {
+      logger.error("Failed to end call", { error: e })
     }
-
-    log(`[updateDisplay: ${number}] ${format(callUUID)}`);
   };
 
-  const state = {}
-  let onRegister = []
-  let onNotif = []
-
-  const { connect } = usecreateUA()
-
-
-  VoipPushNotification.addEventListener('register', (token) => {
-    // --- send token to your apn provider server
-    console.log("register", token)
-  });
-
-  // ===== Step 2: subscribe `notification` event =====
-  // --- this.onVoipPushNotificationiReceived
-  VoipPushNotification.addEventListener('notification', (notification) => {
-    console.log("when receive remote voip push", notification)
-
-    displayIncomingCallNow()
-
-    // --- when receive remote voip push, register your VoIP client, show local notification ... etc
-    // this.doSomething();
-
-    // --- optionally, if you `addCompletionHandler` from the native side, once you have done the js jobs to initiate a call, call `completion()`
-    // VoipPushNotification.onVoipNotificationCompleted(notification.uuid);
-  });
-
-  // ===== Step 3: subscribe `didLoadWithEvents` event =====
-  VoipPushNotification.addEventListener('didLoadWithEvents', (events) => {
-    console.log("didLoadWithEvents", events)
-    // displayIncomingCallNow()
-    // --- this will fire when there are events occured before js bridge initialized
-    // --- use this event to execute your event handler manually by event type
-
-    if (!events || !Array.isArray(events) || events.length < 1) {
-      return;
+  const didDisplayIncomingCall = async ({ callUUID, payload, handle, }) => {
+    try {
+      logger.info('Recieved call with data', { payload, callUUID, handle });
+      // dispatch(
+      //   startVideoChatWithouActivating({
+      //     token: payload.token,
+      //     room_name: payload.room_name,
+      //     call_id: payload.call_id,
+      //     friend: payload.friend,
+      //     callUUID,
+      //     call_uuid: callUUID,
+      //     // location: JSON.parse(data.location ?? '{}'),
+      //   })
+      // );
+      logger.info('Call displayed with data', { payload, callUUID, handle });
+    } catch (e) {
+      logger.error('Failed to save call data', { payload, callUUID, handle });
     }
-    for (let voipPushEvent of events) {
-      let { name, data } = voipPushEvent;
-      if (name === VoipPushNotification.RNVoipPushRemoteNotificationsRegisteredEvent) {
-        console.log("name", name)
-        // onVoipPushNotificationRegistered(data);
-      } else if (name === VoipPushNotification.RNVoipPushRemoteNotificationReceivedEvent) {
-        // onVoipPushNotificationiReceived(data);
-        console.log("name", name)
+  }
+
+  const handlePreJSEvents = (events) => {
+    logger.info('PreJS events', { events });
+    for (let event of events) {
+      if (event.name == "RNCallKeepDidDisplayIncomingCall") {
+        logger.info('PreJS events: didDisplayIncomingCall', { event });
+        didDisplayIncomingCall(event.data)
+      } else if (event.name == 'RNCallKeepAnswerCall') {
+        logger.info('PreJS events: answerCall', { event });
+        answerCall(event.data)
+      } else if (event.name == 'RNCallKeepEndCall') {
+        logger.info('PreJS events: endCall', { event });
+        endCall(event.data)
       }
     }
-  });
+  }
 
-  // ===== Step 4: register =====
-  // --- it will be no-op if you have subscribed before (like in native side)
-  // --- but will fire `register` event if we have latest cahced voip token ( it may be empty if no token at all )
-  VoipPushNotification.registerVoipToken(); // --- register token
+  const initializeCallKeep = () => {
+    connect()
+    setTimeout(() => {
+      try {
+        logger.info('Call keep initiated successfully');
+        RNCallKeep.setAvailable(true);
   
-  useEffect(() => {
-    // PushNotification.requestPermissions();
-    console.log("Received")
+        RNCallKeep.addEventListener('answerCall', answerCall);
+        RNCallKeep.addEventListener('didReceiveStartCallAction', answerCall);
+        RNCallKeep.addEventListener('endCall', endCall);
+        RNCallKeep.addEventListener('didDisplayIncomingCall', didDisplayIncomingCall);
+        
+        if (isIOS) {
+          RNCallKeep.addEventListener('didLoadWithEvents', handlePreJSEvents);
+        }
+      } catch (err) {
+        logger.error('Failed to initialize call keep', {
+          error: err,
+          msg: err.message,
+        });
+        console.error('initializeCallKeep error:', err.message);
+      }
+    }, 2000);
+   
+  };
 
-    // setUser( )
-    RNCallKeep.addEventListener('answerCall', answerCall);
-    RNCallKeep.addEventListener('didPerformDTMFAction', didPerformDTMFAction);
-    RNCallKeep.addEventListener('didReceiveStartCallAction', didReceiveStartCallAction);
-    RNCallKeep.addEventListener('didPerformSetMutedCallAction', didPerformSetMutedCallAction);
-    RNCallKeep.addEventListener('didToggleHoldCallAction', didToggleHoldCallAction);
-    RNCallKeep.addEventListener('endCall', endCall);
+  useEffect(() => {
+    initializeCallKeep();
+
+    VoipPushNotification.addEventListener('register', (token) => {
+      // --- send token to your apn provider server
+      console.log("register", token)
+    });
+
+    // ===== Step 2: subscribe `notification` event =====
+    // --- this.onVoipPushNotificationiReceived
+    VoipPushNotification.addEventListener('notification', (notification) => {
+      console.log("when receive remote voip push title", notification.aps.alert.title)
+      console.log("when receive remote voip push subtitle", notification.aps.alert.subtitle)
+      console.log("when receive remote voip push body", notification.aps.alert.body)
+
+      connect()
+      // displayIncomingCallNow(notification.aps.alert.subtitle)
+
+      // --- optionally, if you `addCompletionHandler` from the native side, once you have done the js jobs to initiate a call, call `completion()`
+      VoipPushNotification.onVoipNotificationCompleted(getNewUuid());
+    });
+   
+
+
+
+
+    // ===== Step 3: subscribe `didLoadWithEvents` event =====
+    VoipPushNotification.addEventListener('didLoadWithEvents', (events) => {
+      console.log("didLoadWithEvents", events)
+      // displayIncomingCallNow()
+      // --- this will fire when there are events occured before js bridge initialized
+      // --- use this event to execute your event handler manually by event type
+
+      if (!events || !Array.isArray(events) || events.length < 1) {
+        return;
+      }
+      for (let voipPushEvent of events) {
+        let { name, data } = voipPushEvent;
+        if (name === VoipPushNotification.RNVoipPushRemoteNotificationsRegisteredEvent) {
+          console.log("name", name)
+          //  onVoipPushNotificationRegistered(data);
+        } else if (name === VoipPushNotification.RNVoipPushRemoteNotificationReceivedEvent) {
+          // onVoipPushNotificationiReceived(data);
+          console.log("name", name)
+        }
+      }
+    });
+
+
+    
 
     return () => {
       RNCallKeep.removeEventListener('answerCall', answerCall);
-      RNCallKeep.removeEventListener('didPerformDTMFAction', didPerformDTMFAction);
-      RNCallKeep.removeEventListener('didReceiveStartCallAction', didReceiveStartCallAction);
-      RNCallKeep.removeEventListener('didPerformSetMutedCallAction', didPerformSetMutedCallAction);
-      RNCallKeep.removeEventListener('didToggleHoldCallAction', didToggleHoldCallAction);
+      RNCallKeep.removeEventListener('didReceiveStartCallAction', answerCall);
       RNCallKeep.removeEventListener('endCall', endCall);
-    }
+      RNCallKeep.removeEventListener('didDisplayIncomingCall', didDisplayIncomingCall);
+      if (isIOS) {
+        RNCallKeep.removeEventListener('didLoadWithEvents', handlePreJSEvents);
+      }
+    };
   }, []);
+
+
 
   const Stack = createStackNavigator();
   return (
@@ -327,7 +289,6 @@ function App() {
             name="TabBar"
             component={TabBar}
             options={{ headerShown: false }} />
-
           <Stack.Screen options={{ headerShown: false }} name="Home" component={HomeScreen} />
           <Stack.Screen options={{ headerShown: false }} name="ForgotPassword" component={ForgotPassword} />
           <Stack.Screen options={{ headerShown: false }} name="LoginWithOTP" component={LoginWithOTP} />
@@ -336,8 +297,16 @@ function App() {
           <Stack.Screen options={{ headerShown: true, title: 'Block Contact' }} name="BlockContact" component={BlockContact} />
           <Stack.Screen options={{ headerShown: true, title: 'CallLogDetails' }} name="CallLogDetails" component={CallLogDetails} />
         </Stack.Navigator>
+        <View>
+          <IncomingCall />
+        </View>
+        <View>
+          <CallScreen />
+        </View>
+
       </CallTimerDuraionProvider>
     </NavigationContainer>
+
 
     //   <View style={styles.container}>
     //   <TouchableOpacity onPress={displayIncomingCallNow} style={styles.button} hitSlop={hitSlop}>

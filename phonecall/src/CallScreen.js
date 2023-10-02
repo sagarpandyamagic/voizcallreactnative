@@ -36,7 +36,7 @@ import { useCallTimerContext } from './hook/useCallTimer';
 
 function CallScreen(props) {
   InCallManager.start({ media: 'audio' }); // Start audio mode
-  const { CallScreenOpen, session, newCallAdd, phoneNumber,Caller_Name } = useSelector((state) => state.sip)
+  const { CallScreenOpen, session, newCallAdd, phoneNumber,Caller_Name,incomingcall } = useSelector((state) => state.sip)
   const dispatch = useDispatch()
   const { toggelHoldCall, blindTx, CallRecoding, CallRecodingStop, Callhangup, holdUsedSwipTime, MuteCall } = usecreateUA()
   const [isSpeker, setSpeker] = useState(false)
@@ -51,9 +51,10 @@ function CallScreen(props) {
     setMute(false)
     sethold(false)
     setswip(false)
-    if(session != {} && CallScreenOpen){
+    if(session != {} && CallScreenOpen && incomingcall == true){
       session&&session.accept()
     }
+
   }, [CallScreenOpen]);
 
   return (

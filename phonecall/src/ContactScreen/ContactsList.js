@@ -42,7 +42,7 @@ const ContactsList = ({ navigation }) => {
         title: currChat,
       }
       let currContacs = contacts.filter(item => {
-        return JSON.stringify(item.givenName[0]).toUpperCase() == JSON.stringify(currChat);
+        return item.givenName[0]&&JSON.stringify(item.givenName[0]).toUpperCase() == JSON.stringify(currChat);
 
       })
       if (currContacs.length > 0) {

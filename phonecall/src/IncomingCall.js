@@ -20,7 +20,7 @@ function IncomingCall( props) {
 
             {/* Incoming Call Modal */}{
                 <Modal
-                    visible={incomingcall}
+                    visible={false}
                     transparent={false}
                     animationType="none"
                 >

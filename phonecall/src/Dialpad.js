@@ -78,15 +78,19 @@ function Number({ onPress }: { onPress: (item: typeof dialPad[number]) => void }
 
 const Dialpad = ({ navigation }) => {
     const incomeingCall = false
-    const { connect, makeCall } = usecreateUA()
+    const { connect, makeCall,Callhangup } = usecreateUA()
     const [code, setCode] = useState([]);
-    const { CallScreenOpen, soketConnect } = useSelector((state) => state.sip)
+    const { CallScreenOpen, soketConnect,CallkeepCall } = useSelector((state) => state.sip)
     const dispatch = useDispatch()
 
-
     useEffect(() => {
-        connect();
-    }, []);
+        if(CallkeepCall==true){
+            Callhangup()
+            dispatch(updateSipState({ key: "CallkeepCall", value: false }))
+        }else{
+            connect();
+        }
+    }, [CallkeepCall]);
 
     const handleMakeCall = (code) => {
         const number = code.join('')

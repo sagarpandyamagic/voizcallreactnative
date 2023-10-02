@@ -1,8 +1,20 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import {
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  useColorScheme,
+  View,
+  TouchableOpacity
+} from 'react-native';
 import RNCallKeep from "react-native-callkeep";
+import { getUniqueId } from "react-native-device-info";
 import { useDispatch, useSelector } from "react-redux";
 
-export const callkeep = () =>{
+ const CallKitManager = () => {
     const [logText, setLog] = useState('');
     const [heldCalls, setHeldCalls] = useState({}); // callKeep uuid: held
     const [mutedCalls, setMutedCalls] = useState({}); // callKeep uuid: muted
@@ -172,16 +184,18 @@ export const callkeep = () =>{
       console.log("when receive remote voip push subtitle", notification.aps.alert.subtitle)
       console.log("when receive remote voip push body", notification.aps.alert.body)
   
+      displayIncomingCallNow(notification.aps.alert.subtitle)
+      
       // displayIncomingCallNow(notification.aps.alert.subtitle)
   
-      RNCallKeep.displayIncomingCall(getNewUuid(), notification.aps.alert.subtitle, notification.aps.alert.subtitle, 'number', false);
+      // RNCallKeep.displayIncomingCall(getNewUuid(), notification.aps.alert.subtitle, notification.aps.alert.subtitle, 'number', false);
   
       // --- when receive remote voip push, register your VoIP client, show local notification ... etc
       // this.doSomething();
       // connect()
   
       // --- optionally, if you `addCompletionHandler` from the native side, once you have done the js jobs to initiate a call, call `completion()`
-      // VoipPushNotification.onVoipNotificationCompleted(notification.uuid);
+      VoipPushNotification.onVoipNotificationCompleted(getUniqueId());
     });
   
     // ===== Step 3: subscribe `didLoadWithEvents` event =====
@@ -234,3 +248,5 @@ export const callkeep = () =>{
       }, [])
   
 }
+
+export default CallKitManager;

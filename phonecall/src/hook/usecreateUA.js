@@ -167,6 +167,8 @@ function usecreateUA() {
 
           dispatch(storeContactNumber({ key: "phoneNumber", value: number }))
 
+          
+
           getContactTableData(number)
 
           const SessionID = invitation?._id
@@ -175,7 +177,7 @@ function usecreateUA() {
           console.log("incoming========", incoming)
 
 
-          // dispatch(updateSipState({ key: "incomingcall", value: true }))
+          dispatch(updateSipState({ key: "incomingcall", value: true }))
 
 
           invitation.delegate = {
@@ -190,7 +192,8 @@ function usecreateUA() {
               dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
               dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
 
-              RNCallKeep.clearInitialEvents();
+
+              RNCallKeep.endAllCalls();
 
               if (invitation) {
                 invitation.dispose()
@@ -238,9 +241,7 @@ function usecreateUA() {
                 dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
                 dispatch(updateSipState({ key: "phoneNumber", value: [] }))
                 dispatch(updateSipState({ key: "allSession", value: {} }))
-                RNCallKeep.endCall("cb499f3e-1521-4467-a51b-ceea76ee92b6")
-
-                delete uuids["cb499f3e-1521-4467-a51b-ceea76ee92b6"]
+                RNCallKeep.endAllCalls();
                 break
               default:
                 console.log('Unknow Incomming Session state')
@@ -388,7 +389,7 @@ function usecreateUA() {
           CallLogStore(callLog)
           dispatch(updateSipState({ key: "phoneNumber", value: [] }))
           dispatch(updateSipState({ key: "allSession", value: {} }))
-          RNCallKeep.endCall("cb499f3e-1521-4467-a51b-ceea76ee92b6")
+          RNCallKeep.endAllCalls();
 
           break
         default:
@@ -662,23 +663,8 @@ function usecreateUA() {
   const Callhangup = () => {
     console.log("allSession", allSession)
     if (allSession.length == null) {
-
-      // const callLog = {
-      //   "number": phoneNumber,
-      //   "direction": "MissCall",
-      //   "duration": "00:00:00",
-      //   "current_time": format(timeStore, 'yyyy-MM-dd kk:mm:ss'),
-      //   "name": Caller_Name,
-      //   "id": `${new Date().getTime()}`
-      // }
-
-      // CallLogStore(callLog)
-      // dispatch(updateSipState({ key: "phoneNumber", value: [] }))
-
       const session = allSession[Object.keys(allSession)];
       session.dispose()
-      // const session =  allSession
-      // session.dispose()
     } else {
       Object.keys(allSession).map(async (key) => {
         const session = allSession[key];

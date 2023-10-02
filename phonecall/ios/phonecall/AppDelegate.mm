@@ -5,13 +5,27 @@
 #import <PushKit/PushKit.h>
 #import <UserNotifications/UNUserNotificationCenter.h>
 #import "RNVoipPushNotificationManager.h"
+#import <Firebase/Firebase.h>
+#import <React/RCTLinkingManager.h>
 
+#if DEBUG
 #import <FlipperKit/FlipperClient.h>
 #import <FlipperKitLayoutPlugin/FlipperKitLayoutPlugin.h>
 #import <FlipperKitUserDefaultsPlugin/FKUserDefaultsPlugin.h>
 #import <FlipperKitNetworkPlugin/FlipperKitNetworkPlugin.h>
 #import <SKIOSNetworkPlugin/SKIOSNetworkAdapter.h>
 #import <FlipperKitReactPlugin/FlipperKitReactPlugin.h>
+
+static void InitializeFlipper(UIApplication *application) {
+  FlipperClient *client = [FlipperClient sharedClient];
+  SKDescriptorMapper *layoutDescriptorMapper = [[SKDescriptorMapper alloc] initWithDefaults];
+  [client addPlugin:[[FlipperKitLayoutPlugin alloc] initWithRootNode:application withDescriptorMapper:layoutDescriptorMapper]];
+  [client addPlugin:[[FKUserDefaultsPlugin alloc] initWithSuiteName:nil]];
+  [client addPlugin:[FlipperKitReactPlugin new]];
+  [client addPlugin:[[FlipperKitNetworkPlugin alloc] initWithNetworkAdapter:[SKIOSNetworkAdapter new]]];
+  [client start];
+}
+#endif
 
 
 @implementation AppDelegate
@@ -25,23 +39,90 @@
   // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
   
-  RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
   
-  [RNVoipPushNotificationManager voipRegistration];
+  
+  //  RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
+  //
+  //  [RNVoipPushNotificationManager voipRegistration];
+  
+  //  [RNCallKeep setup:@{
+  //      @"appName": @"Awesome App",
+  //      @"maximumCallGroups": @3,
+  //      @"maximumCallsPerCallGroup": @1,
+  //      @"supportsVideo": @NO,
+  //    }];
+  
+  //    RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:self.bridge
+  //                                                     moduleName:@"phonecall"
+  //                                              initialProperties:nil];
+  //
   
   // Define UNUserNotificationCenter
-  UNUserNotificationCenter* center = [UNUserNotificationCenter currentNotificationCenter];
-  [center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert + UNAuthorizationOptionSound)
-                        completionHandler:^(BOOL granted, NSError * _Nullable error) {
-    // Enable or disable features based on authorization.
-  }];
-  
-  
+  //  UNUserNotificationCenter* center = [UNUserNotificationCenter currentNotificationCenter];
+  //  [center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert + UNAuthorizationOptionSound)
+  //                        completionHandler:^(BOOL granted, NSError * _Nullable error) {
+  //    // Enable or disable features based on authorization.
+  //  }];
+  //
+  //  RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge moduleName:@"phonecall" initialProperties:nil];
+  //
+  //  [self.window addSubview:rootView];
   
   //  RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge moduleName:@"phonecall" initialProperties:nil];
   
   
-  return [super application:application didFinishLaunchingWithOptions:launchOptions];
+  
+  //#if DEBUG
+  //  InitializeFlipper(application);
+  //#endif
+  //
+  //  RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
+  //  RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge
+  //                                                   moduleName:@"phonecall"
+  //                                            initialProperties:nil];
+  //
+  //  rootView.backgroundColor = [[UIColor alloc] initWithRed:1.0f green:1.0f blue:1.0f alpha:1];
+  //
+  //  self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+  //  UIViewController *rootViewController = [UIViewController new];
+  //  rootViewController.view = rootView;
+  //  self.window.rootViewController = rootViewController;
+  //  [self.window makeKeyAndVisible];
+  
+  [FIRApp configure];
+  
+  RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
+  
+  [RNVoipPushNotificationManager voipRegistration];
+  
+  //Add these Lines
+  [RNCallKeep setup:@{
+    @"appName": @"phonecall",
+    @"maximumCallGroups": @3,
+    @"maximumCallsPerCallGroup": @1,
+    @"supportsVideo": @YES,
+  }];
+  
+  RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge
+                                                   moduleName:@"phonecall"
+                                            initialProperties:nil];
+  
+  if (@available(iOS 13.0, *)) {
+    rootView.backgroundColor = [UIColor systemBackgroundColor];
+  } else {
+    rootView.backgroundColor = [UIColor whiteColor];
+  }
+  
+  self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+  UIViewController *rootViewController = [UIViewController new];
+  rootViewController.view = rootView;
+  self.window.rootViewController = rootViewController;
+  [self.window makeKeyAndVisible];
+  
+  [UIDevice currentDevice].proximityMonitoringEnabled = YES;
+  
+  
+  return YES; //[super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
 
@@ -64,121 +145,92 @@
 // --- Handle incoming pushes
 - (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type withCompletionHandler:(void (^)(void))completion {
   
-  [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
-
-    // Retrieve information like handle and callerName here
-     NSString *uuid = [[[NSUUID UUID] UUIDString] lowercaseString];
-     NSString *callerName = @"caller name here";
-     NSString *handle = @"caller number here";
-     NSDictionary *extra = [payload.dictionaryPayload valueForKeyPath:@"custom.path.to.data"]; /* use this to pass any special data (ie. from your notification) down to RN. Can also be `nil` */
-
-    [RNCallKeep reportNewIncomingCall: uuid
-                               handle: handle
-                           handleType: @"generic"
-                             hasVideo: NO
-                  localizedCallerName: callerName
-                      supportsHolding: YES
-                         supportsDTMF: YES
-                     supportsGrouping: YES
-                   supportsUngrouping: YES
-                          fromPushKit: YES
-                              payload: extra
-                withCompletionHandler: completion];
   
-  
-
-  // Handl
-  
-  //
-  //    NSString *uuid = payload.dictionaryPayload[@"uuid"];
-  //    NSString *callerName = [NSString stringWithFormat:@"%@ (Connecting...)", payload.dictionaryPayload[@"callerName"]];
-  //    NSString *handle = payload.dictionaryPayload[@"handle"];
-  //
-  //    // --- this is optional, only required if you want to call `completion()` on the js side
-  //    [RNVoipPushNotificationManager addCompletionHandler:uuid completionHandler:completion];
-  //
-  //    // --- Process the received push
-  //    [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
-  //
-  //    [RNCallKeep reportNewIncomingCall: uuid
-  //                                 handle: handle
-  //                             handleType: @"generic"
-  //                               hasVideo: NO
-  //                    localizedCallerName: callerName
-  //                        supportsHolding: YES
-  //                           supportsDTMF: YES
-  //                       supportsGrouping: YES
-  //                     supportsUngrouping: YES
-  //                            fromPushKit: YES
-  //                                payload: nil
-  //                  withCompletionHandler: completion];
-  
-  
-  //      NSString *uuid = [[NSUUID UUID] UUIDString];
-  //      NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
-  //      [dict setObject:uuid forKey:@"uuid"];
-  //
-  //    // --- You should make sure to report to callkit BEFORE execute `completion()`
-  //    if ([[CXCallObserver alloc] init].calls.count == 0) {
-  //      // --- Process the received push
-  //      [[NSNotificationCenter defaultCenter] postNotificationName:@"voipRemoteNotificationReceived" object:self userInfo:dict];
-  ////      [RNCallKeep reportNewIncomingCall:uuid handle:@"Stringee" handleType:@"generic" hasVideo:true localizedCallerName:@"Connecting..." fromPushKit: YES payload:nil];
-  //
-  //      NSString *uuid = payload.dictionaryPayload[@"uuid"];
-  //      NSString *callerName = [NSString stringWithFormat:@"%@ (Connecting...)", payload.dictionaryPayload[@"callerName"]];
-  //      NSString *handle = payload.dictionaryPayload[@"handle"];
-  //      [RNCallKeep reportNewIncomingCall: @"cb499f3e-1521-4467-a51b-ceea76ee92b6"
-  //                                   handle: handle
-  //                               handleType: @"generic"
-  //                                 hasVideo: NO
-  //                      localizedCallerName: @"TEST"
-  //                          supportsHolding: YES
-  //                             supportsDTMF: YES
-  //                         supportsGrouping: YES
-  //                       supportsUngrouping: YES
-  //                              fromPushKit: YES
-  //                                  payload: nil
-  //                    withCompletionHandler: completion];
-  //
-  //
-  //      } else {
-  //      // Show fake call
-  ////      [RNCallKeep reportNewIncomingCall:uuid handle:@"Stringee" handleType:@"generic" hasVideo:true localizedCallerName:@"FakeCall" fromPushKit: YES payload:nil];
-  //      [RNCallKeep endCallWithUUID:uuid reason:1];
-  //    }
-  
-  //  NSString *uuid = payload.dictionaryPayload[@"uuid"];
-  //  NSString *callerName = [NSString stringWithFormat:@"%@ (Connecting...)", payload.dictionaryPayload[@"callerName"]];
-  //  NSString *handle = payload.dictionaryPayload[@"handle"];
-  //  NSString *callData = payload.dictionaryPayload[@"callData"];
-  //
-  //  // --- this is optional, only required if you want to call `completion()` on the js side
-  //  [RNVoipPushNotificationManager addCompletionHandler:uuid completionHandler:completion];
-  //
-  //  // --- Process the received push
   //  [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
+  
+  // Retrieve information like handle and callerName here
+  //  NSString *uuid = [[[NSUUID UUID] UUIDString] lowercaseString];
+  //  NSString *callerName = @"caller name here";
+  //  NSString *handle = @"caller number here";
+  //  NSDictionary *extra = [payload.dictionaryPayload valueForKeyPath:@"custom.path.to.data"]; /* use this to pass any special data (ie. from your notification) down to RN. Can also be `nil` */
   //
-  //  // --- You should make sure to report to callkit BEFORE execute `completion()`
-  //  [RNCallKeep reportNewIncomingCall: uuid
+  //  [RNCallKeep reportNewIncomingCall: @"cb499f3e-1521-4467-a51b-ceea76ee9666"
   //                             handle: handle
   //                         handleType: @"generic"
-  //                           hasVideo: true
+  //                           hasVideo: NO
   //                localizedCallerName: callerName
-  //                    supportsHolding: false
-  //                       supportsDTMF: false
-  //                   supportsGrouping: false
-  //                 supportsUngrouping: false
+  //                    supportsHolding: YES
+  //                       supportsDTMF: YES
+  //                   supportsGrouping: YES
+  //                 supportsUngrouping: YES
   //                        fromPushKit: YES
-  //                            payload: callData
-  //              withCompletionHandler: nil];
+  //                            payload: extra
+  //              withCompletionHandler: completion];
+  
+  //  NSString *uuid = payload.dictionaryPayload[@"uuid"];
+  //   NSString *callerName = [NSString stringWithFormat:@"%@ phonecall", payload.dictionaryPayload[@"callerName"]];
+  //   NSString *handle = payload.dictionaryPayload[@"handle"];
+  
+  // --- this is optional, only required if you want to call `completion()` on the js side
+  //   [RNVoipPushNotificationManager addCompletionHandler:uuid completionHandler:completion];
+  
+  // --- Process the received push
+  //   [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
+  //  NSDictionary *extra = [payload.dictionaryPayload valueForKeyPath:@"custom.path.to.data"];
+  
+  //  [RNCallKeep reportNewIncomingCall: uuid
+  //                                handle: handle
+  //                            handleType: @"generic"
+  //                              hasVideo: YES
+  //                   localizedCallerName: callerName
+  //                       supportsHolding: YES
+  //                          supportsDTMF: YES
+  //                      supportsGrouping: YES
+  //                    supportsUngrouping: YES
+  //                           fromPushKit: YES
+  //                               payload: nil
+  //                 withCompletionHandler: completion];
   //
+  
+  
+  NSLog(@"Received incoming push notification with payload: %@", payload.dictionaryPayload);
+  
+  NSDictionary *payloadDict = payload.dictionaryPayload;
+  
+  NSDictionary *apsDict = payloadDict[@"aps"];
+  NSDictionary *alertDict = apsDict[@"alert"];
+  
+  NSString *title = alertDict[@"title"];
+  NSString *subtitle = alertDict[@"subtitle"];
+  NSString *body = alertDict[@"body"];
+  
+  NSUUID *uuid = [NSUUID UUID];
+  NSString *uuidString = [uuid UUIDString];
+
+  
+  [RNVoipPushNotificationManager addCompletionHandler:uuidString completionHandler:completion];
+  
+  [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
+  
+  
+  [RNCallKeep reportNewIncomingCall: uuidString
+                             handle: subtitle
+                         handleType: @"number"
+                           hasVideo: NO
+                localizedCallerName: subtitle
+                    supportsHolding: YES
+                       supportsDTMF: YES
+                   supportsGrouping: YES
+                 supportsUngrouping: YES
+                        fromPushKit: YES
+                            payload: nil
+              withCompletionHandler: completion];
+  
   
   // --- You don't need to call it if you stored `completion()` and will call it on the js side.
   completion();
   
 }
-
-
 //
 //- (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type withCompletionHandler:(void (^)(void))completion {
 //  // Process the received push
@@ -220,6 +272,15 @@ continueUserActivity:(NSUserActivity *)userActivity
   return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 #endif
 }
+
+//Add below delegate to allow deep linking
+- (BOOL)application:(UIApplication *)application
+            openURL:(NSURL *)url
+            options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
+{
+  return [RCTLinkingManager application:application openURL:url options:options];
+}
+
 
 
 @end
