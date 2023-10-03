@@ -16,6 +16,7 @@ import icicon from '../../Assets/voizcall_icon.png';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateSipState } from '../redux/sipSlice';
 import { CallDataStore,LoginUser } from '../redux/LoginDateStore';
+import RNCallKeep from 'react-native-callkeep';
 
 const HomeScreen = ({ navigation }) => {
 
@@ -42,6 +43,7 @@ const HomeScreen = ({ navigation }) => {
 
   useEffect(() => {
     userDataRemvoe()
+    // RNCallKeep.displayIncomingCall("cb499f3e-1521-4467-a51b-ceea76ee92b6", "123445", "123445", 'number', false);
   },[navigation])
 
 

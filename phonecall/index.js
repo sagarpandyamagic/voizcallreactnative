@@ -13,8 +13,6 @@ import PushNotification from "react-native-push-notification";
 
 
 
-
-
 // AppRegistry.registerComponent(appName, () => App);
 
 const appRedux = ()=>(
@@ -23,6 +21,8 @@ const appRedux = ()=>(
     </Provider>
 )
 
+
+  
 AppRegistry.registerHeadlessTask('RNCallKeepBackgroundMessage', () => ({ name, callUUID, handle }) => {
     // Make your call here
     

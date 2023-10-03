@@ -85,10 +85,12 @@ const Dialpad = ({ navigation }) => {
 
     useEffect(() => {
         if(CallkeepCall==true){
+            console.log("Error In userEffect...")
             Callhangup()
-            dispatch(updateSipState({ key: "CallkeepCall", value: false }))
         }else{
-            connect();
+            if(soketConnect == false) {
+                connect();
+            }
         }
     }, [CallkeepCall]);
 

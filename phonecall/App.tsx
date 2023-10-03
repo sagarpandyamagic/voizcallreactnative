@@ -15,7 +15,8 @@ import {
   Text,
   useColorScheme,
   View,
-  TouchableOpacity
+  TouchableOpacity,
+  PermissionsAndroid
 } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
@@ -41,6 +42,7 @@ import CallScreen from './src/CallScreen';
 import HomeScreen from './src/Login/HomeScreen';
 import { Notifications } from 'react-native-notifications';
 import { useNavigation } from '@react-navigation/native';
+import messaging from '@react-native-firebase/messaging';
 
 
 BackgroundTimer.start();
@@ -141,10 +143,9 @@ function App() {
   const endCall = ({ callUUID }) => {
     logger.info("Ending call")
     logger.info("Test Ending call")
+    dispatch(updateSipState({ key: "CallkeepCall", value: true }))
 
     try {
-      // dispatch(endCallWithUUID(callUUID));
-      dispatch(updateSipState({ key: "CallkeepCall", value: true }))
       RNCallKeep.endAllCalls();
       logger.info("Call ended")
     } catch (e) {
@@ -211,72 +212,95 @@ function App() {
         console.error('initializeCallKeep error:', err.message);
       }
     }, 2000);
-   
   };
+
+  //replace the getFCMToken() with below.
+async function getFCMtoken() {
+  if (Platform.OS === 'android') {
+    try {
+      await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+      );
+
+
+    } catch (error) {
+    }
+  }
+
+  const fcmToken = await messaging().getToken();
+  if (fcmToken) {
+    console.log('FCM Token:', fcmToken);
+    // Send the token to your server or use it for notifications
+  } else {
+    console.error('Unable to get FCM Token');
+  }
+
+  messaging().setBackgroundMessageHandler(async remoteMessage => {
+    RNCallKeep.displayIncomingCall("cb499f3e-1521-4467-a51b-ceea76ee92b6", "123445", "123445", 'number', false);
+    console.log('Message handled in the background!', remoteMessage);
+  });
+}
 
   useEffect(() => {
     initializeCallKeep();
-
-    VoipPushNotification.addEventListener('register', (token) => {
-      // --- send token to your apn provider server
-      console.log("register", token)
-    });
-
-    // ===== Step 2: subscribe `notification` event =====
-    // --- this.onVoipPushNotificationiReceived
-    VoipPushNotification.addEventListener('notification', (notification) => {
-      console.log("when receive remote voip push title", notification.aps.alert.title)
-      console.log("when receive remote voip push subtitle", notification.aps.alert.subtitle)
-      console.log("when receive remote voip push body", notification.aps.alert.body)
-
-      connect()
-      // displayIncomingCallNow(notification.aps.alert.subtitle)
-
-      // --- optionally, if you `addCompletionHandler` from the native side, once you have done the js jobs to initiate a call, call `completion()`
-      VoipPushNotification.onVoipNotificationCompleted(getNewUuid());
-    });
-   
-
-
-
-
-    // ===== Step 3: subscribe `didLoadWithEvents` event =====
-    VoipPushNotification.addEventListener('didLoadWithEvents', (events) => {
-      console.log("didLoadWithEvents", events)
-      // displayIncomingCallNow()
-      // --- this will fire when there are events occured before js bridge initialized
-      // --- use this event to execute your event handler manually by event type
-
-      if (!events || !Array.isArray(events) || events.length < 1) {
-        return;
-      }
-      for (let voipPushEvent of events) {
-        let { name, data } = voipPushEvent;
-        if (name === VoipPushNotification.RNVoipPushRemoteNotificationsRegisteredEvent) {
-          console.log("name", name)
-          //  onVoipPushNotificationRegistered(data);
-        } else if (name === VoipPushNotification.RNVoipPushRemoteNotificationReceivedEvent) {
-          // onVoipPushNotificationiReceived(data);
-          console.log("name", name)
-        }
-      }
-    });
-
-
+    if(Platform.OS === 'ios') {
+      VoipPushNotification.addEventListener('register', (token) => {
+        // --- send token to your apn provider server
+        console.log("register", token)
+      });
+  
+      // ===== Step 2: subscribe `notification` event =====
+      // --- this.onVoipPushNotificationiReceived
+      VoipPushNotification.addEventListener('notification', (notification) => {
+        console.log("when receive remote voip push title", notification.aps.alert.title)
+        console.log("when receive remote voip push subtitle", notification.aps.alert.subtitle)
+        console.log("when receive remote voip push body", notification.aps.alert.body)
+  
+        connect()
+        // displayIncomingCallNow(notification.aps.alert.subtitle)
+  
+        // --- optionally, if you `addCompletionHandler` from the native side, once you have done the js jobs to initiate a call, call `completion()`
+        VoipPushNotification.onVoipNotificationCompleted(getNewUuid());
+      });
     
+      // ===== Step 3: subscribe `didLoadWithEvents` event =====
+      VoipPushNotification.addEventListener('didLoadWithEvents', (events) => {
+        console.log("didLoadWithEvents", events)
+        // displayIncomingCallNow()
+        // --- this will fire when there are events occured before js bridge initialized
+        // --- use this event to execute your event handler manually by event type
+  
+        if (!events || !Array.isArray(events) || events.length < 1) {
+          return;
+        }
+        for (let voipPushEvent of events) {
+          let { name, data } = voipPushEvent;
+          if (name === VoipPushNotification.RNVoipPushRemoteNotificationsRegisteredEvent) {
+            console.log("name", name)
+            //  onVoipPushNotificationRegistered(data);
+          } else if (name === VoipPushNotification.RNVoipPushRemoteNotificationReceivedEvent) {
+            // onVoipPushNotificationiReceived(data);
+            console.log("name", name)
+          }
+        }
+      });
 
-    return () => {
-      RNCallKeep.removeEventListener('answerCall', answerCall);
-      RNCallKeep.removeEventListener('didReceiveStartCallAction', answerCall);
-      RNCallKeep.removeEventListener('endCall', endCall);
-      RNCallKeep.removeEventListener('didDisplayIncomingCall', didDisplayIncomingCall);
-      if (isIOS) {
-        RNCallKeep.removeEventListener('didLoadWithEvents', handlePreJSEvents);
-      }
-    };
+      VoipPushNotification.registerVoipToken(); // --- register token
+
+      
+      return () => {
+        RNCallKeep.removeEventListener('answerCall', answerCall);
+        RNCallKeep.removeEventListener('didReceiveStartCallAction', answerCall);
+        RNCallKeep.removeEventListener('endCall', endCall);
+        RNCallKeep.removeEventListener('didDisplayIncomingCall', didDisplayIncomingCall);
+        if (isIOS) {
+          RNCallKeep.removeEventListener('didLoadWithEvents', handlePreJSEvents);
+        }
+      };
+    }else{
+      getFCMtoken()
+    }
   }, []);
-
-
 
   const Stack = createStackNavigator();
   return (
@@ -306,55 +330,6 @@ function App() {
 
       </CallTimerDuraionProvider>
     </NavigationContainer>
-
-
-    //   <View style={styles.container}>
-    //   <TouchableOpacity onPress={displayIncomingCallNow} style={styles.button} hitSlop={hitSlop}>
-    //     <Text>Display incoming call now</Text>
-    //   </TouchableOpacity>
-
-    //   <TouchableOpacity onPress={displayIncomingCallDelayed} style={styles.button} hitSlop={hitSlop}>
-    //     <Text>Display incoming call now in 3s</Text>
-    //   </TouchableOpacity>
-
-    //   {Object.keys(calls).map(callUUID => (
-    //     <View key={callUUID} style={styles.callButtons}>
-    //       <TouchableOpacity
-    //         onPress={() => setOnHold(callUUID, !heldCalls[callUUID])}
-    //         style={styles.button}
-    //         hitSlop={hitSlop}
-    //       >
-    //         <Text>{heldCalls[callUUID] ? 'Unhold' : 'Hold'} {calls[callUUID]}</Text>
-    //       </TouchableOpacity>
-
-    //       <TouchableOpacity
-    //         onPress={() => updateDisplay(callUUID)}
-    //         style={styles.button}
-    //         hitSlop={hitSlop}
-    //       >
-    //         <Text>Update display</Text>
-    //       </TouchableOpacity>
-
-    //       <TouchableOpacity
-    //         onPress={() => setOnMute(callUUID, !mutedCalls[callUUID])}
-    //         style={styles.button}
-    //         hitSlop={hitSlop}
-    //       >
-    //         <Text>{mutedCalls[callUUID] ? 'Unmute' : 'Mute'} {calls[callUUID]}</Text>
-    //       </TouchableOpacity>
-
-    //       <TouchableOpacity onPress={() => hangup(callUUID)} style={styles.button} hitSlop={hitSlop}>
-    //         <Text>Hangup {calls[callUUID]}</Text>
-    //       </TouchableOpacity>
-    //     </View>
-    //   ))}
-
-    //   <ScrollView style={styles.logContainer}>
-    //     <Text style={styles.log}>
-    //       {logText}
-    //     </Text>
-    //   </ScrollView>
-    // </View>
   );
 }
 

@@ -664,11 +664,11 @@ function usecreateUA() {
     console.log("allSession", allSession)
     if (allSession.length == null) {
       const session = allSession[Object.keys(allSession)];
-      session.dispose()
+      session&&session.dispose()
     } else {
       Object.keys(allSession).map(async (key) => {
         const session = allSession[key];
-        session.dispose()
+        session&&session.dispose()
       })
     }
 
