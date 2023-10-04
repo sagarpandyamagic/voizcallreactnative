@@ -30,11 +30,11 @@ const HomeScreen = ({ navigation }) => {
   const userDataRemvoe = async () => {
     try {
       const value = await AsyncStorage.removeItem("is_live");
-      console.log("is_live", value)
+      // console.log("is_live", value)
 
       try {
         const valuelog = await AsyncStorage.removeItem("callLog");
-        console.log("callLog", valuelog)
+        // console.log("callLog", valuelog)
       } catch (e) {
       }
     } catch (e) {
@@ -43,7 +43,6 @@ const HomeScreen = ({ navigation }) => {
 
   useEffect(() => {
     userDataRemvoe()
-    // RNCallKeep.displayIncomingCall("cb499f3e-1521-4467-a51b-ceea76ee92b6", "123445", "123445", 'number', false);
   },[navigation])
 
 
