@@ -12,14 +12,11 @@ import ic_Setting from '../Assets/ic_Tab_setting.png'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect } from 'react';
 import CallLogs from './CallLog/CallLogs';
-
+import setInitVlaue from './setInitVlaue';
 
 
 const TabBar=()=> {
   const { soketConnect} = useSelector((state) => state.sip)
-
-
-
 
   const Tab = createBottomTabNavigator();
     return (
@@ -52,7 +49,7 @@ const TabBar=()=> {
         <Tab.Screen options={{
            headerRight: () => (
             <View style={{paddingRight:10}}>
-              <Pressable onPress={() => alert('This is a button!')}>
+              <Pressable onPress={() => setInitVlaue.usedValue()}>
               <Text style={{color:((soketConnect == true)? "blue" : "red" )}}>Connect</Text>
             </Pressable>
             </View>

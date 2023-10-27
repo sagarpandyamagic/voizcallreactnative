@@ -45,7 +45,6 @@ const ContactDetailScreen = ({ route, navigation }) => {
     const [userBlock, setUserBlock] = useState(false)
     const [favourite, setfavourite] = useState(0)
 
-    console.log(data.phoneNumbers[0].number)
 
     const FistLetter = () => {
         console.log("data", data.thumbnailPath)
@@ -237,8 +236,8 @@ const ContactDetailScreen = ({ route, navigation }) => {
     }
 
     useEffect(() => {
-        console.log("data.phoneNumbers[0].number", data.phoneNumbers[0].number)
-        getContactTableData(data.phoneNumbers[0].number)
+        console.log("data.phoneNumbers[0].number", data.phoneNumbers[0]?.number)
+        getContactTableData(data.phoneNumbers[0]?.number)
         numberCheckBlockORNot()
     }, [])
 
@@ -320,7 +319,7 @@ const ContactDetailScreen = ({ route, navigation }) => {
                     <FistLetter />
                 </View>
                 <NameUser />
-                <Text style={{ color: '#FFFFFF', fontSize: 15, marginTop: 5 }}>{data.phoneNumbers[0].number}</Text>
+                <Text style={{ color: '#FFFFFF', fontSize: 15, marginTop: 5 }}>{data.phoneNumbers[0]?.number}</Text>
             </View>
             <View style={style.viewList}>
                 <View>

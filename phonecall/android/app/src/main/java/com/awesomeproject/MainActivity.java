@@ -1,12 +1,18 @@
-package com.phonecall;
+package com.awesomeproject;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
 import io.wazo.callkeep.RNCallKeepModule;
+import android.telecom.TelecomManager;
+import android.content.Context;
+import android.content.Intent;
 
 public class MainActivity extends ReactActivity {
+
+ private ReactActivity reactContext;
+
 
   /**
    * Returns the name of the main component registered from JavaScript. This is used to schedule
@@ -14,7 +20,7 @@ public class MainActivity extends ReactActivity {
    */
   @Override
   protected String getMainComponentName() {
-    return "phonecall";
+    return "AwesomeProject";
   }
 
   /**
@@ -30,7 +36,8 @@ public class MainActivity extends ReactActivity {
         // If you opted-in for the New Architecture, we enable the Fabric Renderer.
         DefaultNewArchitectureEntryPoint.getFabricEnabled());
   }
-    @Override
+
+  @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
@@ -42,4 +49,5 @@ public class MainActivity extends ReactActivity {
             }
         }
     }
+    
 }

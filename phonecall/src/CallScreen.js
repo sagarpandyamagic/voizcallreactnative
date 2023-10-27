@@ -32,11 +32,13 @@ import phoneLogo from '../Assets/circleVoizCallLogoround.png';
 import iccallSwip from '../Assets/ic_call_swipe.png';
 import ContactsList from './ContactScreen/ContactsList';
 import { useCallTimerContext } from './hook/useCallTimer';
+import skoectbyclass from './skoectbyclass';
+import store from './redux/store';
 
 
 function CallScreen(props) {
   InCallManager.start({ media: 'audio' }); // Start audio mode
-  const { CallScreenOpen, session, newCallAdd, phoneNumber,Caller_Name,incomingcall } = useSelector((state) => state.sip)
+  const { CallScreenOpen, session, newCallAdd, phoneNumber,Caller_Name,CallType } = useSelector((state) => state.sip)
   const dispatch = useDispatch()
   const { toggelHoldCall, blindTx, CallRecoding, CallRecodingStop, Callhangup, holdUsedSwipTime, MuteCall } = usecreateUA()
   const [isSpeker, setSpeker] = useState(false)
@@ -46,17 +48,17 @@ function CallScreen(props) {
   const [ContactShow, setContactShow] = useState(false)
   const [isRecording, setIsRecording] = useState(false);
   const { callTimer } = useCallTimerContext()
+
   useEffect(() => {
     setSpeker(false)
     setMute(false)
     sethold(false)
     setswip(false)
-    if(session != {} && CallScreenOpen && incomingcall == true){
+    if(session != {} && CallScreenOpen && CallType == "InComingCall"){
       session&&session.accept()
     }
-
   }, [CallScreenOpen]);
-
+  
   return (
     <View style={styles.container}>
       <Modal visible={CallScreenOpen}
@@ -111,12 +113,12 @@ function CallScreen(props) {
             <TouchableOpacity style={{ paddingLeft: "20%" }} onPress={() => {
               if (newCallAdd == 1) {
                 toggelHoldCall(false, true)
-                dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
+                store.dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
               } else {
                 setContactShow(true)
               }
             }}>
-              <Image style={{ height: 60, width: 60 }} source={(newCallAdd == 0) ? confrence : callmerge}></Image>
+            <Image style={{ height: 60, width: 60 }} source={(newCallAdd == 0) ? confrence : callmerge}></Image>
             </TouchableOpacity>
             <TouchableOpacity style={{ paddingLeft: "20%" }} onPress={() => {
               if (isRecording == true) {
@@ -125,7 +127,7 @@ function CallScreen(props) {
 
               }
             }}>
-              <Image style={{ height: 60, width: 60 }} source={recoding}></Image>
+             <Image style={{ height: 60, width: 60 }} source={recoding}></Image>
             </TouchableOpacity>
             <TouchableOpacity style={{ paddingLeft: "20%" }} onPress={() => {
               blindTx("4228976292")
@@ -141,7 +143,7 @@ function CallScreen(props) {
               <Image style={{ height: 60, width: 60 }} source={isSpeker ? SpekerButtonOn : SpekerButton}></Image>
             </TouchableOpacity>
             <TouchableOpacity style={{ paddingLeft: "20%" }} onPress={() => {
-              dispatch(updateSipState({ key: "DTMFSCreen", value: true }))
+              store.dispatch(updateSipState({ key: "DTMFSCreen", value: true }))
             }}>
               <Image style={{ height: 60, width: 60 }} source={DialPedLogo}></Image>
             </TouchableOpacity>
@@ -183,7 +185,8 @@ function CallScreen(props) {
 
         <View style={styles.containerButton}>
           <TouchableOpacity style={{ paddingLeft: "2%" }} onPress={() => {
-            Callhangup()
+          //  Callhangup()
+            skoectbyclass.hangupCall()
             InCallManager.setSpeakerphoneOn(false);
             InCallManager.stop();
           }}>
@@ -211,6 +214,8 @@ function CallScreen(props) {
       </Modal>
     </View>
   )
+
+  
 }
 const styles = StyleSheet.create({
   container: {
@@ -221,7 +226,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-
   }, containerCallFeature: {
     flex: 2,
   }, containerButton: {

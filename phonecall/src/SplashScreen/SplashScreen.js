@@ -5,15 +5,13 @@ import {
   } from 'react-native';
   import { React, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useDispatch } from 'react-redux';
-import { updateSipState } from '../redux/sipSlice';
+import store from '../redux/store';
 
   LogBox.ignoreLogs(['Warning: ...']);
   LogBox.ignoreAllLogs();
 
   const SplashScreen = ({ navigation }) => {
 
-    const dispatch = useDispatch()
 
     const usedValue = async () => {
         try {
@@ -21,34 +19,8 @@ import { updateSipState } from '../redux/sipSlice';
           if (value !== null) {
             console.warn(value)
           }
-          
           if(value == "true") {
-           
-            try {
-              const value = await AsyncStorage.getItem("CallData");
-              if (value !== null) {
-                console.warn(value)
-              }
-              let CallData = value
-              CallData = JSON.parse(CallData)
-              console.log("CallData", CallData)
-              if(CallData == null) {
-                navigation.navigate('Home')
-
-              }else{
-                dispatch(updateSipState({ key: "UserName", value: CallData.UserName }))
-                dispatch(updateSipState({ key: "Password", value: CallData.Password }))
-                dispatch(updateSipState({ key: "Server", value: CallData.Server }))
-                dispatch(updateSipState({ key: "Port", value: CallData.Port }))
-                
-                navigation.navigate('TabBar')
-              }
-             
-              
-            } catch (e) {
-            }
-           
-
+            navigation.navigate('TabBar')
           }else{
             navigation.navigate('Home')
           }

@@ -16,7 +16,7 @@ import icicon from '../../Assets/voizcall_icon.png';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateSipState } from '../redux/sipSlice';
 import { CallDataStore,LoginUser } from '../redux/LoginDateStore';
-import RNCallKeep from 'react-native-callkeep';
+import store from '../redux/store';
 
 const HomeScreen = ({ navigation }) => {
 
@@ -30,11 +30,11 @@ const HomeScreen = ({ navigation }) => {
   const userDataRemvoe = async () => {
     try {
       const value = await AsyncStorage.removeItem("is_live");
-      // console.log("is_live", value)
+      console.log("is_live", value)
 
       try {
         const valuelog = await AsyncStorage.removeItem("callLog");
-        // console.log("callLog", valuelog)
+        console.log("callLog", valuelog)
       } catch (e) {
       }
     } catch (e) {
@@ -89,10 +89,10 @@ const HomeScreen = ({ navigation }) => {
           </View>
           <View style={[style.InputTextView, { borderWidth: 0 }]} >
             <TouchableOpacity style={style.linearGradient} onPress={() => {
-              dispatch(updateSipState({ key: "UserName", value: username }))
-              dispatch(updateSipState({ key: "Password", value: userpassword }))
-              dispatch(updateSipState({ key: "Server", value: server }))
-              dispatch(updateSipState({ key: "Port", value: port }))
+              store.dispatch(updateSipState({ key: "UserName", value: username }))
+              store.dispatch(updateSipState({ key: "Password", value: userpassword }))
+              store.dispatch(updateSipState({ key: "Server", value: server }))
+              store.dispatch(updateSipState({ key: "Port", value: port }))
 
               const callData = {
                 "UserName": username,
@@ -191,7 +191,7 @@ const style = StyleSheet.create({
     borderRadius: 5
   },
   InpuText: {
-    marginLeft: 15, height: "100%", color: "#4F6EB4"
+    marginLeft: 15, height: "100%", color: "#4F6EB4",flex:1
   },
   InputTextSideImgView: {
     backgroundColor: '#E8F1FF',

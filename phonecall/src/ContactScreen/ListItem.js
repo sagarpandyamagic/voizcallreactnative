@@ -73,6 +73,12 @@ const ListItem = (props) => {
     const ThumbnailPath = contactDetail.thumbnailPath
     let sql = 'UPDATE ContactList SET name = ?, number = ?, thumbnail = ?,thumbnailpath = ? WHERE recordid = ?';
     let params = [name, phonenumber, HasThumbnail, ThumbnailPath, RecordID];
+    // db.executeSql(sql, params, (resultSet) => {
+    //   console.log('Record updated successfully')
+    // }, (error) => {
+    //   setContactTableData(contactDetail)
+    //   console.log(error);
+    // });
 
     db.transaction((tx) => {
       tx.executeSql(

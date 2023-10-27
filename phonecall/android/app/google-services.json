@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "820744548512",
-    "project_id": "phonecall-bacd9",
-    "storage_bucket": "phonecall-bacd9.appspot.com"
+    "project_number": "719161902052",
+    "project_id": "awesomeproject-9f9e2",
+    "storage_bucket": "awesomeproject-9f9e2.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:820744548512:android:2c9402cf653a2d682a19c5",
+        "mobilesdk_app_id": "1:719161902052:android:0d08abad170335bae2bdf1",
         "android_client_info": {
-          "package_name": "com.phonecall"
+          "package_name": "com.awesomeproject"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyA_h3Y7b3EgbqCld-cCkr4LLFaxqj7mUpg"
+          "current_key": "AIzaSyAg45FL_J5FbXzorKmbRsShj5ahdCbaTag"
         }
       ],
       "services": {

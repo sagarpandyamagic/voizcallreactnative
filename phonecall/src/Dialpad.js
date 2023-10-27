@@ -6,6 +6,7 @@ import {
     FlatList,
     TouchableOpacity,
     Dimensions,
+    Platform,
 } from 'react-native';
 import { React, useEffect, useRef, useState } from 'react';
 const { width } = Dimensions.get('window')
@@ -18,6 +19,17 @@ import { useSelector, useDispatch } from 'react-redux';
 import { updateSipState } from './redux/sipSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DialpadTimeSearchContact from './ContactScreen/DialpadTimeSearchContact';
+import messaging from '@react-native-firebase/messaging';
+import VoipPushNotification from "react-native-voip-push-notification";
+import incomingusebyClass from './incomingusebyClass';
+import store from './redux/store';
+import RNCallKeep from 'react-native-callkeep';
+import skoectbyclass from './skoectbyclass';
+import { updateCallStatus } from './API';
+import { SessionState } from 'sip.js/lib/core';
+import { useCallTimerContext } from './hook/useCallTimer';
+import InCallManager from 'react-native-incall-manager';
+import setInitVlaue from './setInitVlaue';
 
 const pinLength = 3
 const pinContainersize = width / 2;
@@ -78,29 +90,233 @@ function Number({ onPress }: { onPress: (item: typeof dialPad[number]) => void }
 
 const Dialpad = ({ navigation }) => {
     const incomeingCall = false
-    const { connect, makeCall,Callhangup } = usecreateUA()
     const [code, setCode] = useState([]);
-    const { CallScreenOpen, soketConnect,CallkeepCall } = useSelector((state) => state.sip)
+    const { CallScreenOpen, soketConnect,sesstionState,session ,CallType,phoneNumber} = useSelector((state) => state.sip)
     const dispatch = useDispatch()
+    const [firebaseUserConfig, setfirebaseUserConfig] = useState(null);
+    const [isCalling, setisCalling] = useState(false);
+    const { TimerAction, callTimer, seconds } = useCallTimerContext()
+
+    useEffect(()=>{
+        switch(sesstionState){
+            case 'Established':
+                TimerAction('start')
+                break;
+             case 'Terminated':
+                TimerAction('stop')
+                break;   
+        }
+        
+    },[sesstionState])
 
     useEffect(() => {
-        if(CallkeepCall==true){
-            console.log("Error In userEffect...")
-            Callhangup()
-        }else{
-            if(soketConnect == false) {
-                connect();
+        getFCMtoken()
+    }, []);
+
+    useEffect(()=>{
+        console.log("CallType===",CallType)
+        console.log("sesstionState===",sesstionState)
+        if(CallType == "OutGoComingCall" && sesstionState == 'Establishing') {
+            const endIncomingCall = () => {
+                skoectbyclass.hangupCall()
+                InCallManager.setSpeakerphoneOn(false);
+                InCallManager.stop();
+                console.log("endIncomingCall ttttt");
+                incomingusebyClass.endIncomingcallAnswer();
+            };
+            incomingusebyClass.configureendcall(endIncomingCall);
+        }
+    },[sesstionState])
+    
+
+    useEffect(() => {
+        const unsubscribe = messaging().onMessage((remoteMessage) => {
+            // const { callerInfo, videoSDKInfo, type } = JSON.parse(
+            //     remoteMessage.data.info
+            // );
+
+            let type = "CALL_INITIATED"
+            let callerInfo = remoteMessage.from
+
+            console.log("remoteMessage", remoteMessage)
+            switch (type) {
+                case "CALL_INITIATED":
+                    const incomingCallAnswer = ({ callUUID }) => {
+                        updateCallStatus({
+                            callerInfo,
+                            type: "ACCEPTED",
+                        });
+                        skoectbyclass.accepctCall()
+                        RNCallKeep.setCurrentCallActive(callUUID);
+                        // incomingusebyClass.endIncomingcallAnswer(callUUID);
+                        setisCalling(false);
+                    };
+
+                    const endIncomingCall = () => {
+                        skoectbyclass.hangupCall()
+                        console.log("endIncomingCall ttttt");
+                        incomingusebyClass.endIncomingcallAnswer();
+                    };
+
+                    incomingusebyClass.configure(incomingCallAnswer, endIncomingCall);
+                    incomingusebyClass.displayIncomingCall(remoteMessage.from);
+                    break;
+                case "ACCEPTED":
+                    console.log("ACCEPTED");
+                    setisCalling(false);
+                    // navigation.navigate(SCREEN_NAMES.Meeting, {
+                    //     name: "Person B",
+                    //     token: videosdkTokenRef.current,
+                    //     meetingId: videosdkMeetingRef.current,
+                    // });
+                    break;
+                case "REJECTED":
+                    console.log("Call Rejected");
+                    setisCalling(false);
+                    break;
+                case "DISCONNECT":
+                    Platform.OS === "ios"
+                        ? incomingusebyClass.endAllCall()
+                        : incomingusebyClass.endIncomingcallAnswer();
+                    break;
+                default:
+                    console.log("Call Could not placed");
+            }
+        });
+
+        return () => {
+            unsubscribe();
+        };
+    }, []);
+
+    useEffect(() => {
+        VoipPushNotification.addEventListener("register", (token) => {
+          console.log("Voip Token->", token)
+        });
+    
+        VoipPushNotification.addEventListener("notification", (notification) => {
+        //   const { callerInfo, videoSDKInfo, type } = notification;
+           console.log("notification",notification.aps.alert.subtitle)
+           let type = "CALL_INITIATED"
+           let callerInfo = notification.from
+          if (type === "CALL_INITIATED") {
+            const incomingCallAnswer = ({ callUUID }) => {
+                updateCallStatus({
+                    callerInfo,
+                    type: "ACCEPTED",
+                });
+                skoectbyclass.accepctCall()
+                // RNCallKeep.setCurrentCallActive(callUUID);
+                setisCalling(false);
+            };
+
+            const endIncomingCall = () => {
+                skoectbyclass.hangupCall()
+                InCallManager.setSpeakerphoneOn(false);
+                InCallManager.stop();
+                console.log("endIncomingCall ttttt");
+                incomingusebyClass.endIncomingcallAnswer();
+            };
+
+            incomingusebyClass.configure(incomingCallAnswer, endIncomingCall);
+            VoipPushNotification.onVoipNotificationCompleted(notification.uuid);
+        } 
+          else if (type === "DISCONNECT") {
+            incomingusebyClass.endAllCall();
+           
+          }
+          VoipPushNotification.onVoipNotificationCompleted(notification.uuid);
+        });
+    
+        VoipPushNotification.addEventListener("didLoadWithEvents", (events) => {
+            setInitVlaue.usedValue()
+
+            let type = "CALL_INITIATED"
+            let callerInfo = events
+
+            const incomingCallAnswer = ({ callUUID }) => {
+                updateCallStatus({
+                  callerInfo,
+                  type: "ACCEPTED",
+                });
+                skoectbyclass.accepctCall()
+              };
+              const endIncomingCall = () => {
+                incomingusebyClass.endAllCall();
+                updateCallStatus({ callerInfo, type: "REJECTED" });
+              };
+              incomingusebyClass.configure(incomingCallAnswer, endIncomingCall);
+        });
+    
+        return () => {
+          VoipPushNotification.removeEventListener("didLoadWithEvents");
+          VoipPushNotification.removeEventListener("register");
+          VoipPushNotification.removeEventListener("notification");
+        };
+      }, []);
+
+     const questPermission=async ()=> {
+        try {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.POST_NOTIFICATION, // or POST_NOTIFICATIONS
+            {
+              'title': 'TEST',
+              'message': I18n.t('permissions.locationPermissionMessage')
+            }
+          )
+          if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+            
+          } else {
+          }
+        } catch (err) {
+         
+        }
+    }
+
+    
+
+
+    const getFCMtoken = async () => {
+        console.log("GETFCMTOKEN")
+        const authStatus = await messaging().requestPermission();
+        const enabled =
+            authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+            authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+        Platform.OS === "ios" && VoipPushNotification.registerVoipToken();
+        console.log("GETFCMTOKEN1")
+
+        if (Platform.OS === 'android') {
+            try {
+                await PermissionsAndroid.request(
+                    PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+                );
+            } catch (error) {
             }
         }
-    }, [CallkeepCall]);
+
+        if (enabled) {
+            const fcmToken = await messaging().getToken();
+            if (fcmToken) {
+                console.log('FCM Token:', fcmToken);
+                // Send the token to your server or use it for notifications
+            } else {
+                console.error('Unable to get FCM Token');
+            }
+        }
+
+    }
+
 
     const handleMakeCall = (code) => {
         const number = code.join('')
         number.toString()
         console.log(number)
-        makeCall(number)
+
+        skoectbyclass.makeCall(number)
         dispatch(updateSipState({ key: "Caller_Name", value: number }))
         dispatch(updateSipState({ key: "CallScreenOpen", value: true }))
+
+     
     };
 
     const callPick = () => {
@@ -120,8 +336,8 @@ const Dialpad = ({ navigation }) => {
                     }}>
                     <Text style={{ fontSize: 20, }}>{code}</Text>
                 </View>
-                <View style={{flex:1}}>
-                <DialpadTimeSearchContact searchtext={code} setCode={setCode}/>
+                <View style={{ flex: 1 }}>
+                    <DialpadTimeSearchContact searchtext={code} setCode={setCode} />
                 </View>
             </View>
 
@@ -130,29 +346,21 @@ const Dialpad = ({ navigation }) => {
 
                 </View>
                 <View >
-                <Number code={code.length ? {} : code} onPress={(item) => {
-                    if (item.toString() == 'del') {
-                        const updatedWords = [...code];
-                        updatedWords.pop();
-                        setCode(updatedWords);
-                    } else if (item.toString() == "call") {
-                        handleMakeCall(code)
-                    } else if (item.toString() == '*' || item.toString() == '#') {
-                    } else {
-                        const newNumbers = code.length === 0 ? [item.toString()] : [...code, item.toString()];
-                        setCode(newNumbers)
-                    }
-                }} />
+                    <Number code={code.length ? {} : code} onPress={(item) => {
+                        if (item.toString() == 'del') {
+                            const updatedWords = [...code];
+                            updatedWords.pop();
+                            setCode(updatedWords);
+                        } else if (item.toString() == "call") {
+                            handleMakeCall(code)
+                        } else if (item.toString() == '*' || item.toString() == '#') {
+                        } else {
+                            const newNumbers = code.length === 0 ? [item.toString()] : [...code, item.toString()];
+                            setCode(newNumbers)
+                        }
+                    }} />
                 </View>
             </View>
-            {/* <View>
-                <IncomingCall nav={navigation} />
-            </View>
-
-            <View>
-                <CallScreen nav={navigation} />
-            </View> */}
-
         </View>
     )
 }

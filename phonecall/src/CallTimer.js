@@ -21,7 +21,6 @@ const CallTimerContext = createContext(defaultProvider)
 const CallTimerDuraionProvider = ({ children }) => {
   // ** States
   const { seconds, minutes, hours, start, pause, reset } = useStopwatch({ autoStart: false })
-  // const [callDuraion, setDuration] = useState<any>('00:00:00')
   const [callTimer, setCalltimer] = useState('00:00:00')
 
   const TimerAction = (action) => {
@@ -36,6 +35,7 @@ const CallTimerDuraionProvider = ({ children }) => {
         pause()
         break
       case 'stop':
+        setCalltimer('00:00:00')
         reset()
         pause()
         break

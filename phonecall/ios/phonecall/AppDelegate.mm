@@ -40,55 +40,6 @@ static void InitializeFlipper(UIApplication *application) {
   self.initialProps = @{};
   
   
-  
-  //  RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
-  //
-  //  [RNVoipPushNotificationManager voipRegistration];
-  
-  //  [RNCallKeep setup:@{
-  //      @"appName": @"Awesome App",
-  //      @"maximumCallGroups": @3,
-  //      @"maximumCallsPerCallGroup": @1,
-  //      @"supportsVideo": @NO,
-  //    }];
-  
-  //    RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:self.bridge
-  //                                                     moduleName:@"phonecall"
-  //                                              initialProperties:nil];
-  //
-  
-  // Define UNUserNotificationCenter
-  //  UNUserNotificationCenter* center = [UNUserNotificationCenter currentNotificationCenter];
-  //  [center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert + UNAuthorizationOptionSound)
-  //                        completionHandler:^(BOOL granted, NSError * _Nullable error) {
-  //    // Enable or disable features based on authorization.
-  //  }];
-  //
-  //  RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge moduleName:@"phonecall" initialProperties:nil];
-  //
-  //  [self.window addSubview:rootView];
-  
-  //  RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge moduleName:@"phonecall" initialProperties:nil];
-  
-  
-  
-  //#if DEBUG
-  //  InitializeFlipper(application);
-  //#endif
-  //
-  //  RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
-  //  RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge
-  //                                                   moduleName:@"phonecall"
-  //                                            initialProperties:nil];
-  //
-  //  rootView.backgroundColor = [[UIColor alloc] initWithRed:1.0f green:1.0f blue:1.0f alpha:1];
-  //
-  //  self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-  //  UIViewController *rootViewController = [UIViewController new];
-  //  rootViewController.view = rootView;
-  //  self.window.rootViewController = rootViewController;
-  //  [self.window makeKeyAndVisible];
-  
   [FIRApp configure];
   
   RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
@@ -138,61 +89,14 @@ static void InitializeFlipper(UIApplication *application) {
 }
 
 
-- (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type {
-  [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
-}
+//- (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type {
+//  [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
+//}
 
 // --- Handle incoming pushes
 - (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type withCompletionHandler:(void (^)(void))completion {
   
-  
-  //  [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
-  
-  // Retrieve information like handle and callerName here
-  //  NSString *uuid = [[[NSUUID UUID] UUIDString] lowercaseString];
-  //  NSString *callerName = @"caller name here";
-  //  NSString *handle = @"caller number here";
-  //  NSDictionary *extra = [payload.dictionaryPayload valueForKeyPath:@"custom.path.to.data"]; /* use this to pass any special data (ie. from your notification) down to RN. Can also be `nil` */
-  //
-  //  [RNCallKeep reportNewIncomingCall: @"cb499f3e-1521-4467-a51b-ceea76ee9666"
-  //                             handle: handle
-  //                         handleType: @"generic"
-  //                           hasVideo: NO
-  //                localizedCallerName: callerName
-  //                    supportsHolding: YES
-  //                       supportsDTMF: YES
-  //                   supportsGrouping: YES
-  //                 supportsUngrouping: YES
-  //                        fromPushKit: YES
-  //                            payload: extra
-  //              withCompletionHandler: completion];
-  
-  //  NSString *uuid = payload.dictionaryPayload[@"uuid"];
-  //   NSString *callerName = [NSString stringWithFormat:@"%@ phonecall", payload.dictionaryPayload[@"callerName"]];
-  //   NSString *handle = payload.dictionaryPayload[@"handle"];
-  
-  // --- this is optional, only required if you want to call `completion()` on the js side
-  //   [RNVoipPushNotificationManager addCompletionHandler:uuid completionHandler:completion];
-  
-  // --- Process the received push
-  //   [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
-  //  NSDictionary *extra = [payload.dictionaryPayload valueForKeyPath:@"custom.path.to.data"];
-  
-  //  [RNCallKeep reportNewIncomingCall: uuid
-  //                                handle: handle
-  //                            handleType: @"generic"
-  //                              hasVideo: YES
-  //                   localizedCallerName: callerName
-  //                       supportsHolding: YES
-  //                          supportsDTMF: YES
-  //                      supportsGrouping: YES
-  //                    supportsUngrouping: YES
-  //                           fromPushKit: YES
-  //                               payload: nil
-  //                 withCompletionHandler: completion];
-  //
-  
-  
+
   NSLog(@"Received incoming push notification with payload: %@", payload.dictionaryPayload);
   
   NSDictionary *payloadDict = payload.dictionaryPayload;
@@ -212,7 +116,6 @@ static void InitializeFlipper(UIApplication *application) {
   
   [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
   
-  
   [RNCallKeep reportNewIncomingCall: uuidString
                              handle: subtitle
                          handleType: @"number"
@@ -231,30 +134,7 @@ static void InitializeFlipper(UIApplication *application) {
   completion();
   
 }
-//
-//- (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type withCompletionHandler:(void (^)(void))completion {
-//  // Process the received push
-//  [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
-//
-////   Retrieve information like handle and callerName here
-//   NSString *uuid = [[[NSUUID UUID] UUIDString] lowercaseString];
-//   NSString *callerName = @"caller name here";
-//   NSString *handle = @"caller number here";
-//   NSDictionary *extra = [payload.dictionaryPayload valueForKeyPath:@"custom.path.to.data"]; /* use this to pass any special data (ie. from your notification) down to RN. Can also be `nil` */
-//
-//  [RNCallKeep reportNewIncomingCall: uuid
-//                             handle: handle
-//                         handleType: @"generic"
-//                           hasVideo: NO
-//                localizedCallerName: callerName
-//                    supportsHolding: YES
-//                       supportsDTMF: YES
-//                   supportsGrouping: YES
-//                 supportsUngrouping: YES
-//                        fromPushKit: YES
-//                            payload: extra
-//              withCompletionHandler: completion];
-//}
+
 - (BOOL)application:(UIApplication *)application
 continueUserActivity:(NSUserActivity *)userActivity
  restorationHandler:(void(^)(NSArray<id<UIUserActivityRestoring>> * __nullable restorableObjects))restorationHandler

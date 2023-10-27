@@ -3,15 +3,18 @@ import { Modal, View, Text, TouchableOpacity, StyleSheet, Image } from 'react-na
 import voizLogo from '../Assets/circleVoizCallLogo.png';
 import callPick from '../Assets/ic_answer_call.png';
 import callDecline from '../Assets/ic_decline_call.png';
-import { useDispatch,useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { updateSipState } from './redux/sipSlice';
 import usecreateUA from './hook/usecreateUA';
+import incomingusebyClass from './incomingusebyClass';
+import skoectbyclass from './skoectbyclass';
+import store from './redux/store';
 
 
-function IncomingCall( props) {
+function IncomingCall(props) {
     const dispatch = useDispatch()
-    const { incomingcall, session,phoneNumber ,Caller_Name} = useSelector((state) => state.sip)
-    const { Callhangup} = usecreateUA()
+    const { incomingcall, session, phoneNumber, Caller_Name } = useSelector((state) => state.sip)
+    const { Callhangup } = usecreateUA()
 
     // console.log("IncomingScreen", incomingcall)
     return (
@@ -20,7 +23,7 @@ function IncomingCall( props) {
 
             {/* Incoming Call Modal */}{
                 <Modal
-                    visible={false}
+                    visible={incomingcall}
                     transparent={false}
                     animationType="none"
                 >
@@ -38,25 +41,26 @@ function IncomingCall( props) {
                             </View>
                         </View>
                         <View style={style.CallingIcon}>
-                          <View style={{flexDirection:'row',justifyContent:'center',alignItems:'center',flex:1}}>
-                            <TouchableOpacity style={{marginRight:50}} onPress={()=>{
-                                session.accept()
-                                dispatch(updateSipState({key:"CallScreenOpen",value:true}))
-                                dispatch(updateSipState({key:"incomingcall",value:false}))
-                            }} >
-                            <Image style={{ width: 70, height: 70 }}
-                                source={callPick} />
+                            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+                                <TouchableOpacity style={{ marginRight: 50 }} onPress={() => {
+                                    session.accept()
+                                    store.dispatch(updateSipState({ key: "CallScreenOpen", value: true }))
+                                    store.dispatch(updateSipState({ key: "incomingcall", value: false }))
+                                }} >
+                                    <Image style={{ width: 70, height: 70 }}
+                                        source={callPick} />
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={()=>{
-                                       Callhangup()
-                                       dispatch(updateSipState({key:"incomingcall",value:false}))
-                                       dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
-                                       dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
+                                <TouchableOpacity onPress={() => {
+                                    //    Callhangup()
+                                   skoectbyclass.declineCall()
+                                   store.dispatch(updateSipState({ key: "incomingcall", value: false }))
+                                   store.dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
+                                   store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
                                 }}>
-                            <Image style={{ width: 70, height: 70 }}
-                                source={callDecline} />
+                                    <Image style={{ width: 70, height: 70 }}
+                                        source={callDecline} />
                                 </TouchableOpacity>
-                            </View>  
+                            </View>
                         </View>
                     </View>
                 </Modal>

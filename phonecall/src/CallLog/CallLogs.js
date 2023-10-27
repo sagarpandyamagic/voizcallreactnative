@@ -43,7 +43,7 @@ const getUiqueCallHistory = (allHistory) => {
     if (numberMange != "" && numberMange != (his["number"])) {
       groupUser.push({ [numberMange]: d })
       console.log("groupUser", groupUser)
-      if(his["number"] != "") {
+      if (his["number"] != "") {
         d = []
         numberMange = (his["number"])
         d.push(his)
@@ -56,8 +56,8 @@ const getUiqueCallHistory = (allHistory) => {
     }
   })
   if (numberMange != "") {
-  groupUser.push({ [numberMange]: d })
-  console.log("groupUser", groupUser)
+    groupUser.push({ [numberMange]: d })
+    console.log("groupUser", groupUser)
   }
   return groupUser
 }
@@ -72,13 +72,15 @@ const CallLogs = ({ navigation }) => {
   const { newCallAdd } = useSelector((state) => state.sip)
   const [hideAddcontact, sethideAddcontact] = useState(false)
 
+  
+  
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
       CallDataGet();
     });
   }, [navigation]);
 
-    
+
 
   const CallDataGet = async () => {
     db.transaction((tx) => {
@@ -95,8 +97,8 @@ const CallLogs = ({ navigation }) => {
           const formateLog = getUiqueCallHistory(users)
           setlogData(formateLog)
         },
-        (error) => { 
-          console.error('Error retrieving data:', error); 
+        (error) => {
+          console.error('Error retrieving data:', error);
         }
       );
     });
@@ -109,116 +111,106 @@ const CallLogs = ({ navigation }) => {
     for (let i = 0; i < logkey.length; i++) {
       db.transaction((txn) => {
         txn.executeSql('DELETE FROM CallLogList WHERE unicid = ?', [logkey[i]]
-        , () => {
-          console.log("deleted  Item",i);
-          if((logkey.length - 1) == i) {
-            setlogInfoModal(!logInfoModal)
-            CallDataGet()
-          }
-        }, (error) => {
-          console.log("Item delete error: " + error.message);
-        });
+          , () => {
+            console.log("deleted  Item", i);
+            if ((logkey.length - 1) == i) {
+              setlogInfoModal(!logInfoModal)
+              CallDataGet()
+            }
+          }, (error) => {
+            console.log("Item delete error: " + error.message);
+          });
       });
     }
   }
 
   const handleAddContact = ({ num }) => {
-
-    const newContact = {
-      familyName: '',
-      givenName: '',
-      phoneNumbers: [
-        {
-          label: 'mobile',
-          number: num,
-        },
-      ],
-    };
-
-    try {
-      Contacts.addContact(newContact, (err) => {
-        if (err) {
-          console.error(`Error: ${err}`);
-        } else {
-          console.log('Contact added successfully');
-        }
-      });
-    } catch (error) {
-      console.error(`Error: ${error.message}`);
+    console.log("Number", num)
+    var newPerson = {
+      phoneNumbers: [{
+        label: 'mobile',
+        number: `${num}`
+      }],
+      displayName: "Unknown"
     }
-    
+
+    Contacts.openContactForm(newPerson).then(contact => {
+      // contact has been saved
+    })
+
+
   }
 
+
+
   const ModelContactInfo = () => {
+   
     return (
-      <View>
+      <Modal
+        style={styleModle.centeredView}
+        animationType="fade"
+        transparent={true}
+        visible={logInfoModal}
+        onRequestClose={() => {setlogInfoModal(false)  }}
+
+      >
+
         <View style={styleModle.centeredView}>
-          <Modal
-            animationType="fade"
-            transparent={true}
-            visible={logInfoModal}
-            onRequestClose={() => {
-              alert('Modal has been closed.');
-            }}>
-
-            <View style={styleModle.centeredView}>
-              <View style={styleModle.modalView}>
-                <CallLogTimeNameFind number={logInfoNumber} sethideAddcontact={sethideAddcontact} />
-                <Text style={styleModle.modalText}>{logInfoNumber}</Text>
-                <View style={{ justifyContent: 'center', alignContent: 'center' }}>
-                  <Pressable
-                    style={{ flexDirection: 'row', paddingTop: 15 }}
-                    onPress={() => {
-                      // const str = logInfoNumber.replace(/[^a-z0-9,. ]/gi, '');
-                      // makeCall(str.replace(/ /g, ''))
-                      // navigation.navigate('Dialpad')
-                      setlogInfoModal(!logInfoModal)
-                    }
-                    }>
-                    <View style={{ flex: 1, flexDirection: 'row', height: 40 }}>
-                      <View style={{ paddingLeft: 10, paddingRight: 30 }}>
-                        <Image source={ic_call} style={{ height: 25, width: 25 }}></Image>
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styleModle.textStyle}>Call</Text>
-                      </View>
-                    </View>
-                  </Pressable>
-                  {
-                    hideAddcontact == false && <Pressable
-                      style={{ flexDirection: 'row', paddingTop: 15 }}
-                      onPress={() =>  handleAddContact(logInfoNumber)}>
-                      <View style={{ flex: 1, flexDirection: 'row', height: 40 }}>
-                        <View style={{ paddingLeft: 10, paddingRight: 20 }}>
-                          <Image source={ic_add_new_contact} style={{ height: 25, width: 35 }}></Image>
-                        </View>
-                        <View style={{ flex: 1 }}>
-                          <Text style={styleModle.textStyle}>Add Contact</Text>
-                        </View>
-                      </View>
-                    </Pressable>
-                  }
-
-                  <Pressable
-                    style={{ flexDirection: 'row', paddingTop: 15 }}
-                    onPress={deleteCallHistory}>
-                    <View style={{ flex: 1, flexDirection: 'row', height: 40 }}>
-                      <View style={{ paddingLeft: 10, paddingRight: 30 }}>
-                        <Image source={ic_delete} style={{ height: 25, width: 25, tintColor: 'red' }}></Image>
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <Text style={[styleModle.textStyle, { color: 'red' }]}>Delete History</Text>
-                      </View>
-                    </View>
-                  </Pressable>
+          <View style={styleModle.modalView}>
+            <CallLogTimeNameFind number={logInfoNumber} sethideAddcontact={sethideAddcontact} />
+            <Text style={styleModle.modalText}>{logInfoNumber}</Text>
+            <View style={{ justifyContent: 'center', alignContent: 'center' }}>
+              <Pressable
+                style={{ flexDirection: 'row', paddingTop: 15 }}
+                onPress={() => {
+                  // const str = logInfoNumber.replace(/[^a-z0-9,. ]/gi, '');
+                  // makeCall(str.replace(/ /g, ''))
+                  // navigation.navigate('Dialpad')
+                  setlogInfoModal(!logInfoModal)
+                }
+                }>
+                <View style={{ flex: 1, flexDirection: 'row', height: 40 }}>
+                  <View style={{ paddingLeft: 10, paddingRight: 30 }}>
+                    <Image source={ic_call} style={{ height: 25, width: 25 }}></Image>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styleModle.textStyle}>Call</Text>
+                  </View>
                 </View>
-              </View>
-            </View>
-          </Modal>
-        </View>
-      </View>
+              </Pressable>
+              {
+                hideAddcontact == false && <Pressable
+                  style={{ flexDirection: 'row', paddingTop: 15 }}
+                  onPress={() => handleAddContact(logInfoNumber)}>
+                  <View style={{ flex: 1, flexDirection: 'row', height: 40 }}>
+                    <View style={{ paddingLeft: 10, paddingRight: 20 }}>
+                      <Image source={ic_add_new_contact} style={{ height: 25, width: 35 }}></Image>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styleModle.textStyle}>Add Contact</Text>
+                    </View>
+                  </View>
+                </Pressable>
+              }
 
+              <Pressable
+                style={{ flexDirection: 'row', paddingTop: 15 }}
+                onPress={deleteCallHistory}>
+                <View style={{ flex: 1, flexDirection: 'row', height: 40 }}>
+                  <View style={{ paddingLeft: 10, paddingRight: 30 }}>
+                    <Image source={ic_delete} style={{ height: 25, width: 25, tintColor: 'red' }}></Image>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styleModle.textStyle, { color: 'red' }]}>Delete History</Text>
+                  </View>
+                </View>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     )
+   
   }
 
   const CallTimeFind = (DateorTime) => {

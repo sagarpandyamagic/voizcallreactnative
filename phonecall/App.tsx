@@ -8,16 +8,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   Platform,
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
   View,
-  TouchableOpacity,
-  PermissionsAndroid,
-  Alert
 } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
@@ -26,14 +17,7 @@ import ContactDetailScreen from './src/ContactScreen/ContactDetailScreen';
 import BlockContact from './src/BlockContact';
 import ContactsList from './src/ContactScreen/ContactsList';
 import { CallTimerDuraionProvider } from './src/CallTimer';
-import uuid from 'uuid';
-import RNCallKeep from 'react-native-callkeep';
-import BackgroundTimer from 'react-native-background-timer';
-import PushNotification from "react-native-push-notification";
 import VoipPushNotification from 'react-native-voip-push-notification';
-import usecreateUA from './src/hook/usecreateUA';
-import { useDispatch, useSelector } from 'react-redux';
-import { updateSipState } from './src/redux/sipSlice';
 import CallLogDetails from './src/CallLog/CallLogDetails';
 import LoginWithOTP from './src/Login/LoginWithOTP';
 import SplashScreen from './src/SplashScreen/SplashScreen';
@@ -41,284 +25,12 @@ import ForgotPassword from './src/Login/ForgotPassword';
 import IncomingCall from './src/IncomingCall';
 import CallScreen from './src/CallScreen';
 import HomeScreen from './src/Login/HomeScreen';
-import { Notifications } from 'react-native-notifications';
-import { useNavigation } from '@react-navigation/native';
-import messaging from '@react-native-firebase/messaging';
-import {setJSExceptionHandler,setNativeExceptionHandler} from 'react-native-exception-handler'
-
-setJSExceptionHandler((error, isFatal)=>{
-  //Fetch
-  console.log(error,isFatal)
-  Alert.alert(error.message);
-},true)
-
-BackgroundTimer.start();
-
-const hitSlop = { top: 10, left: 10, right: 10, bottom: 10 };
-
-function setupCallKeep() {
-  const options = {
-    android: {
-      alertTitle: 'Permissions Required',
-      alertDescription:
-        'This application needs to access your phone calling accounts to make calls',
-      cancelButton: 'Cancel',
-      okButton: 'ok',
-      imageName: 'ic_launcher',
-      additionalPermissions: [PermissionsAndroid.PERMISSIONS.READ_CONTACTS],
-    },
-  };
-
-  try {
-    RNCallKeep.setup(options);
-    RNCallKeep.setAvailable(true); // Only used for Android, see doc above.
-  } catch (err) {
-    console.error('initializeCallKeep error:', err.message);
-  }
-}
-
-setupCallKeep();
-
-const getNewUuid = () => "cb499f3e-1521-4467-a51b-ceea76ee92b6"
-
-const format = uuid => uuid.split('-')[0];
-
-const getRandomNumber = () => String(Math.floor(Math.random() * 100000));
-
-const isIOS = Platform.OS === 'ios';
-
-console.log("uuid", uuid)
-
-const useLogger = (moduleName) => {
-  const info = (message, data = {}) => {
-    console.log(`[${moduleName}] INFO: ${message}`, data);
-  };
-
-  const error = (message, data = {}) => {
-    console.error(`[${moduleName}] ERROR: ${message}`, data);
-  };
-
-  return { info, error };
-};
+import { setupCallKeep } from './src/hook/usecallkeep';
 
 function App() {
-  const logger = useLogger('CallKeep');
-  const dispatch = useDispatch()
-  const { connect, makeCall, Callhangup } = usecreateUA()
-
-
-
-  const answerCall = ({ callUUID }) => {
-    logger.info("Call recieved, answering call...")
-    // AsyncStorage.setItem('currentCallUUID', callUUID);
-    try {
-      logger.info("Starting Callkeep call")
-      if (Platform.OS === 'ios') {
-        RNCallKeep.startCall(callUUID, '123445', "123445", 'number', false);
-      }
-
-      logger.info("Call started successfully")
-    } catch (e) {
-      logger.error("Failed to start callkeep call")
-    }
-
-    setTimeout(() => {
-      logger.info("Setting current active call...")
-      try {
-        RNCallKeep.setCurrentCallActive(callUUID);
-        dispatch(updateSipState({ key: "CallScreenOpen", value: true }))
-        dispatch(updateSipState({ key: "incomingcall", value: false }))
-        logger.info("Current active call set");
-      } catch (e) {
-        logger.error("Failed to set current call", { error: e });
-      }
-    }, 1000);
-    logger.info("Call started successfully, setting active call")
-
-
-    // On Android display the app when answering a video call
-    if (!isIOS) {
-      console.log('bringing app to foreground');
-      RNCallKeep.backToForeground();
-    }
-
-    logger.info("Setting current call UUID")
-    // dispatch(setCurrentCallUUID(callUUID))
-
-    logger.info("Navigating to call screen")
-
-
-  };
-
-  const endCall = ({ callUUID }) => {
-    logger.info("Ending call")
-    logger.info("Test Ending call")
-    dispatch(updateSipState({ key: "CallkeepCall", value: true }))
-
-    try {
-      RNCallKeep.endAllCalls();
-      logger.info("Call ended")
-    } catch (e) {
-      logger.error("Failed to end call", { error: e })
-    }
-  };
-
-  const didDisplayIncomingCall = async ({ callUUID, payload, handle, }) => {
-    try {
-      logger.info('Recieved call with data', { payload, callUUID, handle });
-      // dispatch(
-      //   startVideoChatWithouActivating({
-      //     token: payload.token,
-      //     room_name: payload.room_name,
-      //     call_id: payload.call_id,
-      //     friend: payload.friend,
-      //     callUUID,
-      //     call_uuid: callUUID,
-      //     // location: JSON.parse(data.location ?? '{}'),
-      //   })
-      // );
-      logger.info('Call displayed with data', { payload, callUUID, handle });
-    } catch (e) {
-      logger.error('Failed to save call data', { payload, callUUID, handle });
-    }
-  }
-
-  const handlePreJSEvents = (events) => {
-    logger.info('PreJS events', { events });
-    for (let event of events) {
-      if (event.name == "RNCallKeepDidDisplayIncomingCall") {
-        logger.info('PreJS events: didDisplayIncomingCall', { event });
-        didDisplayIncomingCall(event.data)
-      } else if (event.name == 'RNCallKeepAnswerCall') {
-        logger.info('PreJS events: answerCall', { event });
-        answerCall(event.data)
-      } else if (event.name == 'RNCallKeepEndCall') {
-        logger.info('PreJS events: endCall', { event });
-        endCall(event.data)
-      }
-    }
-  }
-
-  const initializeCallKeep = () => {
-    connect()
-    setTimeout(() => {
-      try {
-        logger.info('Call keep initiated successfully');
-        RNCallKeep.setAvailable(true);
-        RNCallKeep.addEventListener('answerCall', answerCall);
-        RNCallKeep.addEventListener('didReceiveStartCallAction', answerCall);
-        RNCallKeep.addEventListener('endCall', endCall);
-        RNCallKeep.addEventListener('didDisplayIncomingCall', didDisplayIncomingCall);
-
-        if (isIOS) {
-          RNCallKeep.addEventListener('didLoadWithEvents', handlePreJSEvents);
-        }
-      } catch (err) {
-        logger.error('Failed to initialize call keep', {
-          error: err,
-          msg: err.message,
-        });
-        console.error('initializeCallKeep error:', err.message);
-      }
-    }, 2000);
-  };
-
-  //replace the getFCMToken() with below.
-  async function getFCMtoken() {
-    if (Platform.OS === 'android') {
-      try {
-        await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-        );
-      } catch (error) {
-      }
-    }
-
-    const fcmToken = await messaging().getToken();
-    if (fcmToken) {
-      console.log('FCM Token:', fcmToken);
-      // Send the token to your server or use it for notifications
-    } else {
-      console.error('Unable to get FCM Token');
-    }
-
-    messaging().setBackgroundMessageHandler(async remoteMessage => {
-      // connect()
-
-      PushNotification.removeAllDeliveredNotifications();
-
-      RNCallKeep.displayIncomingCall("cb499f3e-1521-4467-a51b-ceea76ee92b6", "123445", "123445", 'number', false);
-      console.log('Message handled in the background!', remoteMessage);
-
-    });
-
-    messaging().onMessage(async remoteMessage => {
-      // Handle the notification data here
-      // You can extract relevant information from remoteMessage.data
-      RNCallKeep.displayIncomingCall("cb499f3e-1521-4467-a51b-ceea76ee92b6", "123445", "123445", 'number', false);
-    });
-  }
 
   useEffect(() => {
-    initializeCallKeep();
-    if (Platform.OS === 'android') {
-      getFCMtoken()
-    }
-    else {
-      VoipPushNotification && VoipPushNotification.addEventListener('register', (token) => {
-        // --- send token to your apn provider server
-        console.log("register", token)
-      });
-
-      // ===== Step 2: subscribe `notification` event =====
-      // --- this.onVoipPushNotificationiReceived
-      VoipPushNotification && VoipPushNotification.addEventListener('notification', (notification) => {
-        console.log("when receive remote voip push title", notification.aps.alert.title)
-        console.log("when receive remote voip push subtitle", notification.aps.alert.subtitle)
-        console.log("when receive remote voip push body", notification.aps.alert.body)
-
-        connect()
-        // displayIncomingCallNow(notification.aps.alert.subtitle)
-
-        // --- optionally, if you `addCompletionHandler` from the native side, once you have done the js jobs to initiate a call, call `completion()`
-        VoipPushNotification.onVoipNotificationCompleted(getNewUuid());
-      });
-
-      // ===== Step 3: subscribe `didLoadWithEvents` event =====
-      VoipPushNotification && VoipPushNotification.addEventListener('didLoadWithEvents', (events) => {
-        console.log("didLoadWithEvents", events)
-        // displayIncomingCallNow()
-        // --- this will fire when there are events occured before js bridge initialized
-        // --- use this event to execute your event handler manually by event type
-
-        if (!events || !Array.isArray(events) || events.length < 1) {
-          return;
-        }
-        for (let voipPushEvent of events) {
-          let { name, data } = voipPushEvent;
-          if (name === VoipPushNotification.RNVoipPushRemoteNotificationsRegisteredEvent) {
-            console.log("name", name)
-            //  onVoipPushNotificationRegistered(data);
-          } else if (name === VoipPushNotification.RNVoipPushRemoteNotificationReceivedEvent) {
-            // onVoipPushNotificationiReceived(data);
-            console.log("name", name)
-          }
-        }
-      });
-
-      VoipPushNotification && VoipPushNotification.registerVoipToken(); // --- register token  
-    }
-
-
-    return () => {
-      RNCallKeep.removeEventListener('answerCall', answerCall);
-      RNCallKeep.removeEventListener('didReceiveStartCallAction', answerCall);
-      RNCallKeep.removeEventListener('endCall', endCall);
-      RNCallKeep.removeEventListener('didDisplayIncomingCall', didDisplayIncomingCall);
-      if (isIOS) {
-        RNCallKeep.removeEventListener('didLoadWithEvents', handlePreJSEvents);
-      }
-    };
+    setupCallKeep();
   }, []);
 
   const Stack = createStackNavigator();
@@ -346,7 +58,6 @@ function App() {
         <View>
           <CallScreen />
         </View>
-
       </CallTimerDuraionProvider>
     </NavigationContainer>
   );

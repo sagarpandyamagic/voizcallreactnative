@@ -63,214 +63,215 @@ function usecreateUA() {
   const [callerName, setcallerName] = useState("Unknown");
 
   const connect = async () => {
-    try {
-      createCallLogTable()
-      const webSoket = `wss://${Server}:${Port}`
-      const sip_aor = `sip:${UserName}@${Server}:${Port}` //`sip:${"101030"}@${"s1.netcitrus.com:5090"}`
-      const registererOptions = {}
-      const userAgentOptions = {
-        uri: UserAgent.makeURI(sip_aor),
-        transportOptions: {
-          wsServers: [webSoket], //["wss://s1.netcitrus.com:5090"],
-          traceSip: true
-        },
-        sessionDescriptionHandlerFactoryOptions: {
-          iceGatheringTimeout: 5000,
-        },
-        displayName: "sagar",
-        authorizationPassword: Password,//"1010@0101Aa30",
-        authorizationUsername: UserName,//"101030",
-        dtmfType: 'info',
-        contactTransport: 'wss',
-        noAnswerTimeout: 60,
-        displayName: "TEST",
-        contactParams: { transport: 'wss' },
-        hackIpInContact: true,
-        logBuiltinEnabled: true
+    // try {
+    //   createCallLogTable()
+    //   const webSoket = `wss://${Server}:${Port}`
+    //   const sip_aor = `sip:${UserName}@${Server}:${Port}` //`sip:${"101030"}@${"s1.netcitrus.com:5090"}`
+    //   const registererOptions = {}
+    //   const userAgentOptions = {
+    //     uri: UserAgent.makeURI(sip_aor),
+    //     transportOptions: {
+    //       wsServers: [webSoket], //["wss://s1.netcitrus.com:5090"],
+    //       traceSip: true
+    //     },
+    //     sessionDescriptionHandlerFactoryOptions: {
+    //       iceGatheringTimeout: 5000,
+    //     },
+    //     displayName: "sagar",
+    //     authorizationPassword: Password,//"1010@0101Aa30",
+    //     authorizationUsername: UserName,//"101030",
+    //     dtmfType: 'info',
+    //     contactTransport: 'wss',
+    //     noAnswerTimeout: 60,
+    //     displayName: "TEST",
+    //     contactParams: { transport: 'wss' },
+    //     hackIpInContact: true,
+    //     logBuiltinEnabled: true
 
-      }
+    //   }
 
-      const USERAGENT = new UserAgent(userAgentOptions)
-      const registerer = new Registerer(USERAGENT, registererOptions)
+    //   const USERAGENT = new UserAgent(userAgentOptions)
+    //   const registerer = new Registerer(USERAGENT, registererOptions)
 
-      dispatch(updateSipState({ key: "userAgent", value: USERAGENT }))
+    //   dispatch(updateSipState({ key: "userAgent", value: USERAGENT }))
 
-      USERAGENT.start()
-        .then(() => {
-          registerer.stateChange.addListener(newState => {
-            switch (newState) {
-              case RegistererState.Initial:
-                console.log('UserAgent ==> Initial')
-                break
-              case RegistererState.Registered:
-                dispatch(updateSipState({ key: "soketConnect", value: true }))
-                console.log('UserAgent ==> Registered')
-                break
-              case RegistererState.Unregistered:
-                dispatch(updateSipState({ key: "soketConnect", value: false }))
-                console.log('UserAgent ==> Unregistered')
-                break
-              case RegistererState.Terminated:
-                console.log('UserAgent ==> Terminated')
-                USERAGENT.stop()
-                break
-              default:
-                console.log('UserAgent ==> Unidentified')
-                break
-            }
-          })
-          registerer
-            .register()
-            .then(() => {
-              setupRemoteMedia(USERAGENT, false)
-              console.log('Successfully sent REGISTER, object is here')
-            })
-            .catch(error => {
-              console.log('Failed to send REGISTER', error)
-            })
-        })
-        .catch(error => {
-          console.log('Failed to send REGISTER', error)
-        })
+    //   USERAGENT.start()
+    //     .then(() => {
+    //       registerer.stateChange.addListener(newState => {
+    //         switch (newState) {
+    //           case RegistererState.Initial:
+    //             console.log('UserAgent ==> Initial')
+    //             break
+    //           case RegistererState.Registered:
+    //             dispatch(updateSipState({ key: "soketConnect", value: true }))
+    //             console.log('UserAgent ==> Registered')
+    //             break
+    //           case RegistererState.Unregistered:
+    //             dispatch(updateSipState({ key: "soketConnect", value: false }))
+    //             console.log('UserAgent ==> Unregistered')
+    //             break
+    //           case RegistererState.Terminated:
+    //             console.log('UserAgent ==> Terminated')
+    //             USERAGENT.stop()
+    //             break
+    //           default:
+    //             console.log('UserAgent ==> Unidentified')
+    //             break
+    //         }
+    //       })
+    //       registerer
+    //         .register()
+    //         .then(() => {
+    //           setupRemoteMedia(USERAGENT, false)
+    //           console.log('Successfully sent REGISTER, object is here')
+    //         })
+    //         .catch(error => {
+    //           console.log('Failed to send REGISTER', error)
+    //         })
+    //     })
+    //     .catch(error => {
+    //       console.log('Failed to send REGISTER', error)
+    //     })
 
-      /*
-       * Setup handling for incoming INVITE requests
-       */
-      let isVoiceOnly = true;
+    //   /*
+    //    * Setup handling for incoming INVITE requests
+    //    */
+    //   let isVoiceOnly = true;
 
-      try {
-        const mediaStream = await mediaDevices.getUserMedia(mediaConstraints);
-        // if ( isVoiceOnly ) {
-        //   let videoTrack = mediaStream.getVideoTracks()[0];
-        //   videoTrack.enabled = false;
-        // };
-        localMediaStream = mediaStream;
-
-
-      } catch (err) {
-        // Handle Error
-      };
+    //   try {
+    //     const mediaStream = await mediaDevices.getUserMedia(mediaConstraints);
+    //     // if ( isVoiceOnly ) {
+    //     //   let videoTrack = mediaStream.getVideoTracks()[0];
+    //     //   videoTrack.enabled = false;
+    //     // };
+    //     localMediaStream = mediaStream;
 
 
+    //   } catch (err) {
+    //     // Handle Error
+    //   };
 
 
 
-      USERAGENT.delegate = {
-        async onInvite(invitation) {
-          const number = invitation?.remoteIdentity?.uri?.user || ''
-          console.log('invitations', invitation)
-          console.log('invitation?.request?.callId', invitation?.request?.callId)
-          console.log('invitation?.request?.callId', invitation?.request?.callId)
-          dispatch(updateSipState({ key: "session", value: invitation }))
 
-          incoming = true
 
-          dispatch(storeContactNumber({ key: "phoneNumber", value: number }))
+    //   USERAGENT.delegate = {
+    //     async onInvite(invitation) {
+    //       dispatch(updateSipState({ key: "CallType", value: "InComingCall" }))
+
+    //       const number = invitation?.remoteIdentity?.uri?.user || ''
+    //       console.log('invitations', invitation)
+    //       console.log('invitation?.request?.callId', invitation?.request?.callId)
+    //       console.log('invitation?.request?.callId', invitation?.request?.callId)
+    //       dispatch(updateSipState({ key: "session", value: invitation }))
+
+    //       incoming = true
+
+    //       dispatch(storeContactNumber({ key: "phoneNumber", value: number }))
+
+    //       getContactTableData(number)
+
+    //       const SessionID = invitation?._id
+    //       dispatch(addSession({ sessionID: SessionID, session: invitation }))
+
+    //       console.log("incoming========", incoming)
 
           
-
-          getContactTableData(number)
-
-          const SessionID = invitation?._id
-          dispatch(addSession({ sessionID: SessionID, session: invitation }))
-
-          console.log("incoming========", incoming)
+    //       // dispatch(updateSipState({ key: "incomingcall", value: true }))
 
 
-          dispatch(updateSipState({ key: "incomingcall", value: true }))
+    //       invitation.delegate = {
+    //         //  Handle incoming onCancel request
+    //         onRefer(referral) {
+    //           console.log('referral', referral)
+    //         },
 
+    //         onCancel(message) {
+    //           console.log('ON CANCEL - message ==> ', message)
+    //           dispatch(updateSipState({ key: "incomingcall", value: false }))
+    //           dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
+    //           dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
 
-          invitation.delegate = {
-            //  Handle incoming onCancel request
-            onRefer(referral) {
-              console.log('referral', referral)
-            },
+    //           RNCallKeep.clearInitialEvents();
 
-            onCancel(message) {
-              console.log('ON CANCEL - message ==> ', message)
-              dispatch(updateSipState({ key: "incomingcall", value: false }))
-              dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
-              dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
+    //           if (invitation) {
+    //             invitation.dispose()
+    //           }
+    //         }
+    //       }
 
+    //       invitation.stateChange.addListener(state => {
+    //         dispatch(updateSipState({ key: "sesstionState", value: state }))
 
-              RNCallKeep.endAllCalls();
+    //         console.debug(`Session state changed to ${state}`)
+    //         switch (state) {
+    //           case 'Initial':
+    //             console.log('incomming session state Initial')
+    //             break
+    //           case 'Establishing':
+    //             console.log('Incoming Session state Establishing')
+    //             break
+    //           case 'Established':
+    //             timeStore = data
+    //             TimerAction('start')
+    //             console.log('Incoming Session state Established')
+    //             setupRemoteMedia(invitation, false)
 
-              if (invitation) {
-                invitation.dispose()
-              }
-            }
-          }
+    //             break
+    //           case 'Terminating':
+    //             console.log('Terminating')
+    //             break
+    //           case 'Terminated':
+    //             TimerAction('stop')
 
-          invitation.stateChange.addListener(state => {
-            dispatch(updateSipState({ key: "sesstionState", value: state }))
+    //             const callLog = {
+    //               "number": number,
+    //               "direction": "Incomging",
+    //               "duration": callDuration,
+    //               "current_time": format(timeStore, 'yyyy-MM-dd kk:mm:ss'),
+    //               "name": Caller_Name == "" ? "Unknown" : Caller_Name,
+    //               "id": `${new Date().getTime()}`
+    //             }
+    //             CallLogStore(callLog)
+    //             console.log('Terminated')
 
-            console.debug(`Session state changed to ${state}`)
-            switch (state) {
-              case 'Initial':
-                console.log('incomming session state Initial')
-                break
-              case 'Establishing':
-                console.log('Incoming Session state Establishing')
-                break
-              case 'Established':
-                timeStore = data
-                TimerAction('start')
-                console.log('Incoming Session state Established')
-                setupRemoteMedia(invitation, false)
+    //             dispatch(updateSipState({ key: "incomingcall", value: false }))
+    //             dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
+    //             dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
+    //             dispatch(updateSipState({ key: "phoneNumber", value: [] }))
+    //             dispatch(updateSipState({ key: "allSession", value: {} }))
+    //             RNCallKeep.endCall("cb499f3e-1521-4467-a51b-ceea76ee92b6")
 
-                break
-              case 'Terminating':
-                console.log('Terminating')
-                break
-              case 'Terminated':
-                TimerAction('stop')
+    //             delete uuids["cb499f3e-1521-4467-a51b-ceea76ee92b6"]
+    //             break
+    //           default:
+    //             console.log('Unknow Incomming Session state')
+    //         }
+    //       })
+    //     },
+    //     onConnect() {
+    //       console.log("IS Connected..")
+    //     },
+    //     onDisconnect(error) {
+    //       registerer
+    //         .unregister()
+    //         .then(() => {
+    //           console.log('onDisconnect - Unregistered event success')
 
-                const callLog = {
-                  "number": number,
-                  "direction": "Incomging",
-                  "duration": callDuration,
-                  "current_time": format(timeStore, 'yyyy-MM-dd kk:mm:ss'),
-                  "name": Caller_Name == "" ? "Unknown" : Caller_Name,
-                  "id": `${new Date().getTime()}`
-                }
-                CallLogStore(callLog)
-                console.log('Terminated')
-
-                dispatch(updateSipState({ key: "incomingcall", value: false }))
-                dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
-                dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
-                dispatch(updateSipState({ key: "phoneNumber", value: [] }))
-                dispatch(updateSipState({ key: "allSession", value: {} }))
-                RNCallKeep.endAllCalls();
-                break
-              default:
-                console.log('Unknow Incomming Session state')
-            }
-          })
-        },
-        onConnect() {
-          console.log("IS Connected..")
-        },
-        onDisconnect(error) {
-          registerer
-            .unregister()
-            .then(() => {
-              console.log('onDisconnect - Unregistered event success')
-
-            })
-            .catch(e => {
-              console.log(`onDisconnect - Unregister failed with cause ${e}`)
-            })
-          if (error) {
-            // attemptReconnection();
-            console.log('trying to reconnect')
-          }
-        }
-      }
-    } catch (error) {
-      console.debug('userAgent create Error', error)
-      dispatch(updateSipState({ key: "incomingcall", value: false }))
-    }
+    //         })
+    //         .catch(e => {
+    //           console.log(`onDisconnect - Unregister failed with cause ${e}`)
+    //         })
+    //       if (error) {
+    //         // attemptReconnection();
+    //         console.log('trying to reconnect')
+    //       }
+    //     }
+    //   }
+    // } catch (error) {
+    //   console.debug('userAgent create Error', error)
+    //   dispatch(updateSipState({ key: "incomingcall", value: false }))
+    // }
 
   }
 
@@ -389,7 +390,7 @@ function usecreateUA() {
           CallLogStore(callLog)
           dispatch(updateSipState({ key: "phoneNumber", value: [] }))
           dispatch(updateSipState({ key: "allSession", value: {} }))
-          RNCallKeep.endAllCalls();
+          RNCallKeep.endCall("cb499f3e-1521-4467-a51b-ceea76ee92b6")
 
           break
         default:
@@ -664,11 +665,11 @@ function usecreateUA() {
     console.log("allSession", allSession)
     if (allSession.length == null) {
       const session = allSession[Object.keys(allSession)];
-      session&&session.dispose()
+      session.dispose()
     } else {
       Object.keys(allSession).map(async (key) => {
         const session = allSession[key];
-        session&&session.dispose()
+        session.dispose()
       })
     }
 
