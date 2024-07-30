@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "149720405502",
+    "project_id": "voizcall-flutter",
+    "storage_bucket": "voizcall-flutter.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:149720405502:android:fefb111e39d2a2541e5caf",
+        "android_client_info": {
+          "package_name": "com.example.test_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCO8AMzQeyjxdn54_IBFnW1u69WSdZ8mqo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:149720405502:android:991ec16dd57d0d411e5caf",
+        "android_client_info": {
+          "package_name": "com.voizcallreactnative"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCO8AMzQeyjxdn54_IBFnW1u69WSdZ8mqo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
