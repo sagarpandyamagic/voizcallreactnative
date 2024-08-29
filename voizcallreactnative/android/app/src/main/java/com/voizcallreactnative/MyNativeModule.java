@@ -170,8 +170,6 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
                     currentActivity.setShowWhenLocked(true);
                     currentActivity.setTurnScreenOn(true);
-                    currentActivity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
-                    WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 } else {
                     currentActivity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
                             WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
@@ -200,7 +198,6 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
                         currentActivity.setShowWhenLocked(false);
                         currentActivity.setTurnScreenOn(false);
-                        currentActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                     } else {
                         currentActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
                                 WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
