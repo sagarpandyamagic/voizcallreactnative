@@ -2,28 +2,38 @@ import React, { useEffect, useState } from 'react';
 import { View, Image, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import CallLogList from './CallLogList';
-import { GETAPICALL, POSTAPICALL } from '../../services/auth';
+import { CDRLAPICALL, GETAPICALL, POSTAPICALL } from '../../services/auth';
 import { APIURL } from '../../HelperClass/APIURL';
-import loadinganimaion from '../../../Assets/animation.json';
 import LottieView from 'lottie-react-native';
+import CallLogDeletePopup from './CallLogDeletePopup';
+import LodingJson from '../../HelperClass/LodingJson';
+import loadinganimaion from '../../../Assets/animation.json';
 
-const Calllog = () => {
+const Calllog = ({ DataType,navigation }) => {
     const [list, setList] = useState([]);
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [hasMoreData, setHasMoreData] = useState(true);
+    const [deletePopupVisible, setDeletePopupVisible] = useState(false);
+    const [uuidItme, setuuidItme] = useState(false);
 
     const fetchData = async (pageNumber) => {
         setLoading(true);
-        const response = await POSTAPICALL(APIURL.ALLCDR, { "page_num": pageNumber });
-        setLoading(false);
-        if (response && response.data.length > 0) {
-            setList(prevList => [...prevList, ...response.data]);
-        } else {
-            setHasMoreData(false);
+        try {
+            const response = await POSTAPICALL(APIURL.ALLCDR, { "page_num": pageNumber, "call_direction": DataType });
+            // console.log(response)
+            if (response && response.data.length > 0) {
+                setList(prevList => [...prevList, ...response.data]);
+            } else {
+                setHasMoreData(false);
+            }
         }
+        catch (e) {
+            console.error(e)
+        }
+        setLoading(false);
+       
     };
-
 
     useEffect(() => {
         fetchData(page);
@@ -35,37 +45,29 @@ const Calllog = () => {
         }
     };
 
-    const renderRightActions = (itemId) => (
-        <TouchableOpacity
-            style={{
-                backgroundColor: 'red',
-                justifyContent: 'center',
-                alignItems: 'center',
-                width: 100,
-                height: '100%',
-            }}
-            onPress={() => handleDelete(itemId)}
-        >
-            <Text style={{ color: 'white' }}>Delete</Text>
-        </TouchableOpacity>
-    );
+    const handleDelete = async () => {
+        // console.log('uuid',uuidItme)
+        const response = await POSTAPICALL(APIURL.CDRDelte, { "uuid": [uuidItme] });
+        if (response.success) {
+            setList(prevList => prevList.filter(item => item.uuid !== uuidItme));
+        }
+        setDeletePopupVisible(false)
+    };
 
+    const actionBtnDelete = (id) => {
+        setDeletePopupVisible(!deletePopupVisible)
+        setuuidItme(id)
+    };
 
     return (
         <View style={{ flex: 1 }}>
             {
-                loading && page === 1 ?
-                    <LottieView
-                        source={loadinganimaion}
-                        autoPlay
-                        loop
-                        style={{ width: '100%', height: '100%', position: 'absolute', top: 20, alignItems: 'center', zIndex: 1, }}
-                    /> : <></>
+                page == 1 && <LodingJson loading={loading} setLoading={setLoading} />
             }
             <FlatList
                 data={list}
                 renderItem={({ item }) =>
-                    <CallLogList data={item} />
+                    <CallLogList data={item} navigation = {navigation} onDelete={() => actionBtnDelete(item.uuid)} />
                 }
                 keyExtractor={(item) => item.id.toString()}
                 onEndReached={handleLoadMore}
@@ -80,6 +82,11 @@ const Calllog = () => {
                         style={{ width: '100%', height: 50 }}
                     />
                 ) : null}
+            />
+            <CallLogDeletePopup
+                visible={deletePopupVisible}
+                ActaionCancle={() => setDeletePopupVisible(false)}
+                ActaionYes={handleDelete}
             />
         </View>
     );

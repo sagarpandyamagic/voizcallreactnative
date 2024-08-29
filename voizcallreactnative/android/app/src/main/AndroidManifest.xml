@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 xmlns:tools="http://schemas.android.com/tools">
 
-  <uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.INTERNET" />
 <uses-feature android:name="android.hardware.camera" />
 <uses-feature android:name="android.hardware.camera.autofocus" />
 <uses-feature android:name="android.hardware.audio.output" />
@@ -22,7 +22,7 @@ xmlns:tools="http://schemas.android.com/tools">
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 <uses-permission android:name="android.permission.READ_PROFILE" />
-<uses-permission android:name="android.permission.READ_CONTACTS" />   
+<uses-permission android:name="android.permission.READ_CONTACTS" />
 
 <uses-permission android:name="android.permission.WRITE_CONTACTS" />
 
@@ -37,6 +37,19 @@ xmlns:tools="http://schemas.android.com/tools">
 <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 <uses-permission android:name="android.permission.ACTION_MANAGE_OVERLAY_PERMISSION" /> 
 <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" /> 
+<uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+<uses-permission android:name="android.permission.ANSWER_PHONE_CALLS" /> 
+<uses-permission android:name="android.permission.READ_PHONE_STATE_PERMISSION" /> 
+<uses-permission android:name="android.permission.MANAGE_OWN_CALLS"/>
+<uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+<uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+<uses-permission android:name="android.permission.READ_CALL_LOG" />
+<uses-permission android:name="android.permission.USE_SIP" />
+<uses-permission android:name="android.permission.BIND_DEVICE_ADMIN" />
+<uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+
+
+
 
 
     <application
@@ -48,6 +61,8 @@ xmlns:tools="http://schemas.android.com/tools">
       android:theme="@style/AppTheme"
       android:supportsRtl="true"
       tools:overrideLibrary="com.facebook.react"
+      android:screenOrientation="portrait" 
+      android:largeHeap="true"
       >
       <activity
         android:name=".MainActivity"
@@ -55,17 +70,36 @@ xmlns:tools="http://schemas.android.com/tools">
         android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
         android:launchMode="singleTask"
         android:windowSoftInputMode="adjustResize"
+        android:screenOrientation="portrait" 
         android:exported="true">
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
       </activity>
+      <activity android:name=".NativeActivity"
+       android:exported="false"
+      />
+
    <service android:name="io.wazo.callkeep.VoiceConnectionService" android:label="Wazo" android:permission="android.permission.BIND_TELECOM_CONNECTION_SERVICE" android:foregroundServiceType="camera|microphone"  android:exported="true">
       <intent-filter>
         <action android:name="android.telecom.ConnectionService"/>
       </intent-filter>
     </service>
+    <service android:name=".NotificationService" 
+       android:enabled="true"
+        android:exported="false"
+        android:permission="android.permission.FOREGROUND_SERVICE"
+    />
+    <receiver android:name=".NotificationReceiver"
+    android:exported="true"
+    >
+    <intent-filter>
+        <action android:name="android.intent.action.BOOT_COMPLETED" />
+        <action android:name="com.voizcallreactnative.NOTIFICATION_RECEIVED" />
+    </intent-filter>
+</receiver>
+
      <service android:showOnLockScreen="true" android:name="io.invertase.firebase.messaging.RNFirebaseBackgroundMessagingService" />  
      <service
 	android:name="app.notifee.core.ForegroundService"

@@ -17,7 +17,17 @@ end
 permissions_path = '../node_modules/react-native-permissions/ios'
 
 target 'voizcallreactnative' do
+ use_frameworks! :linkage => :static
+
   config = use_native_modules!
+
+  # Flags change depending on the env values.
+  flags = get_default_flags()
+  
+   pod 'Firebase', :modular_headers => true
+   pod 'FirebaseCoreInternal', :modular_headers => true
+   pod 'GoogleUtilities', :modular_headers => true
+   pod 'FirebaseCore', :modular_headers => true
 
   use_react_native!(
     :path => config[:reactNativePath],
@@ -26,11 +36,11 @@ target 'voizcallreactnative' do
   )
   
 
-
-  target 'voizcallreactnativeTests' do
-    inherit! :complete
-    # Pods for testing
-  end
+#
+#  target 'voizcallreactnativeTests' do
+#    inherit! :complete
+#    # Pods for testing
+#  end
 
   post_install do |installer|
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202

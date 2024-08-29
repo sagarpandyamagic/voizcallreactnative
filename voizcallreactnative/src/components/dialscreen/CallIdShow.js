@@ -6,7 +6,7 @@ import { Dropdown } from 'react-native-element-dropdown';
 import down_arrow from '../../../Assets/ic_dwon_arrow.png';
 
 
-const CallIdShow = () => {
+const CallIdShow = ({callIDShow,setCallerID}) => {
     const local_data = [
         {
             value: '1',
@@ -31,55 +31,65 @@ const CallIdShow = () => {
     ];
 
     const [country, setCountry] = useState('1');
+    const [showIDList, setshowIDList] = useState(true);
+
+
+    const hundelCallerID = () => {
+        setshowIDList(!showIDList)
+        setCallerID(showIDList)
+    }
 
     return (
-        // <View style={styles.CallId}>
-        //     <TouchableOpacity style={{ flexDirection: 'row', justifyContent: 'center', alignContent: 'center', alignItems: 'center', marginTop: 10 }}>
-        //         <Text style={{ alignSelf: 'center', marginRight: 5, fontSize: 15, fontFamily: AppCommon_Font.Font }}>Caller ID</Text>
-        //         <Image
-        //             style={{ height: 15, width: 15, alignSelf: 'center' }}
-        //             source={down_arrow}
-        //         >
-        //         </Image>
-        //     </TouchableOpacity>
-        // </View>
-
+        <>
         <View style={styles.CallId}>
-            <Dropdown
-                style={[styles.dropdown]}
-                selectedTextStyle={styles.selectedTextStyle}
-                placeholderStyle={styles.placeholderStyle}
-                iconStyle={styles.iconStyle}
-                maxHeight={200}
-                value={country}
-                data={local_data}
-                searchStyle={styles.searchStyle} // Add this line
-                valueField="value"
-                labelField="lable"
-                imageField="image"
-                placeholder="Select country"
-                searchPlaceholder="Search..."
-                onChange={e => {
-                    setCountry(e.value);
-                }}
-            />
+            <TouchableOpacity style={{flex:1, flexDirection: 'row', alignItems: 'center',marginLeft:15}} onPress={hundelCallerID}>
+                <Text style={{ alignSelf: 'center', fontSize: 15, fontFamily: AppCommon_Font.Font }}>Caller ID</Text>
+                <View style={{alignItems:'flex-end',flex:1,marginRight:10}}>
+                <Image
+                    style={{ height: 15, width: 15 }}
+                    source={down_arrow}
+                >
+                </Image>
+                </View>
+            </TouchableOpacity>
         </View>
+       
+        </>
+
+        // <View style={styles.CallId}>
+        //     <Dropdown
+        //         style={[styles.dropdown]}
+        //         selectedTextStyle={styles.selectedTextStyle}
+        //         placeholderStyle={styles.placeholderStyle}
+        //         iconStyle={styles.iconStyle}
+        //         maxHeight={200}
+        //         value={country}
+        //         data={local_data}
+        //         searchStyle={styles.searchStyle} // Add this line
+        //         valueField="value"
+        //         labelField="lable"
+        //         imageField="image"
+        //         placeholder="Select country"
+        //         searchPlaceholder="Search..."
+        //         onChange={e => {
+        //             setCountry(e.value);
+        //         }}
+        //     />
+        // </View>
 
     );
 };
 const styles = StyleSheet.create({
     CallId: {
         height: 40,
-        width: 140,
+        width: '50%',
         backgroundColor: '#fff',
         marginTop: -20,
         borderRadius: 20,
-        // Shadow properties for iOS
         shadowColor: '#000', // Shadow color
         shadowOffset: { width: 0, height: 2 }, // Shadow offset
         shadowOpacity: 0.3, // Shadow opacity
         shadowRadius: 4, // Shadow radius
-        // Elevation for Android
         elevation: 5, // Elevation level for Android
     },
     dropdown: {

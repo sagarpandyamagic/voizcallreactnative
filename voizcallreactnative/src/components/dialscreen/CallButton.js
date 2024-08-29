@@ -14,20 +14,26 @@ import { showAlert } from '../../HelperClass/CommonAlert';
 const CallButton = ({ onRemove,navigation,setCode,code }) => {
     
     const dispatch = useDispatch()
+    const {ISConfrenceTransfer,phoneNumber,allSession} = useSelector((state)=>state.sip)
 
     const handleMakeCall = async (code) => {
-        
-
         const number = code.join('')
         if (number == "") {
             showAlert('Empty Number!',"please enter phonenumber")
         }else{
             number.toString()
             console.log(number)
-            dispatch(updateSipState({ key: "phoneNumber", value: [] }))
             dispatch(updateSipState({ key: "Caller_Name", value: number }))
             dispatch(updateSipState({ key: "CallScreenOpen", value: true }))
-    
+            console.log("SessionCount",allSession)
+            if(Object.keys(allSession).length > 0){
+                dispatch(updateSipState({ key: "ISConfrenceTransfer", value: true }))
+                console.log("ISConfrenceTransfer",ISConfrenceTransfer)
+                SipUA.toggelHoldCall(true) 
+            }else{
+                dispatch(updateSipState({ key: "phoneNumber", value: [] }))
+            }
+            console.log("ISConfrenceTransfer",ISConfrenceTransfer)
             SipUA.makeCall(number, false)
             navigation.navigate('AudioCallingScreen')
         }    

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Modal, View, StyleSheet, Image } from 'react-native'
+import { Modal, View, StyleSheet, Image, NativeModules, Button } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import IncomeScreenIconVw from '../components/incomescreen/IncomeScreenIconVw'
 import IncomeScreenBtnVw from '../components/incomescreen/IncomeScreenBtnVw'
@@ -7,7 +7,9 @@ import IncomeScreenBtnVw from '../components/incomescreen/IncomeScreenBtnVw'
 function IncomingCall() {
     const dispatch = useDispatch()
     const { IncomingScrrenOpen, session, phoneNumber, Caller_Name } = useSelector((state) => state.sip)
-    console.log('incomingcall',IncomingScrrenOpen)
+    console.log('incomingcall', IncomingScrrenOpen)
+
+
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             {

@@ -11,18 +11,18 @@ const DialpadContactSearch = ({ search }) => {
     let [tempcontacts, settempContacts] = useState([]);
 
     useEffect(() => {
-        if (Platform.OS === 'android') {
-            PermissionsAndroid.request(
-                PermissionsAndroid.PERMISSIONS.READ_CONTACTS, {
-                title: 'Contacts',
-                message: 'This app would like to view your contacts.',
-            }).then(() => {
-                loadContacts();
-            }
-            );
-        } else {
-            loadContacts();
-        }
+        // if (Platform.OS === 'android') {
+        //     PermissionsAndroid.request(
+        //         PermissionsAndroid.PERMISSIONS.READ_CONTACTS, {
+        //         title: 'Contacts',
+        //         message: 'This app would like to view your contacts.',
+        //     }).then(() => {
+        //         loadContacts();
+        //     }
+        //     );
+        // } else {
+        //     loadContacts();
+        // }
     }, []);
 
     const getData = () => {
@@ -92,7 +92,7 @@ const DialpadContactSearch = ({ search }) => {
                     return matchesName || matchesPhone;
                 });
                 setContacts(filteredContacts);
-                console.log("Filtered contacts:", filteredContacts);
+                // console.log("Filtered contacts:", filteredContacts);
             }
         }
     };

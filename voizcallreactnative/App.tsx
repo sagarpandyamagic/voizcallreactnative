@@ -5,8 +5,11 @@
  * @format
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { Component, useEffect, useState } from 'react';
 import {
+  NativeEventEmitter,
+  NativeModules,
+  Platform,
   StyleSheet,
   View,
 } from 'react-native';
@@ -29,55 +32,140 @@ import PickYourCountyCode from './src/components/loginscreen/PickYourCountyCode'
 import OTPFillScreen from './src/components/loginscreen/OTPFillScreen';
 import QrScanScreen from './src/components/loginscreen/QrScanScreen';
 import IncomingCall from './src/Screen/IncomingCall';
+import { FCMDelegateMethod, requestPermissions, requestUserPermission } from './src/services/FirebaseConfig';
+import { setupCallKeep } from './src/services/Callkeep/CallkeepSeup';
+import { CallTimerDuraionProvider } from './src/hook/CallTimer';
+import { voipConfig } from './src/services/voipConfig';
+import VoipPushNotification from "react-native-voip-push-notification";
+import Splash from 'react-native-splash-screen'
+import { useDispatch } from 'react-redux';
+import { updateSipState } from './src/store/sipSlice';
+import { hasOverlayPermission, requestOverlayPermission } from './src/HelperClass/OverlayPermission';
+
 
 function App() {
   const Stack = createStackNavigator();
+  const dispatch = useDispatch();
+  const { MyNativeModule } = NativeModules;
+  const myNativeModuleEmitter = new NativeEventEmitter(MyNativeModule);
+
+  const [hasPermission, setHasPermission] = useState(false);
+
+
+  const openNativeLayouta = () => {
+    if (MyNativeModule) {
+      MyNativeModule.notificationService();
+    } else {
+      console.error('MyNativeModule is not available');
+    }
+  };
+
+  useEffect(() => {
+    const subscription = myNativeModuleEmitter.addListener(
+      'onCallAccepted',
+      (event) => {
+        console.log('Call accepted');
+      
+          // MyNativeModule.lockScreen(
+          //   (error: any) => {
+          //     console.error('Failed to lock screen:', error);
+          //   },
+          //   (success: any) => {
+          //     console.log('Screen locked:', success);
+          //   }
+          // );
+        dispatch(updateSipState({ key: "CallScreenOpen", value: true }));
+        dispatch(updateSipState({ key: "CallAns", value: false }));
+      }
+    );
+
+    return () => {
+      subscription.remove();
+    };
+  }, [dispatch]);
+
+
+
+  useEffect(() => {
+    requestUserPermission()
+     FCMDelegateMethod()
+     requestPermissions()
+    if (Platform.OS != "android") {
+      console.log("Platform.OS", Platform.OS)
+      Platform.OS == "ios" && VoipPushNotification.registerVoipToken();
+      Platform.OS == "ios" && voipConfig();
+    }else{
+      checkPermission();
+      // openNativeLayouta()
+      Splash.hide()
+    }
+    
+  }, [])
+
+
+
+  const checkPermission = async () => {
+    const result = await hasOverlayPermission();
+    setHasPermission(result);
+    if (result == false) {
+      handleRequestPermission();
+    }
+  };
+
+  const handleRequestPermission = async () => {
+    try {
+      const result = await requestOverlayPermission();
+      setHasPermission(result);
+    } catch (error) {
+      console.error('Error requesting overlay permission:', error);
+    }
+  };
+
 
   return (
+    <SafeAreaProvider>
       <NavigationContainer>
-        <Stack.Navigator initialRouteName='SplashScreen'>
-          <Stack.Screen options={{ headerShown: false }} name="SplashScreen" component={SplashScreen} />
-          <Stack.Screen options={{ headerShown: false }} name="Login" component={Login} />
-          <Stack.Screen
-            name="TabBar"
-            component={TabBar}
-            options={{ headerShown: false }} />
-          <Stack.Screen name="App language" component={LanguagesSelecaion} options={{
-            headerStyle: {
-              backgroundColor: THEME_COLORS.black, // Change the background color
-              shadowColor: THEME_COLORS.transparent, // Remove the shadow
-              elevation: 0
-            },
-            headerTintColor: '#fff', // Change the header text color if needed
-          }} />
-          <Stack.Screen name="Privacy & Policy" component={privacyPoilcyScreen} options={{
-            headerStyle: {
-              backgroundColor: THEME_COLORS.black, // Change the background color
-              shadowColor: THEME_COLORS.transparent, // Remove the shadow
-              elevation: 0
-            },
-            headerTintColor: '#fff', // Change the header text color if needed
-          }} />
-
-          <Stack.Screen name="Contact Detail" component={ContactDetailScreen} options={{
-            headerStyle: {
-              backgroundColor: THEME_COLORS.black, // Change the background color
-              shadowColor: THEME_COLORS.transparent, // Remove the shadow
-              elevation: 0
-            },
-            headerTintColor: '#fff', // Change the header text color if needed
-          }} />
-
-          <Stack.Screen name="AddNewContact" component={AddNewContact} options={{
-            headerStyle: {
-              backgroundColor: THEME_COLORS.black, // Change the background color
-              shadowColor: THEME_COLORS.transparent, // Remove the shadow
-              elevation: 0
-            },
-            headerTintColor: '#fff', // Change the header text color if needed
-          }} />
-
-          {/* <Stack.Screen name="AudioCallingScreen" component={AudioCallingScreen} options={{
+        <CallTimerDuraionProvider>
+          <Stack.Navigator initialRouteName='SplashScreen'>
+            <Stack.Screen options={{ headerShown: false }} name="SplashScreen" component={SplashScreen} />
+            <Stack.Screen options={{ headerShown: false }} name="Login" component={Login} />
+            <Stack.Screen
+              name="TabBar"
+              component={TabBar}
+              options={{ headerShown: false }} />
+            <Stack.Screen name="App language" component={LanguagesSelecaion} options={{
+              headerStyle: {
+                backgroundColor: THEME_COLORS.black, // Change the background color
+                shadowColor: THEME_COLORS.transparent, // Remove the shadow
+                elevation: 0
+              },
+              headerTintColor: '#fff', // Change the header text color if needed
+            }} />
+            <Stack.Screen name="Privacy & Policy" component={privacyPoilcyScreen} options={{
+              headerStyle: {
+                backgroundColor: THEME_COLORS.black, // Change the background color
+                shadowColor: THEME_COLORS.transparent, // Remove the shadow
+                elevation: 0
+              },
+              headerTintColor: '#fff', // Change the header text color if needed
+            }} />
+            <Stack.Screen name="Contact Detail" component={ContactDetailScreen} options={{
+              headerStyle: {
+                backgroundColor: THEME_COLORS.black, // Change the background color
+                shadowColor: THEME_COLORS.transparent, // Remove the shadow
+                elevation: 0
+              },
+              headerTintColor: '#fff', // Change the header text color if needed
+            }} />
+            <Stack.Screen name="AddNewContact" component={AddNewContact} options={{
+              headerStyle: {
+                backgroundColor: THEME_COLORS.black, // Change the background color
+                shadowColor: THEME_COLORS.transparent, // Remove the shadow
+                elevation: 0
+              },
+              headerTintColor: '#fff', // Change the header text color if needed
+            }} />
+            {/* <Stack.Screen name="AudioCallingScreen" component={AudioCallingScreen} options={{
             headerShown: false,
             headerStyle: {
               backgroundColor: THEME_COLORS.black, // Change the background color
@@ -86,54 +174,51 @@ function App() {
             },
             headerTintColor: '#fff', // Change the header text color if needed
           }} /> */}
-
-          <Stack.Screen name="ForgotPasswordScreen" component={ForgotPasswordScreen} options={{
-            title: "",
-            headerStyle: {
-              backgroundColor: THEME_COLORS.black, // Change the background color
-              shadowColor: THEME_COLORS.transparent, // Remove the shadow
-              elevation: 0
-            },
-            headerTintColor: '#fff', // Change the header text color if needed
-          }} />
-
-          <Stack.Screen name="Pick Your County" component={PickYourCountyCode} options={{
-            headerStyle: {
-              backgroundColor: THEME_COLORS.black, // Change the background color
-              shadowColor: THEME_COLORS.transparent, // Remove the shadow
-              elevation: 0
-            },
-            headerTintColor: '#fff', // Change the header text color if needed
-          }} />
-
-          <Stack.Screen name="OTPFillScreen" component={OTPFillScreen} options={{
-            title: "",
-            headerStyle: {
-              backgroundColor: THEME_COLORS.black, // Change the background color
-              shadowColor: THEME_COLORS.transparent, // Remove the shadow
-              elevation: 0
-            },
-            headerTintColor: '#fff', // Change the header text color if needed
-          }} />
-
-          <Stack.Screen name="QrScanScreen" component={QrScanScreen} options={{
-            title: "Qr Code Scanner",
-            headerStyle: {
-              backgroundColor: THEME_COLORS.black, // Change the background color
-              shadowColor: THEME_COLORS.transparent, // Remove the shadow
-              elevation: 0
-            },
-            headerTintColor: '#fff', // Change the header text color if needed
-          }} />
-          
-        </Stack.Navigator>
-        <View>
+            <Stack.Screen name="ForgotPasswordScreen" component={ForgotPasswordScreen} options={{
+              title: "",
+              headerStyle: {
+                backgroundColor: THEME_COLORS.black, // Change the background color
+                shadowColor: THEME_COLORS.transparent, // Remove the shadow
+                elevation: 0
+              },
+              headerTintColor: '#fff', // Change the header text color if needed
+            }} />
+            <Stack.Screen name="Pick Your County" component={PickYourCountyCode} options={{
+              headerStyle: {
+                backgroundColor: THEME_COLORS.black, // Change the background color
+                shadowColor: THEME_COLORS.transparent, // Remove the shadow
+                elevation: 0
+              },
+              headerTintColor: '#fff', // Change the header text color if needed
+            }} />
+            <Stack.Screen name="OTPFillScreen" component={OTPFillScreen} options={{
+              title: "",
+              headerStyle: {
+                backgroundColor: THEME_COLORS.black, // Change the background color
+                shadowColor: THEME_COLORS.transparent, // Remove the shadow
+                elevation: 0
+              },
+              headerTintColor: '#fff', // Change the header text color if needed
+            }} />
+            <Stack.Screen name="QrScanScreen" component={QrScanScreen} options={{
+              title: "Qr Code Scanner",
+              headerStyle: {
+                backgroundColor: THEME_COLORS.black, // Change the background color
+                shadowColor: THEME_COLORS.transparent, // Remove the shadow
+                elevation: 0
+              },
+              headerTintColor: '#fff', // Change the header text color if needed
+            }} />
+          </Stack.Navigator>
+          <View>
             <IncomingCall />
           </View>
           <View>
             <AudioCallingScreen />
           </View>
+        </CallTimerDuraionProvider>
       </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
 export default App;

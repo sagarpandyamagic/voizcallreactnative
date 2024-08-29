@@ -2,8 +2,6 @@
 
 import React from 'react';
 import { View, Text, Button, Modal, StyleSheet, Touchable, Pressable } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
-import { THEME_COLORS } from '../../HelperClass/Constant';
 
 const LogoutModal = ({ visible, onClose, onLogout }) => {
     return (

@@ -44,9 +44,9 @@ const TabBar = () => {
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
 
-          if (route.name === 'ContactsList') {
+          if (route.name === 'Contact List') {
             iconName = focused ? contact_icon_select : contact_icon;
-          } else if (route.name === 'CallLogs') {
+          } else if (route.name === 'Call Logs') {
             iconName = focused ? recent_icon_select : recent_icon;
           } else if (route.name === 'Dialpad') {
             iconName = focused ? dialpad_icon_select : dialpad_icon;
@@ -64,7 +64,7 @@ const TabBar = () => {
         // activeBackgroundColor: 'transparent', // Set the background color of active tab to transparent
       }}
     >
-      <Tab.Screen name="ContactsList" component={ContactScreen} 
+      <Tab.Screen name="Contact List" component={ContactScreen} 
        options={({ navigation }) => ({
         // headerLeft: () => (
           // <Button
@@ -76,7 +76,7 @@ const TabBar = () => {
       containerStyle={(active) => ({
         backgroundColor: active ? "red" : undefined,
       })} />
-      <Tab.Screen name="CallLogs" component={CallLog} />
+      <Tab.Screen name="Call Logs" component={CallLog} />
       <Tab.Screen options={{
         headerShown:false,
         // headerRight: () => (

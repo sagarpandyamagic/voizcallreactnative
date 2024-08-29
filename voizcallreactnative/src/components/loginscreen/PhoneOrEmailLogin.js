@@ -11,10 +11,11 @@ import { AppStoreData, getStorageData } from '../utils/UserData';
 import { generateUniqueId } from '../../HelperClass/InstanceID';
 import { getConfigParamValue } from '../../data/profileDatajson';
 import LottieView from 'lottie-react-native';
-import loadinganimaion from '../../../Assets/animation.json';
 import store from '../../store/store';
 import SipUA from '../../services/call/SipUA';
 import { inticalluserData } from '../../store/sipSlice';
+import { PushSubScribeNotificaion } from '../../services/PushSubScribeNotificaion';
+import LodingJson from '../../HelperClass/LodingJson';
 
 const PhoneOrEmailLogin = ({ navi }) => {
     const [deviceId, setdeviceId] = useState('');
@@ -34,7 +35,9 @@ const PhoneOrEmailLogin = ({ navi }) => {
             const deviceModel = DeviceInfo.getModel(); // Get the device model
             const systemName = DeviceInfo.getSystemName();
 
-            setdeviceId(deviceId)
+            const cleanedString = deviceId.replace(/-/g, '');
+            setdeviceId(cleanedString)
+            console.log('deviceId', deviceId);
             setdeviceModel(deviceModel)
             setsystemName(systemName)
         } catch (error) {
@@ -44,18 +47,19 @@ const PhoneOrEmailLogin = ({ navi }) => {
 
     const LoginAPICall = async () => {
         try {
-            await AppStoreData(StorageKey.instance_id, generateUniqueId())
+            await AppStoreData(StorageKey.instance_id, deviceId)
+            const Instanceid =  await getStorageData(StorageKey.instance_id)
+            const FcmTokan = await getStorageData(StorageKey.FCM)
             const pram = {
                 "usr_username": username,
                 "usr_password": userpassword,
-                "instance_id": await getStorageData(StorageKey.instance_id),
-                "device_token": deviceId,
-                "device_type": (Platform.IOS) ? "ios" : "android",
+                "instance_id": Instanceid,
+                "device_token": FcmTokan,
+                "device_type": Platform.OS ,
                 "device_model": deviceModel,
                 "device_os": systemName
             }
             console.log(pram)
-
             setLoading(true);
             const configInfo = await POSTAPICALLAllData(APIURL.LoginPhoneNumber, pram)
             console.log("configInfo", configInfo)
@@ -65,6 +69,8 @@ const PhoneOrEmailLogin = ({ navi }) => {
                 console.log(configInfo.data.data)
                 await AppStoreData(StorageKey.userData, configInfo.data.data)
                 await AppStoreData(StorageKey.access_token, configInfo.data.access_token)
+                await AppStoreData(StorageKey.auth_type, configInfo.data.data.auth_type)
+
                 await AppStoreData(StorageKey.isLogin, true)
                 const value = await getStorageData(StorageKey.isLogin)
                 const profileInfo = await getProfile()
@@ -75,6 +81,9 @@ const PhoneOrEmailLogin = ({ navi }) => {
                     const sipserver = await getConfigParamValue(userprofilealias.sip_sipServer)
                     const sipport = "7443"
                     store.dispatch(inticalluserData({ sipusername, password, sipserver, sipport }))
+
+                    await PushSubScribeNotificaion(configInfo.data.data)
+
                     SipUA.connect()
                     navi.navigate('TabBar')
                 }
@@ -90,13 +99,7 @@ const PhoneOrEmailLogin = ({ navi }) => {
     return (
         <>
             {
-                loading ?
-                    <LottieView
-                        source={loadinganimaion}
-                        autoPlay
-                        loop
-                        style={{ width: '100%', height: '100%', position: 'absolute', top: 20, alignItems: 'center', zIndex: 1, }}
-                    /> : <></>
+                <LodingJson loading={loading} setLoading={setLoading} />
             }
             <View style={styles.InputTextView}>
                 <View style={styles.InputTextSideImgView}>

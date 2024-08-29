@@ -2,17 +2,29 @@ import RNCallKeep from "react-native-callkeep";
 import { Inviter, Registerer, RegistererState, SessionState, UserAgent } from "sip.js";
 import { RTCPeerConnection, mediaDevices, registerGlobals } from "react-native-webrtc";
 import SQLite from 'react-native-sqlite-storage';
-import { CallNumberCoundRemove, Callcount, addSession, removeSession, storeContactNumber, updateSipState } from '../../store/sipSlice';
-// import { callDuration } from "./CallTimer";
+import { CallNumberCoundRemove, addSession, removeSession, storeContactNumber, updateSipState } from '../../store/sipSlice';
 import { format } from 'date-fns';
-// import incomingusebyClass from "./incomingusebyClass";
 import store from "../../store/store";
 import { setupRemoteMedia } from "../../hook/utlis";
 import { POSTAPICALL } from "../auth";
 import { APIURL } from "../../HelperClass/APIURL";
 import { IncomingcallPermission } from "./IncomingcallPermission";
+import { AppState, NativeModules, Platform } from 'react-native';
+import incomingusebyClass from "../Callkeep/incomingusebyClass";
+import uuid from 'react-native-uuid';
+import BackgroundTimer from 'react-native-background-timer';
+import { StorageKey } from "../../HelperClass/Constant";
+import { getStorageData } from "../../components/utils/UserData";
+import inCallManager from "react-native-incall-manager";
+
+const { AudioModule ,MyNativeModule} = NativeModules; // Assuming you have a native module for audio playback
+
+
 let sessionCall = null;
 let localMediaStream = null;
+
+let testUUID = uuid.v4();
+
 
 const db = SQLite.openDatabase(
   {
@@ -23,11 +35,12 @@ const db = SQLite.openDatabase(
   error => { console.log(error) }
 );
 registerGlobals()
+
 export const holdUsedSwipTime = async (hold) => {
   try {
-    console.info('Hold Request.', store.getState().allSession)
-    Object.keys(store.getState().allSession).map(async (key) => {
-      const session = store.getState().allSession[key];
+    console.info('Hold Request.', store.getState().sip.allSession)
+    Object.keys(store.getState().sip.allSession).map(async (key) => {
+      const session = store.getState().sip.allSession[key];
       const holdState = (session?.remoteIdentity?.uri?.normal?.user == hold) ? true : false
       if (session) {
         session.sessionDescriptionHandlerOptionsReInvite = {
@@ -69,7 +82,7 @@ export const holdUsedSwipTime = async (hold) => {
 }
 
 export const getContactTableData = (userNumber) => {
-  console.log("userNumber", userNumber)
+  // console.log("userNumber", userNumber)
   db.transaction((tx) => {
     tx.executeSql(
       'SELECT * FROM ContactList',
@@ -106,7 +119,7 @@ export const getContactTableData = (userNumber) => {
 
 export const CallLogStore = (callLog) => {
   // setCallLogTable(callLog)
-  if (Callcount == 1) {
+  if (store.getState().sip.SessionCount == 1) {
     store.dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
     store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
   }
@@ -202,23 +215,25 @@ class SipClinet {
         displayName: "TEST",
         contactParams: { transport: 'wss' },
         hackIpInContact: true,
-        logBuiltinEnabled: true,
+        logBuiltinEnabled: false,
       }
 
       const USERAGENT = new UserAgent(userAgentOptions)
       const registerer = new Registerer(USERAGENT, registererOptions)
 
       store.dispatch(updateSipState({ key: "userAgent", value: USERAGENT }))
+      store.dispatch(updateSipState({ key: "registerer", value: registerer }))
+      console.log('UserAgent1 ==> Unregistered')
       USERAGENT.start()
         .then(() => {
           registerer.stateChange.addListener(async newState => {
             switch (newState) {
               case RegistererState.Initial:
-                console.log('UserAgent ==> Initial')
+                // console.log('UserAgent ==> Initial')
                 break
               case RegistererState.Registered:
                 store.dispatch(updateSipState({ key: "soketConnect", value: true }))
-                console.log('UserAgent ==> Registered')
+                // console.log('UserAgent ==> Registered')
                 const pram = {
                   "aor": `sip:${await getStorageData(StorageKey.instance_id)}-${store.getState().sip.UserName}:${store.getState().sip.Server}`
                 }
@@ -226,17 +241,17 @@ class SipClinet {
                 break
               case RegistererState.Unregistered:
                 store.dispatch(updateSipState({ key: "soketConnect", value: false }))
-                console.log('UserAgent ==> Unregistered')
+                // console.log('UserAgent ==> Unregistered')
                 break
               case RegistererState.Terminated:
                 store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
                 store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
 
-                console.log('UserAgent ==> Terminated')
+                // console.log('UserAgent ==> Terminated')
                 USERAGENT.stop()
                 break
               default:
-                console.log('UserAgent ==> Unidentified')
+                // console.log('UserAgent ==> Unidentified')
                 break
             }
           })
@@ -244,14 +259,14 @@ class SipClinet {
             .register()
             .then(() => {
               setupRemoteMedia(USERAGENT, false)
-              console.log('Successfully sent REGISTER, object is here')
+              // console.log('Successfully sent REGISTER, object is here')
             })
             .catch(error => {
-              console.log('Failed to send REGISTER', error)
+              // console.log('Failed to send REGISTER', error)
             })
         })
         .catch(error => {
-          console.log('Failed to send REGISTER', error)
+          // console.log('Failed to send REGISTER', error)
         })
 
       /*
@@ -269,9 +284,9 @@ class SipClinet {
           store.dispatch(updateSipState({ key: "CallType", value: "InComingCall" }))
           // console.log("store", callinfo)
           const number = invitation?.remoteIdentity?.uri?.user || ''
-          console.log('invitations', invitation)
-          console.log('invitation?.request?.callId', invitation?.request?.callId)
-          console.log('invitation?.request?.callId', invitation?.request?.callId)
+          // console.log('invitations', invitation)
+          // console.log('invitation?.request?.callId', invitation?.request?.callId)
+          // console.log('invitation?.request?.callId', invitation?.request?.callId)
 
           store.dispatch(updateSipState({ key: "session", value: invitation }))
           // invitation.accept()
@@ -279,27 +294,47 @@ class SipClinet {
 
           // getContactTableData(number)
           store.dispatch(updateSipState({ key: "Caller_Name", value: "Unknown" }))
-          store.dispatch(updateSipState({ key: "IncomingScrrenOpen", value: true }))
+          // store.dispatch(updateSipState({ key: "IncomingScrrenOpen", value: true }))
+
+          const valueDND = await getStorageData(StorageKey.UserDND);
+          const CallkeeporNto = await getStorageData(StorageKey.CallKeepORNot);
+          console.log('UserAgent2 ==> Unregistered')
 
 
-          store.dispatch(storeContactNumber({ key: "phoneNumber", value: number }))
+          // if (AppState.currentState === "active" && Platform.OS == "android" && valueDND == false && CallkeeporNto == false) {
+          //   store.dispatch(updateSipState({ key: "IncomingScrrenOpen", value: true }))
+          // }
+
+          // await AppStoreData(StorageKey.CallKeepORNot,false);
+          // store.dispatch(storeContactNumber({ key: "phoneNumber", value: number }))
+          console.log('UserAgent3 ==> Unregistered')
+          store.dispatch(updateSipState({ key: "DialNumber", value: number }))
+          console.log("DialNumber", number)
+
+          if (valueDND) {
+            invitation.reject();
+            return
+          }
+
+
+
           const SessionID = invitation?._id
           store.dispatch(addSession({ sessionID: SessionID, session: invitation }))
 
-          console.log("phoneNumber========test", number)
+          // console.log("phoneNumber========test", number)
           sessionCall = invitation
-          console.log("sessionCall========test", sessionCall)
+          // console.log("sessionCall========test", sessionCall)
 
           store.dispatch(updateSipState({ key: "CallAns", value: true }))  // Change TEST
 
           invitation.delegate = {
             //  Handle incoming onCancel request
             onRefer(referral) {
-              console.log('referral', referral)
+              // console.log('referral', referral)
             },
 
             onCancel(message) {
-              console.log('ON CANCEL - message ==> ', message)
+              // console.log('ON CANCEL - message ==> ', message)
               store.dispatch(updateSipState({ key: "CallAns", value: false }))
               store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
               store.dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
@@ -318,21 +353,23 @@ class SipClinet {
             switch (state) {
               case 'Initial':
                 console.log('incomming session state Initial')
+                inCallManager.startProximitySensor();
+
                 break
               case 'Establishing':
-                console.log('Incoming Session state Establishing')
+                // console.log('Incoming Session state Establishing')
                 break
               case 'Established':
                 timeStore = data
                 // TimerAction('start')
-                console.log('Incoming Session state Established')
+                // console.log('Incoming Session state Established')
                 setupRemoteMedia(invitation, false)
                 break
               case 'Terminating':
-                console.log('Terminating')
+                // console.log('Terminating')
                 break
               case 'Terminated':
-                console.log('Terminated Call')
+                // console.log('Terminated Call')
                 // TimerActio('stop')
 
                 // const callLog = {
@@ -344,16 +381,21 @@ class SipClinet {
                 //   "id": `${new Date().getTime()}`
                 // }
                 // CallLogStore(callLog)
-                console.log('Terminated')
-                store.dispatch(updateSipState({ key: "allSession", value: {} }))
+                // console.log('Terminated')
                 store.dispatch(updateSipState({ key: "CallAns", value: false }))
                 store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
                 store.dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
                 store.dispatch(updateSipState({ key: "phoneNumber", value: [] }))
-                // incomingusebyClass.endIncomingcallAnswer();
+                store.dispatch(updateSipState({ key: "ISCallTransfer", value: false }))
+                store.dispatch(updateSipState({ key: "ISAttendedTransfer", value: false }))
+                store.dispatch(updateSipState({ key: "ISConfrenceTransfer", value: false }))
+                store.dispatch(updateSipState({ key: "Caller_Name", value: "" }))
+                store.dispatch(removeSession(invitation.id))
+                incomingusebyClass.endIncomingcallAnswer();
+                inCallManager.stopProximitySensor(); // Disable
                 break
               default:
-                console.log('Unknow Incomming Session state')
+              // console.log('Unknow Incomming Session state')
             }
           })
         },
@@ -399,15 +441,20 @@ class SipClinet {
         },
         extraHeaders: _headers,
         earlyMedia: earlyMedia,
+        from: {
+          uri: `sip:9099458674@${store.getState().sip.Server}`,
+          displayName: 'Caller Name' // Effective Caller ID name
+        }
       }
       console.log("inviteOptions->1", inviteOptions)
 
-      console.log("sip.userAgent", store.getState().sip.userAgent)
+      // console.log("sip.userAgent", store.getState().sip.userAgent)
       const session = new Inviter(store.getState().sip.userAgent, uri, inviteOptions)
 
       store.dispatch(storeContactNumber({ key: "phoneNumber", value: destination }))
+      store.dispatch(updateSipState({ key: "DialNumber", value: destination }))
 
-      console.log("phoneNumber========test", store.getState().sip.phoneNumber)
+      // console.log("phoneNumber========test", store.getState().sip.phoneNumber)
 
       // let incomingUser = session.remoteIdentity.displayName;
       // let userNumber = session.remoteIdentity.uri.normal.user
@@ -422,8 +469,21 @@ class SipClinet {
       // }
 
       const SessionID = session?._id
-      console.log("SessionID",SessionID)
+      // console.log("SessionID",SessionID)
       store.dispatch(addSession({ sessionID: SessionID, session: session }))
+
+
+
+
+      // var myCandidateTimeout = null;
+
+      // session.on('icecandidate', function (candidate, ready) {
+      //   console.log('getting a candidate' + candidate.candidate.candidate);
+      //   if (myCandidateTimeout != null)
+      //     clearTimeout(myCandidateTimeout);
+
+      //   myCandidateTimeout = setTimeout(candidate.ready, 2000);
+      // })
 
       session.stateChange.addListener(async newState => {
         store.dispatch(updateSipState({ key: "sesstionState", value: newState }))
@@ -439,19 +499,38 @@ class SipClinet {
             // timeStore = data
             console.debug('Session is establishing')
             store.dispatch(updateSipState({ key: "CallType", value: "OutGoComingCall" }))
-            if (store.Callcount == 0) {
-              // RNCallKeep.startCall(incomingusebyClass.getCurrentCallId(), userNumber, userNumber, "number", false);
-            }
+            // if (store.Callcount == 0) {
+            // RNCallKeep.startCall(incomingusebyClass.getCurrentCallId(), userNumber, userNumber, "number", false);
+            // }
+            // Configure outgoing call management
+            // incomingusebyClass.setupOutgoingCallHandlers();
+
             store.dispatch(updateSipState({ key: "CallAns", value: true }))
             break
           case SessionState.Established:
             setupRemoteMedia(session, video)
             console.debug('Session has been ==> Established')
+            console.debug('Session has been ==> Established')
+            RNCallKeep.startCall(incomingusebyClass.getCurrentCallId(), '1234567890', '1234567890');
+            incomingusebyClass.backToForeground()
+            BackgroundTimer.setTimeout(() => {
+              RNCallKeep.setCurrentCallActive(incomingusebyClass.getCurrentCallId());
+            }, 1000);
+            inCallManager.startProximitySensor();
             break
           case SessionState.Terminated:
             console.debug('Session Has Been Terminated')
             store.dispatch(updateSipState({ key: "IncomingScrrenOpen", value: false }))
             store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
+            store.dispatch(updateSipState({ key: "ISCallTransfer", value: false }))
+            store.dispatch(updateSipState({ key: "ISAttendedTransfer", value: false }))
+            store.dispatch(updateSipState({ key: "ISConfrenceTransfer", value: false }))
+            store.dispatch(updateSipState({ key: "Caller_Name", value: "" }))
+            console.log("session.id", session.id)
+            store.dispatch(removeSession(session.id))
+            incomingusebyClass.endIncomingcallAnswer();
+            inCallManager.stopProximitySensor();
+
 
             // if (session) {
             //   session.cancel();
@@ -547,6 +626,14 @@ class SipClinet {
     }
   }
 
+  hangupSession = (sestionID) => {
+    const allSession = store.getState().sip.allSession
+    const session = allSession[sestionID]
+    if (session) {
+      session.dispose()
+    }
+  }
+
   hangupCall = (phonenumber) => {
     const allSession = store.getState().sip.allSession
     console.log("allSession", allSession)
@@ -555,20 +642,21 @@ class SipClinet {
         const session = allSession[key];
         session.dispose()
       })
-
-      store.dispatch(updateSipState({ key: "phoneNumber", value: [] }))
-      store.dispatch(updateSipState({ key: "allSession", value: {} }))
-      store.dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
-      store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
-      // incomingusebyClass.endIncomingcallAnswer();
-
     } else {
       Object.keys(allSession).map(async (key) => {
         const session = allSession[key];
         session.dispose()
       })
     }
-    // }
+
+    store.dispatch(updateSipState({ key: "phoneNumber", value: [] }))
+    store.dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
+    store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
+    store.dispatch(updateSipState({ key: "ISCallTransfer", value: false }))
+    store.dispatch(updateSipState({ key: "ISAttendedTransfer", value: false }))
+    store.dispatch(updateSipState({ key: "ISConfrenceTransfer", value: false }))
+    store.dispatch(updateSipState({ key: "Caller_Name", value: "" }))
+    incomingusebyClass.endIncomingcallAnswer();
   }
 
   accepctCall = () => {
@@ -578,7 +666,21 @@ class SipClinet {
   }
 
   disconnectSocket = () => {
-    store.getState().sip.userAgent.stop()
+    // store.getState().sip.registerer.unregister()
+    // store.getState().sip.userAgent.stop().then(() => {
+    //   console.log("UserAgent stopped. Reconnecting...");
+    // });
+    try {
+      // Unregister from the SIP server
+      store.getState().sip.registerer.unregister();
+      console.log("Unregistration request sent");
+      // Stop the UserAgent (this closes the WebSocket connection)
+      store.getState().sip.userAgent.stop();
+      console.log("UserAgent stopped, socket closed");
+    } catch (error) {
+      console.error("Error during unregistration or stopping the UserAgent:", error);
+    }
+
   }
 
   sendDTMF = (digit) => {
@@ -601,13 +703,14 @@ class SipClinet {
   toggelHoldCall = async (state, sessionId = "") => {
     try {
       if (sessionId) {
-         const { allSession } = store.getState().sip
-         await this.HoldUnHoldSession(allSession[sessionId], state)
+        const { allSession } = store.getState().sip
+        await this.HoldUnHoldSession(allSession[sessionId], state)
       }
       else {
-        console.log('state',state)
+        console.log('state', state)
         Object.keys(store.getState().sip.allSession).map(async (key) => {
           const session = store.getState().sip.allSession[key];
+          console.log('session', session)
           this.HoldUnHoldSession(session, state)
         })
       }
@@ -680,8 +783,98 @@ class SipClinet {
         })
       }
     } catch (error) {
-      console.debug('hold unhold hooks function error', error) 
+      console.debug('hold unhold hooks function error', error)
     }
   }
+
+  blindTx = async (number) => {
+    const allSession = store.getState().sip.allSession
+    console.log("allSession", allSession)
+    let userSession;
+    Object.keys(allSession).map(async (key) => {
+      userSession = allSession[key];
+    })
+    try {
+      console.debug('sessiions', userSession)
+      // Send an outgoing REFER request
+      const transferTarget = UserAgent.makeURI(`sip:${number}@${store.getState().sip.Server}:${store.getState().sip.Port}`)
+      console.log('BTXtransfer ==> ', transferTarget)
+      if (!transferTarget) {
+        throw new Error('Failed to create transfer target URI.')
+      }
+      userSession.refer(transferTarget, {
+        // Example of extra headers in REFER request
+        requestOptions: {
+          extraHeaders: [`Referred-By : sip:${store.getState().sip.UserName}@${store.getState().sip.Server}:${store.getState().sip.Port}`]
+        },
+        requestDelegate: {
+          onAccept() {
+            console.log('BTXtransfer accepted')
+            // callHangUp();
+          },
+          onReject: () => {
+            console.debug('BTXtransfer  Rejected')
+          }
+        }
+      })
+    } catch (error) {
+      console.log('CATCH found - blindTx ==> ', error)
+    }
+  }
+
+  conference() {
+    //take all received tracks from the sessions you want to merge
+    const receivedTracks = [];
+    const Allsessions = store.getState().sip.allSession;
+    const sessions = Object.values(Allsessions)
+    if (sessions) {
+      sessions.forEach(function (session) {
+        if (session !== null && session !== undefined) {
+          const pc = session.sessionDescriptionHandler.peerConnection
+          pc.getReceivers().forEach(function (stream) {
+            stream.track.enabled = state;
+            receivedTracks.push(stream.track);
+          })
+        }
+      });
+
+      const allReceivedMediaStreams = new MediaStream();
+
+      for (const session of sessions) {
+        if (session) {
+          // const receivers = session.sipSession?.rtcSession?.connection.getReceivers();
+          const receivers = session.sessionDescriptionHandler.peerConnection.getReceivers();
+          if (receivers) {
+            for (const receiver of receivers) {
+              if (receiver.track.kind === 'audio') {
+                allReceivedMediaStreams.addTrack(receiver.track);
+              }
+            }
+          }
+
+          // const senders = session.sipSession?.rtcSession?.connection.getSenders();
+          const senders = session.sessionDescriptionHandler.peerConnection.getSenders();
+
+          if (senders) {
+            for (const sender of senders) {
+              if (sender.track.kind === 'audio') {
+                allReceivedMediaStreams.addTrack(sender.track);
+              }
+            }
+            if (senders[0]) {
+              senders[0].replaceTrack(allReceivedMediaStreams.getTracks()[0]);
+            }
+          }
+        }
+      }
+
+      // Play all received streams to you
+      // this.playRemote(allReceivedMediaStreams);
+      AudioModule.playStream(allReceivedMediaStreams);
+
+    }
+    return true;
+  }
+
 }
 export default SipUA = new SipClinet();

@@ -8,7 +8,7 @@ import store from '../../store/store';
 
 
 const CallingShowInfo = () => {
-    const { Caller_Name } = useSelector((state) => state.sip)
+    const { Caller_Name,SessionCount,DialNumber,phoneNumber,ISConfrenceTransfer } = useSelector((state) => state.sip)
     const dispatch = useDispatch()
     return (
         <View style={{
@@ -21,15 +21,16 @@ const CallingShowInfo = () => {
             , borderRadius: 5
         }}>
             <TouchableOpacity onPress={() => {
+                store.dispatch(updateSipState({ key: "ISCallTransfer", value: false }))
                 store.dispatch(updateSipState({ key: "CallScreenOpen", value: true }))
             }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                     <Image style={{ height: 25, width: 25, marginLeft: 15 }} source={phoneLogo} />
-                    <Text style={{ color: '#fff', marginLeft: 15, flex: 1 }}> {Caller_Name}
-                        {/* {Callcount >= 2 ? "Confrence" : (Caller_Name == "") ? phoneNumber[0] : Caller_Name} */}
+                    <Text style={{ color: '#fff', marginLeft: 15, flex: 1 }}> 
+                        {/* {Caller_Name} */}
+                     { SessionCount >= 2 ? "Confrence" : (Caller_Name == "") ? phoneNumber[0] : Caller_Name }
                     </Text>
                     <View>
-
                         <Image style={{ height: 25, width: 25, marginRight: 15, tintColor: 'white' }} source={ArrowGoCall} />
                     </View>
                 </View>

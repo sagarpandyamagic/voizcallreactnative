@@ -5,6 +5,7 @@ import {
     Text,
     Dimensions,
     TouchableOpacity,
+    NativeModules,
 } from 'react-native';
 import { React, useState } from 'react';
 import ic_decline_call from '../../../Assets/ic_decline_call.png'
@@ -13,32 +14,46 @@ import ic_transfercall from '../../../Assets/ic_transfer-call.png'
 import SipUA from '../../services/call/SipUA';
 import InCallManager from 'react-native-incall-manager';
 import { useSelector } from 'react-redux';
+import incomingusebyClass from '../../services/Callkeep/incomingusebyClass';
+import RNCallKeep from 'react-native-callkeep';
 
 const { width } = Dimensions.get('window')
-const imageSize = width * 0.15; // Example: 10% of screen width
+const imageSize = width * 0.17; // Example: 10% of screen width
 const itemSpacing = 40;      // Space between each Image+Text pair
 
 const ButtonCallCut = () => {
-    const { phoneNumber, sessionID, allSession } = useSelector((state) => state.sip)
-    const [hold, sethold] = useState(false)
+    const { phoneNumber, sessionID, allSession, ISConfrenceTransfer } = useSelector((state) => state.sip)
+    const { MyNativeModule } = NativeModules;
 
-    const handelToggelHold = () => {
-        sethold(!hold)
-        SipUA.toggelHoldCall(!hold, sessionID)
+    const handelToggleHungup = () => {
+        // console.log("ISConfrenceTransfer",ISConfrenceTransfer)
+        if (ISConfrenceTransfer) {
+            const keys = Object.keys(allSession)
+            // console.log("keys",keys)
+            const activeseationkey = keys[keys.length - 1]
+            // console.log("activeseationkey",activeseationkey)
+            SipUA.hangupSession(activeseationkey)
+        } else {
+            incomingusebyClass.endIncomingcallAnswer();
+            SipUA.hangupCall(phoneNumber[0])
+            InCallManager.setSpeakerphoneOn(false);
+            InCallManager.stop();
+            setTimeout(() => {
+                MyNativeModule.removeFlags()
+            }, 2000);
+        }
+
     }
+
     return (
         <View style={style.container}>
             <View style={style.item}>
-                <TouchableOpacity style={[style.imageVw, { backgroundColor: 'red' }]} onPress={() => {
-                    SipUA.hangupCall(phoneNumber[0])
-                    InCallManager.setSpeakerphoneOn(false);
-                    InCallManager.stop();
-                }}>
-                 <Image source={ic_decline_call} style={style.image}>
-                 </Image>
+                <TouchableOpacity style={[style.imageVw, { backgroundColor: 'red' }]} onPress={handelToggleHungup}>
+                    <Image source={ic_decline_call} style={style.image}>
+                    </Image>
                 </TouchableOpacity>
                 <Text style={[style.text, { color: 'red' }]}>
-                    hungup
+                    Hangup
                 </Text>
             </View>
         </View>

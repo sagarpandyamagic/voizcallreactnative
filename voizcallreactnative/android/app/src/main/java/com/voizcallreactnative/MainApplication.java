@@ -11,6 +11,7 @@ import com.facebook.soloader.SoLoader;
 import com.facebook.react.ReactInstanceManager;
 import android.content.Context;
 import java.lang.reflect.InvocationTargetException;
+import com.voizcallreactnative.DeviceLockModule;
 
 
 
@@ -30,8 +31,9 @@ public class MainApplication extends Application implements ReactApplication {
           @SuppressWarnings("UnnecessaryLocalVariable")
           List<ReactPackage> packages = new PackageList(this).getPackages();
           // Packages that cannot be autolinked yet can be added manually here, for example:
-          // packages.add(new MyReactNativePackage());
-           return packages;
+          packages.add(new MyPackage());
+          // packages.add(new MyNotificaion());
+          return packages;
         }
 
         @Override
@@ -85,7 +87,7 @@ public class MainApplication extends Application implements ReactApplication {
          We use reflection here to pick up the class that initializes Flipper,
         since Flipper library is not available in release mode
         */
-        Class<?> aClass = Class.forName("com.awesomeproject.ReactNativeFlipper");
+        Class<?> aClass = Class.forName("com.voizcallreactnative.ReactNativeFlipper");
         aClass
             .getMethod("ReactNativeFlipper.", Context.class, ReactInstanceManager.class)
             .invoke(null, context, reactInstanceManager);

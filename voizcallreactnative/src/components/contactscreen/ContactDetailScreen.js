@@ -87,208 +87,43 @@ const ContactDetailScreen = ({ route, navigation }) => {
 
     }
 
-    const deleteItem = () => {
-        let fullName = ""
-        if (Platform.OS === 'android') {
-            fullName = data.displayName;
-        } else {
-            fullName = data.givenName + " " + data.familyName;
-        }
-        Alert.alert(
-            'The record will be deleted!',
-            `${fullName} The record will be deleted. Are you sure ?`,
-            [
-                {
-                    text: 'cancel',
-                    onPress: () => console.log('Cancel Pressed'),
-                    style: 'cancel',
-                },
-                {
-                    text: 'Ok',
-                    onPress: async () => {
-                        db.transaction((txn) => {
-                            txn.executeSql('DELETE FROM ContactList WHERE recordid = ?', [data.recordID]
-                                , () => {
-                                    console.log("deleted  Item");
-                                }, (error) => {
-                                    console.log("Item delete error: " + error.message);
-                                });
-                        });
-                        const resp = await Contacts.deleteContact({ recordID: data.recordID });
-                        navigation.pop(1)
-                    },
-                },
-            ],
-        );
-    };
-
-    const BlockContact = () => {
-        let fullName = ""
-        if (Platform.OS === 'android') {
-            fullName = data.displayName;
-        } else {
-            fullName = data.givenName + " " + data.familyName;
-        }
-
-        Alert.alert(
-            "Block - " + `${fullName}`,
-            `You will no longer receive calls from this number`,
-            [
-                {
-                    text: 'cancel',
-                    onPress: () => console.log('Cancel Pressed'),
-                    style: 'cancel',
-                },
-                {
-                    text: 'Ok',
-                    onPress: async () => {
-                        AddToBlockContact()
-                        setUserBlock(true)
-                    },
-                },
-            ],
-        );
-    };
-
-    const AddToBlockContact = async () => {
-        try {
-            const value = await AsyncStorage.getItem("block_contact");
-            if (value !== null) {
-                console.warn(value)
-            }
-            let block_contact = value
-            block_contact = JSON.parse(block_contact)
-            console.log("block_contact", block_contact)
-            if (block_contact && block_contact.length > 0) {
-                block_contact.push(data)
-                BlockContactSave(JSON.stringify(block_contact))
-            } else {
-                BlockContactSave("block_contact", JSON.stringify([data]))
-            }
-        } catch (e) {
-        }
-
-    }
-
-    const UnBlockContactPopup = () => {
-        let fullName = ""
-        if (Platform.OS === 'android') {
-            fullName = data.displayName;
-        } else {
-            fullName = data.givenName + " " + data.familyName;
-        }
-        Alert.alert(
-            "UnBlock - " + `${fullName}`, "",
-            [
-                {
-                    text: 'cancel',
-                    onPress: () => console.log('Cancel Pressed'),
-                    style: 'cancel',
-                },
-                {
-                    text: 'Ok',
-                    onPress: async () => {
-                        unBlockNumber()
-                    },
-                },
-            ],
-        );
-    };
-
-    const unBlockNumber = async () => {
-        try {
-            const value = await AsyncStorage.getItem("block_contact");
-            if (value !== null) {
-                console.warn(value)
-            }
-            console.log("unBlockNumber", value)
-
-            let block_contact = value
-            block_contact = JSON.parse(block_contact)
-            let reaminBlockContact = block_contact.filter((his) => {
-                console.log("his", his)
-                if (!data.recordID.includes(his.recordID)) {
-                    return his
-                }
-            })
-            console.log("reaminBlockContact", reaminBlockContact)
-            try {
-                await AsyncStorage.setItem("block_contact", JSON.stringify(reaminBlockContact));
-                setUserBlock(false)
-            } catch (e) {
-            }
-        } catch (e) {
-        }
-    }
-
     function showToast() {
         ToastAndroid.show('Add updated successfully!', ToastAndroid.SHORT);
     }
 
     useEffect(() => {
-        getContactTableData(data.phoneNumbers[0]?.number)
-        numberCheckBlockORNot()
+        getFavoriteContactsFromDatabase()
     }, [])
 
-    const numberCheckBlockORNot = async () => {
-        try {
-            const value = await AsyncStorage.getItem("block_contact");
-            if (value !== null) {
-                console.warn(value)
-            }
 
-            let block_contact = value
-            block_contact = JSON.parse(block_contact)
-
-            let findIndex = block_contact.findIndex((item) => {
-                return item.recordID === data.recordID
-            })
-
-            console.log("findIndex", findIndex)
-
-            if (findIndex != -1) {
-                setUserBlock(true)
-            } else {
-                setUserBlock(false)
-            }
-
-        } catch (e) {
-        }
-    }
-
-    const getContactTableData = (userNumber) => {
-        console.log("userNumber", userNumber)
+    const getFavoriteContactsFromDatabase = () => {
         db.transaction((tx) => {
-            tx.executeSql(
-                'SELECT * FROM ContactList',
-                [],
-                (tx, results) => {
-                    const rows = results.rows;
-                    const users = [];
-                    for (let i = 0; i < rows.length; i++) {
-                        const user = rows.item(i);
-                        users.push(user);
-                    }
-                    let nameAdd = false
-                    console.log("users->", users)
-
-                    Object.keys(users).map(async (key) => {
-                        const str = users[key].number.replace(/[^a-z0-9,. ]/gi, '');
-                        console.log("key->", str)
-                        if (userNumber.replace(/[^a-z0-9,. ]/gi, '').replace(/ /g, '').includes(str.replace(/ /g, ''))) {
-                            console.log("key->", users[key].isfavourite)
-                            setfavourite(users[key].isfavourite)
-                        }
-                    })
-                },
-                (error) => {
-                    console.error('Error retrieving data:', error);
-                }
-            );
+          tx.executeSql(
+            'SELECT * FROM ContactList WHERE isfavourite = 1', // Updated query
+            [],
+            (tx, results) => {
+              const rows = results.rows;
+              const favoriteContacts = [];
+    
+              for (let i = 0; i < rows.length; i++) {
+                console.log('favoriteContacts', rows.item(i))
+                const contact = rows.item(i);
+                favoriteContacts.push(contact);
+                if (contact.recordid ===  data.recordID) {
+                    setfavourite(1)
+                  }
+              }
+            },
+            (error) => {
+              console.error('Error retrieving data:', error);
+            }
+          );
         });
-    }
+      }
+
 
     const setContactAddORRemoveInFavourite = () => {
+        console.log("data.recordID", data.recordID)
         const RecordID = data.recordID
         let sql = 'UPDATE ContactList SET isfavourite = ? WHERE recordid = ?';
         let params = [(favourite == 1) ? 0 : 1, RecordID];

@@ -43,7 +43,7 @@ export const getCountyCode = async () => {
 
 export const SendOTPAPI = async (data) => {
   try {
-    const res = await axiosInstance.post(APIURL.SendOTP,data);
+    const res = await axiosInstance.post(APIURL.SendOTP, data);
     if (res.data.status == 'SUCCESS') {
       return { success: true, data: res.data.data };
     }
@@ -56,7 +56,7 @@ export const SendOTPAPI = async (data) => {
 
 
 export const Qr_login = async (data) => {
-  console.log("data",data)
+  console.log("data", data)
   try {
     const res = await axiosInstance.post(APIURL.Qrlogin, data);
     if (res.data.status == 'SUCCESS') {
@@ -87,7 +87,7 @@ export const GETAPICALL = async (APIURL) => {
   try {
     const res = await axiosInstance.get(APIURL);
     if (res.data.status == 'SUCCESS') {
-      return { success: true, data: res.data.data};
+      return { success: true, data: res.data.data };
     }
     return { success: false, data: res.data.data };
   } catch (error) {
@@ -96,12 +96,45 @@ export const GETAPICALL = async (APIURL) => {
   }
 };
 
-export const POSTAPICALL = async (APIURL,data) => {
-  console.log('APIURL',APIURL)
+export const POSTAPICALL = async (APIURL, data) => {
+  console.log('APIURL', APIURL)
   try {
-    const res = await axiosInstance.post(APIURL,data);
+    const res = await axiosInstance.post(APIURL, data);
     if (res.data.status == 'SUCCESS') {
-      return { success: true, data: res.data.data};
+      return { success: true, data: res.data.data };
+    }
+    return { success: false, data: res.data.data};
+  } catch (error) {
+    console.log(error);
+    return { success: false, message: error.message};
+  }
+};
+
+export const CDRLAPICALL = async (APIURL, data) => {
+  console.log('APIURL', APIURL)
+  try {
+    const res = await axiosInstance.post(APIURL, data);
+    console.log('res', res.data.data)
+    console.log('res', res.data.status)
+
+    if (res.data.status == 'SUCCESS') {
+      return { success: true, data: res.data.data };
+    }
+    return { success: false, data: res.data.data};
+  } catch (error) {
+    console.log(error);
+    return { success: false, message: error.message};
+  }
+};
+
+export const DLETEAPICAll = async (APIURL, data) => {
+  console.log('APIURL', APIURL)
+  try {
+    console.log('resdelete', data)
+    const res = await axiosInstance.delete(APIURL, {data});
+    console.log('resdelete', res)
+    if (res.data.status == 'SUCCESS') {
+      return { success: true, data: res.data.data };
     }
     return { success: false, data: res.data.data };
   } catch (error) {
@@ -111,12 +144,13 @@ export const POSTAPICALL = async (APIURL,data) => {
 };
 
 
-export const POSTAPICALLAllData = async (APIURL,data) => {
-  console.log('APIURL',APIURL)
+
+export const POSTAPICALLAllData = async (APIURL, data) => {
+  console.log('APIURL', APIURL)
   try {
-    const res = await axiosInstance.post(APIURL,data);
+    const res = await axiosInstance.post(APIURL, data);
     if (res.data.status == 'SUCCESS') {
-      return { success: true, data: res.data};
+      return { success: true, data: res.data };
     }
     return { success: false, data: res.data };
   } catch (error) {

@@ -6,8 +6,7 @@ import {
 import { React, useEffect, useState } from 'react';
 import { getSwitchConfig, POSTAPICALL } from '../services/auth';
 import LottieView from 'lottie-react-native';
-import loadinganimaion from '../../Assets/animation.json';
-import { getStorageData } from '../components/utils/UserData';
+import { AppStoreData, getStorageData } from '../components/utils/UserData';
 import { AndroidVersion, IOSVersion, StorageKey, userprofilealias } from '../HelperClass/Constant';
 import { getConfigParamValue } from '../data/profileDatajson';
 import store from '../store/store';
@@ -15,6 +14,7 @@ import SipUA from '../services/call/SipUA';
 import { APIURL } from '../HelperClass/APIURL';
 import { inticalluserData } from '../store/sipSlice';
 import UpdateApp from '../components/loginscreen/UpdateApp';
+import LodingJson from '../HelperClass/LodingJson';
 
 LogBox.ignoreLogs(['Warning: ...']);
 LogBox.ignoreAllLogs();
@@ -23,7 +23,8 @@ const SplashScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [appUpdate, setappUpdate] = useState(false);
 
-  const usedValue = async () => {
+  const usedValue = async () => {    
+    await AppStoreData(StorageKey.CallKeepORNot,false);
     try {
       const value = await getStorageData(StorageKey.isLogin);
       if (value == true) {
@@ -34,27 +35,28 @@ const SplashScreen = ({ navigation }) => {
         const versionCheck = await POSTAPICALL(APIURL.VersionNotify,pram)
         console.log("versionCheck",versionCheck)
         if (versionCheck.data.is_updated == "0") {
-          const ProfileConfigData = await POSTAPICALL(APIURL.ProfileConfigData,pram)
-          console.log("ProfileConfigData", ProfileConfigData.data)
+        //   const ProfileConfigData = await POSTAPICALL(APIURL.ProfileConfigData,pram)
+        //   console.log("ProfileConfigData", ProfileConfigData.data)
+        //   console.log("versionCheck.success", versionCheck.success)
 
-          if (versionCheck.success) {
-            const sipusername = await getConfigParamValue(userprofilealias.sip_username)
-            const password = await getConfigParamValue(userprofilealias.sip_password)
-            const sipserver = await getConfigParamValue(userprofilealias.sip_sipServer)
-            const sipport = "7443"
-            store.dispatch(inticalluserData({ sipusername, password, sipserver, sipport }))
-            SipUA.connect()
+          // if (versionCheck.success) {
+            // const sipusername = await getConfigParamValue(userprofilealias.sip_username)
+            // const password = await getConfigParamValue(userprofilealias.sip_password)
+            // const sipserver = await getConfigParamValue(userprofilealias.sip_sipServer)
+            // const sipport = "7443"
+            // store.dispatch(inticalluserData({ sipusername, password, sipserver, sipport }))
+            // SipUA.connect()
             setLoading(false);
             navigation.navigate('TabBar')
-          }        
+          // }        
         }else{
           setLoading(false);
           setappUpdate(true)
         }
-
-
        
       } else {
+        await AppStoreData(StorageKey.UserActive,true)
+        await AppStoreData(StorageKey.UserDND,false)
         setLoading(true);
         const configInfo = await getSwitchConfig()
         setLoading(false);
@@ -81,13 +83,7 @@ const SplashScreen = ({ navigation }) => {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       {
-        loading ?
-          <LottieView
-            source={loadinganimaion}
-            autoPlay
-            loop
-            style={{ width: '100%', height: '100%', position: 'absolute', top: 20, alignItems: 'center', zIndex: 1, }}
-          /> : <></>
+        <LodingJson loading={loading} setLoading={setLoading} />
       }
       {
         appUpdate ? <UpdateApp/> : <></>

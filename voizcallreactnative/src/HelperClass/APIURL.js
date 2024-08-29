@@ -12,7 +12,12 @@ export const APIURL = {
     LoginPhoneNumber: '/auth/login',
     ResetPassword :'/auth/reset-password',
     EnterPriseContact: '/directory/get-enterprise_directory-detail',
-    ALLCDR: '/cdr/sync'
+    ALLCDR: '/cdr/sync',
+    PushSubScribe: '/push/subscribe',
+    CDRDelte: '/cdr/delete',
+    PushSubscribeDelete: '/push/subscribe',
+    GETENTERPRISEDIC: '/directory/get-enterprise_directory-detail',
+
 
 }
 

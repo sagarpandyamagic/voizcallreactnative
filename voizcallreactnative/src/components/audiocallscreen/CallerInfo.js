@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux';
 import { useCallTimerContext } from '../../hook/useCallTimer';
 
 const CallerInfo = () => {
-    const {phoneNumber} = useSelector((state) => state.sip)
+    const {phoneNumber,DialNumber} = useSelector((state) => state.sip)
     const { callTimer } = useCallTimerContext()
 
     return (
@@ -18,10 +18,10 @@ const CallerInfo = () => {
                 Unknown
             </Text>
             <Text style={[style.Text,{fontSize:15,marginTop:15}]}>
-                {phoneNumber[0]}
+                {DialNumber}
             </Text>
             <Text style={[style.Text,{fontSize:15}]}>
-                {callTimer}
+                {callTimer == "00:00:00" ? "Calling...." : callTimer}
             </Text>
         </View>
     )

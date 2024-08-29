@@ -25,7 +25,7 @@ const Login = ({ navigation, route }) => {
 
   return (
     <>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
+      <KeyboardAvoidingView behavior={Platform.OS == "android" ? "height" : "padding"}>
         <ScrollView keyboardShouldPersistTaps='handled' contentContainerStyle={{height:screenHeight, flexGrow: 1, justifyContent: 'center' }}>
           <View style={[style.mainViewContain, {}]}>
             <LoginTopSideVw />

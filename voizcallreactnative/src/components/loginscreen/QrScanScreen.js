@@ -15,7 +15,6 @@ import flashbtn from '../../../Assets/flash-btn.png';
 import DeviceInfo from 'react-native-device-info';
 import { getProfile, Qr_login } from '../../services/auth';
 import LottieView from 'lottie-react-native';
-import loadinganimaion from '../../../Assets/animation.json';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { access_token, AppStoreData, getStorageData, isLogin, LoginUser } from '../utils/UserData';
 import { getConfigParamValue } from '../../data/profileDatajson';
@@ -118,13 +117,7 @@ const QrScanScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       {
-        loading ?
-          <LottieView
-            source={loadinganimaion}
-            autoPlay
-            loop
-            style={{ width: '100%', height: '100%', position: 'absolute', top: 20, alignItems: 'center', zIndex: 1, }}
-          /> : <></>
+        <LodingJson loading={loading} setLoading={setLoading} />
       }
 
       <View style={{ flex: 1 }}>

@@ -7,6 +7,8 @@ import QrCode from '../components/loginscreen/QrCode';
 import { AppCommon_Font, THEME_COLORS } from '../HelperClass/Constant';
 import ContactsList from '../components/contactscreen/ContactsList';
 import EnterPriseList from '../components/contactscreen/EnterPriseContact/EnterPriseList';
+import FavouriteContact from '../components/contactscreen/FavouriteContact';
+import EPriceAllContact from '../components/contactscreen/EnterPriseContactMarge/EPriceAllContact';
 
 const ContactScreen = ({ navigation }) => {
     const Tab = createMaterialTopTabNavigator();
@@ -24,8 +26,8 @@ const ContactScreen = ({ navigation }) => {
               },
           }}
         >
-            <Tab.Screen name="Favourites" component={(props) => <ContactsList {...props} navigation={navigation} /> } />
-            <Tab.Screen name="All" component={QrCode} />
+            <Tab.Screen name="Favourites" component={(props) => <FavouriteContact {...props} navigation={navigation} /> } />
+            <Tab.Screen name="All" component = {(props) => <EPriceAllContact {...props} navigation={navigation} /> } />
             <Tab.Screen name="Enterprise" component={(props) => <EnterPriseList {...props} navigation={navigation} /> } />
             <Tab.Screen name="Phone" component={(props) => <ContactsList {...props} navigation={navigation} /> } />
         </Tab.Navigator>

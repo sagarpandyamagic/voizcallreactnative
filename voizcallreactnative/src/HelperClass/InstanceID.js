@@ -11,5 +11,5 @@ export const generateUniqueId = () => {
     const randomPart = Math.random().toString(36).substring(2, 8);
   
     // Combine date, time, and random part to create a unique ID
-    return `${year}${month}${day}${hours}${minutes}${seconds}-${randomPart}`;
+    return `${year}${month}${day}${hours}${minutes}${seconds}${randomPart}`;
   };

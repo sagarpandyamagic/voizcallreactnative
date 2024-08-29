@@ -67,8 +67,6 @@ const ListItem = (props) => {
     });
   }
 
-
-
   const setContactUpdateTableData = async (contactDetail) => {
     const RecordID = contactDetail.recordID
     const name = `${contactDetail.givenName} ${contactDetail.familyName}`
@@ -148,7 +146,7 @@ const ListItem = (props) => {
                 <Text
                 style={
                   [styles.titleStyle,{color:settextColor}]
-                }>{item.phoneNumbers[0].number.replace(/\D/g, '')}</Text>
+                }>{item.phoneNumbers[0]?.number.replace(/\D/g, '')}</Text>
             </View>
           </View>
         </View>

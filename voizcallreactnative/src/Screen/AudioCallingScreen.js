@@ -2,24 +2,51 @@ import {
     View,
     StyleSheet,
     Modal,
+    Dimensions,
+    Image,
+    Text,
+    NativeModules
 } from 'react-native';
-import { React } from 'react';
+import { React, useEffect, useState } from 'react';
 import { THEME_COLORS } from '../HelperClass/Constant';
 import CallerInfo from '../components/audiocallscreen/CallerInfo';
 import ButtonRowFirstThree from '../components/audiocallscreen/ButtonRowFirstThree';
 import ButtonCallCut from '../components/audiocallscreen/ButtonCallCut';
 import InCallManager from 'react-native-incall-manager';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import DTMFScreen from '../components/audiocallscreen/DTMFScreen';
 import ButtonRowSecondThree from '../components/audiocallscreen/ButtonRowSecondThree';
+import CallTransfer from '../components/audiocallscreen/CallTransfer';
+import { updateSipState } from '../store/sipSlice';
+
+const { height, width } = Dimensions.get('window');
 
 function AudioCallingScreen() {
     InCallManager.start({ media: 'audio' }); // Start audio mode
-    const { CallScreenOpen } = useSelector((state) => state.sip)
+    const { CallScreenOpen, allSession, ISConfrenceTransfer ,session,CallType} = useSelector((state) => state.sip)
+    const [showtranspercall, setshowtranspercall] = useState(false)
+    const dispatch = useDispatch()
+    const transparentCall = () => {
+        setshowtranspercall(!showtranspercall)
+    }
+
+
+    useEffect(() => {
+        if (allSession && Object.keys(allSession).length == 1) {
+            dispatch(updateSipState({ key: "ISConfrenceTransfer", value: false }))
+        }
+    }, [allSession])
+
+    useEffect(() => {
+        if (session != {} && CallScreenOpen && CallType == "InComingCall") {
+            session && session.accept()
+        }
+    }, [CallScreenOpen]);
+
 
     return (
         <View style={{ flex: 1, backgroundColor: THEME_COLORS.black }}>
-             <Modal
+            <Modal
                 visible={CallScreenOpen}
                 transparent={false}
                 animationType="none"
@@ -31,12 +58,15 @@ function AudioCallingScreen() {
                 <View style={{ backgroundColor: THEME_COLORS.black }}>
                     <View style={style.container}>
                         <ButtonRowFirstThree />
-                        <ButtonRowSecondThree />
+                        <ButtonRowSecondThree transparentCall={transparentCall} />
                         <ButtonCallCut />
+                        {
+                            showtranspercall ? <CallTransfer transparentCall={transparentCall} /> : <></>
+                        }
                     </View>
                 </View>
                 <View>
-                    <DTMFScreen/>
+                    <DTMFScreen />
                 </View>
             </Modal>
         </View>
@@ -53,7 +83,7 @@ const style = StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 4,
         elevation: 10,
-        height: 320,
+        height: height * 0.5,
         borderTopLeftRadius: 40,
         borderTopRightRadius: 40,
     },

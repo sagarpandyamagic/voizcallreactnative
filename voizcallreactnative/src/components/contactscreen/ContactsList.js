@@ -7,6 +7,7 @@ import SQLite from 'react-native-sqlite-storage';
 import ic_Search from '../../../Assets/ic_Search.png'
 import gradiant_border from '../../../Assets/gradiant_border.png'
 import AddContactButton from './AddContactButton';
+import LodingJson from '../../HelperClass/LodingJson';
 
 const db = SQLite.openDatabase(
   {
@@ -22,6 +23,7 @@ const ContactsList = ({ navigation }) => {
   let [contacts, setContacts] = useState([]);
   const headerArray = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const fetchData = () => {
     setTimeout(() => {
@@ -58,26 +60,18 @@ const ContactsList = ({ navigation }) => {
   const getContactTableData = () => {
     db.transaction((tx) => {
       tx.executeSql(
-        'SELECT * FROM ContactList WHERE isfavourite = 1',
+        'SELECT * FROM ContactList',
         [],
         (tx, results) => {
           const rows = results.rows;
-          const favouriteNumbers = [];
-  
+          const dbContacts = [];
+
           for (let i = 0; i < rows.length; i++) {
-            const user = rows.item(i);
-            favouriteNumbers.push(user.number.replace(/[^a-z0-9,. ]/gi, '').replace(/ /g, ''));
+            const contact = rows.item(i);
+            dbContacts.push(contact);
           }
-  
-          const favouriteContacts = contacts.filter(contact => {
-            return contact.phoneNumbers.some(phone => {
-              const cleanedNumber = phone.number.replace(/[^a-z0-9,. ]/gi, '').replace(/ /g, '');
-              return favouriteNumbers.includes(cleanedNumber);
-            });
-          });
-  
-          setContacts(favouriteContacts);
-          console.log("Favourite contacts set:", favouriteContacts);
+
+          setContacts(dbContacts);
         },
         (error) => {
           console.error('Error retrieving data:', error);
@@ -86,12 +80,46 @@ const ContactsList = ({ navigation }) => {
     });
   }
 
+  const saveContactsToDatabase = (contacts) => {
+    db.transaction((tx) => {
+      contacts.forEach(contact => {
+        tx.executeSql(
+          'INSERT INTO ContactList (name, number, recordid, thumbnail, thumbnailpath, isfavourite) VALUES (?, ?, ?, ?, ?, ?)',
+          [contact.givenName, contact.phoneNumbers[0]?.number, contact.recordID, contact.thumbnailPath, contact.thumbnailPath, '0'],
+          () => { console.log('Contact inserted successfully.'); },
+          (error) => { console.error('Error inserting contact:', error); }
+        );
+      });
+    });
+  }
 
+  const updateDatabaseWithNewContacts = (contacts) => {
+    db.transaction((tx) => {
+      contacts.forEach(contact => {
+        tx.executeSql(
+          'SELECT * FROM ContactList WHERE recordid = ?',
+          [contact.recordID],
+          (tx, results) => {
+            if (results.rows.length === 0) {
+              // New contact, insert it
+              tx.executeSql(
+                'INSERT INTO ContactList (name, number, recordid, thumbnail, thumbnailpath, isfavourite) VALUES (?, ?, ?, ?, ?, ?)',
+                [contact.givenName, contact.phoneNumbers[0]?.number, contact.recordID, contact.thumbnailPath, contact.thumbnailPath, '0'],
+                () => { console.log('New contact inserted successfully.'); },
+                (error) => { console.error('Error inserting new contact:', error); }
+              );
+            }
+          },
+          (error) => { console.error('Error checking contact:', error); }
+        );
+      });
+    });
+  }
 
   const createContactTable = () => {
     db.transaction((tx) => {
       tx.executeSql(
-        'CREATE TABLE IF NOT EXISTS ContactList (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, number TEXT,recordid TEXT, thumbnail TEXT, thumbnailpath TEXT,isfavourite TEXT)',
+        'CREATE TABLE IF NOT EXISTS ContactList (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, number TEXT, recordid TEXT, thumbnail TEXT, thumbnailpath TEXT, isfavourite TEXT)',
         [],
         () => {
           console.log('Table created successfully.');
@@ -102,33 +130,67 @@ const ContactsList = ({ navigation }) => {
   }
 
   useEffect(() => {
-    createContactTable()
+    createContactTable();
     if (Platform.OS === 'android') {
-      PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.READ_CONTACTS, {
-        title: 'Contacts',
-        message: 'This app would like to view your contacts.',
-      }).then(() => {
-        loadContacts();
-      }
-      );
+      checkContactPermission()
     } else {
       loadContacts();
     }
   }, []);
 
+  const checkContactPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_CONTACTS);
+      if (granted) {
+        console.log('Permission granted');
+        loadContacts();
+      } else {
+        const result = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.READ_CONTACTS, {
+          title: 'Contacts',
+          message: 'This app would like to view your contacts.',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        });
+
+        if (result === PermissionsAndroid.RESULTS.GRANTED) {
+          loadContacts();
+        } else {
+          Alert.alert('Permission Denied', 'Permission to access contacts was denied');
+        }
+      }
+    } catch (error) {
+      console.warn('Permission check or request failed', error);
+    }
+  };
+
+
   const loadContacts = () => {
+    setLoading(true)
     Contacts.getAll()
       .then(contacts => {
-        contacts.sort((a, b) =>
-          a.givenName.toLowerCase() > b.givenName.toLowerCase()
-        );
-        console.log("contacts",contacts)
-        setContacts(contacts);
+        if (contacts.length === 0) {
+          console.log('No contacts found');
+        } else {
+          contacts = contacts.filter(contact => contact.givenName);
+
+          // Sort contacts by givenName
+          contacts.sort((a, b) => {
+            const nameA = a.givenName.toLowerCase();
+            const nameB = b.givenName.toLowerCase();
+            return nameA.localeCompare(nameB);
+          });
+  
+          saveContactsToDatabase(contacts);
+          setContacts(contacts);
+        }
+        setLoading(false);
       })
       .catch(e => {
-        alert('Permission to access contacts was denied');
-        console.warn('Permission to access contacts was denied');
+        setLoading(false)
+        // alert('Permission to access contacts was denied',e);
+        Alert.alert('Error', 'Failed to load contacts');
+        console.warn('Error loading contacts:', error.message);
       });
   };
 
@@ -175,6 +237,9 @@ const ContactsList = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      {
+        <LodingJson loading={loading} setLoading={setLoading} />
+      }
       <ScrollView
         contentContainerStyle={styles.scrollView}
         refreshControl={
@@ -203,20 +268,21 @@ const ContactsList = ({ navigation }) => {
             }}
             keyExtractor={item => item.recordID}
             renderSectionHeader={({ section: { title } }) => (
-                <View style={{justifyContent: 'center',}}>
-                <Image style={{ resizeMode: 'contain'}} source={gradiant_border}></Image>
+              <View style={{ justifyContent: 'center', }}>
+                <Image style={{ resizeMode: 'contain' }} source={gradiant_border}></Image>
                 <Text style={styles.header} >{title}</Text>
-               </View>
+              </View>
             )}
           />
         </View>
       </ScrollView>
-      <AddContactButton navigation={navigation}  />
+      <AddContactButton navigation={navigation} />
     </SafeAreaView>
   );
 };
 
 export default ContactsList;
+
 
 const styles = StyleSheet.create({
   container: {
@@ -226,7 +292,8 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 15,
     paddingLeft: 10,
-    marginTop:-18
+    position:'absolute',
+    justifyContent:'center'
   },
   searchBar: {
     backgroundColor: '#f0eded',

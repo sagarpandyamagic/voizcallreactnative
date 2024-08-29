@@ -20,7 +20,7 @@ import InCallManager from 'react-native-incall-manager';
 
 
 const { width } = Dimensions.get('window')
-const imageSize = width * 0.15; // Example: 10% of screen width
+const imageSize = width * 0.17; // Example: 10% of screen width
 const itemSpacing = 40;      // Space between each Image+Text pair
 
 const ButtonRowFirstThree = () => {
@@ -76,7 +76,7 @@ const ButtonRowFirstThree = () => {
                 }  
                 </TouchableOpacity>
                 <Text style={style.text}>
-                    Speker
+                    Speaker
                 </Text>
             </View>
         </View>
@@ -116,7 +116,7 @@ const style = StyleSheet.create({
 
     },
     text: {
-        fontSize: 14,
+        fontSize: 12,
         marginBottom: 0,
         marginTop: 5 // Set the font size of the text
     },

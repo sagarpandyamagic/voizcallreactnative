@@ -11,6 +11,7 @@ import ic_decline_call from '../../../Assets/ic_decline_call.png'
 import store from '../../store/store';
 import SipUA from '../../services/call/SipUA';
 import { updateSipState } from '../../store/sipSlice';
+import incomingusebyClass from '../../services/Callkeep/incomingusebyClass';
 
 const IncomeScreenBtnVw = () => {
     const { phoneNumber, Caller_Name,session } = useSelector((state) => state.sip)
@@ -19,7 +20,8 @@ const IncomeScreenBtnVw = () => {
             <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
                 <TouchableOpacity style={{ marginRight: 50 }} onPress={() => {
                     store.dispatch(updateSipState({ key: "CallScreenOpen", value: true }))
-                    session.accept()
+                    // session.accept()
+                    // incomingusebyClass.startCall();;
                     store.dispatch(updateSipState({ key: "IncomingScrrenOpen", value: false }))
                 }} >
                     <Image style={{ width: 70, height: 70 }}
