@@ -3,7 +3,7 @@ export const AppCommon_Font = {
 }
 
 export const THEME_COLORS = {
-    black: '#3E5DA3'
+      black: '#3E5DA3'
     , transparent: 'transparent'
 }
 

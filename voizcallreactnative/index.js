@@ -103,7 +103,6 @@ export const showCallNotification = (callerName) => {
   });
 };
 
-
 const openNativeLayouta = () => {
   if (MyNativeModule) {
     const lastOpenTime = store.getState().sip.terminationTime || 0;
@@ -157,45 +156,6 @@ const firebaseListener = async (remoteMessage) => {
     console.error('Error calling applyFlags:', error);
   }
 
-
-
-  // if (AppState.currentState !== 'active') {
-  //     PushNotification.invokeApp();
-  // }
-
-
-
-
-  // const incomingCallAnswer = ({ callUUID }) => {
-  //   console.log('session accept1->');
-  //   SipUA.accepctCall()
-  //   RNCallKeep.setCurrentCallActive(callUUID);
-  //   // incomingusebyClass.endIncomingcallAnswer(callUUID);
-  //   BackgroundTimer.setTimeout(() => {
-  //      incomingusebyClass.backToForeground();
-  //   },1000);
-  // };
-
-  // RNCallKeep.addEventListener('answerCall', ({ callUUID }) => {
-  //   console.log('Answering call with UUID:', callUUID);
-  //   AppState.currentState === 'background' && AppRegistry.runApplication();
-  // });
-
-  // const endIncomingCall = () => {
-  //   SipUA.hangupCall()
-  //   incomingusebyClass.endIncomingcallAnswer();
-  // };
-
-  // store.dispatch(updateSipState({ key: "IncomingScrrenOpen", value: false }))
-
-  // // setInitTimeValue();
-  // incomingusebyClass.configure(incomingCallAnswer, endIncomingCall);
-  // incomingusebyClass.displayIncomingCall(remoteMessage.from);
-  // incomingusebyClass.backToForeground();
-
-  //store.dispatch(updateSipState({ key: "IncomingScrrenOpen", value: true }))
-  // console.log("ContactName:",getContactTableData(remoteMessage.from))
-
 };
 
 messaging().onMessage(async (remoteMessage) => {
@@ -213,42 +173,9 @@ messaging().onMessage(async (remoteMessage) => {
   } catch (error) {
     console.error('Error calling applyFlags:', error);
   }
-
-
-  // BackgroundTimer.start();
-  // console.log('Message handled in the foreground!ee', remoteMessage);
-
-  // const incomingCallAnswer = ({ callUUID }) => {
-  //   console.log('session accept1->');
-  //   SipUA.accepctCall()
-  //   RNCallKeep.setCurrentCallActive(callUUID);
-
-  //   // incomingusebyClass.endIncomingcallAnswer(callUUID);
-  //   BackgroundTimer.setTimeout(() => {
-  //      incomingusebyClass.backToForeground();
-  //   },1000);
-  // };
-
-  // // RNCallKeep.addEventListener('answerCall', ({ callUUID }) => {
-  // //   console.log('Answering call with UUID:', callUUID);
-  // //   AppState.currentState === 'background' && AppRegistry.runApplication();
-  // // });
-
-  // const endIncomingCall = () => {
-  //   SipUA.hangupCall()
-  //   incomingusebyClass.endIncomingcallAnswer();
-  // };
-
-  // // setInitTimeValue();
-  // // store.dispatch(updateSipState({ key: "IncomingScrrenOpen", value: false }))
-  //  incomingusebyClass.configure(incomingCallAnswer, endIncomingCall);
-  //  incomingusebyClass.displayIncomingCall(remoteMessage.from);
-  //  incomingusebyClass.backToForeground();
-
 });
 
 Platform.OS == "android" && messaging().setBackgroundMessageHandler(firebaseListener);
-
 
 const appRedux = () => (
   <Provider store={store}>

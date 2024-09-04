@@ -17,14 +17,13 @@ import { StorageKey } from "../../HelperClass/Constant";
 import { getStorageData } from "../../components/utils/UserData";
 import inCallManager from "react-native-incall-manager";
 
-const { AudioModule ,MyNativeModule} = NativeModules; // Assuming you have a native module for audio playback
+const { AudioModule, MyNativeModule } = NativeModules; // Assuming you have a native module for audio playback
 
 
 let sessionCall = null;
 let localMediaStream = null;
 
 let testUUID = uuid.v4();
-
 
 const db = SQLite.openDatabase(
   {
@@ -246,7 +245,9 @@ class SipClinet {
                 store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
                 store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
 
-                // console.log('UserAgent ==> Terminated')
+              
+
+                console.log('UserAgent ==> Terminated')
                 USERAGENT.stop()
                 break
               default:
@@ -392,6 +393,14 @@ class SipClinet {
                 store.dispatch(removeSession(invitation.id))
                 incomingusebyClass.endIncomingcallAnswer();
                 inCallManager.stopProximitySensor(); // Disable
+
+                if (Platform.OS == "android"){
+                  setTimeout(() => {
+                    MyNativeModule.removeFlags()
+                  }, 2000);
+                }
+               
+                
                 break
               default:
               // console.log('Unknow Incomming Session state')
@@ -424,7 +433,6 @@ class SipClinet {
 
   makeCall = async (destination, video = false) => {
     try {
-
       let timeStore = ""
       const data = new Date()
       const sip_aor = `sip:${destination}@${store.getState().sip.Server}`
@@ -529,8 +537,12 @@ class SipClinet {
             store.dispatch(removeSession(session.id))
             incomingusebyClass.endIncomingcallAnswer();
             inCallManager.stopProximitySensor();
-
-
+           
+            if (Platform.OS == "android"){
+              setTimeout(() => {
+                MyNativeModule.removeFlags()
+              }, 2000);
+            }
             // if (session) {
             //   session.cancel();
             // }

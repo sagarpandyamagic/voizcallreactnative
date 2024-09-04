@@ -168,14 +168,6 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
     }
 
     private void sendEvent(String eventName, WritableMap params) {
-        // if (reactContext != null && reactContext.hasActiveCatalystInstance()) {
-        // reactContext
-        // .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-        // .emit(eventName, params);
-        // } else {
-        // Log.e("NativeActivity", "ReactContext or CatalystInstance is not active");
-        // }
-
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             if (reactContext != null && reactContext.hasActiveCatalystInstance()) {
                 reactContext
@@ -284,8 +276,15 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void showSplashScreen() {
         wakeUpDevice();
-            Intent intent = new Intent(reactContext, MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            reactContext.startActivity(intent);
+        Intent intent = new Intent(reactContext, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        reactContext.startActivity(intent);
     }
+
+    @ReactMethod
+    public void CallerNumberOrNameSet(String name, String number) {
+        Log.d("CallerNumberOrNameSet", "Create event name: " + name
+                + " and Number: " + number);
+    }
+
 }

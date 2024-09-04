@@ -95,7 +95,5 @@ public class NotificationService extends Service {
 
         // Optionally release the wake lock immediately after waking up
         wakeLock.release();
-
-      
     }
 }

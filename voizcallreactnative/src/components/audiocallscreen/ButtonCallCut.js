@@ -38,9 +38,9 @@ const ButtonCallCut = () => {
             SipUA.hangupCall(phoneNumber[0])
             InCallManager.setSpeakerphoneOn(false);
             InCallManager.stop();
-            setTimeout(() => {
-                MyNativeModule.removeFlags()
-            }, 2000);
+            // setTimeout(() => {
+            //     MyNativeModule.removeFlags()
+            // }, 2000);
         }
 
     }

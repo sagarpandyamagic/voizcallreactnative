@@ -73,7 +73,6 @@ function App() {
     }
   };
 
-
   useEffect(() => {
     if(AppOpenTimeRootChange === 'TabBar'){
       openNativeLayouta();
@@ -102,25 +101,21 @@ function App() {
     };
   }, []);
 
-
-
   useEffect(() => {
     requestUserPermission()
     FCMDelegateMethod()
     requestPermissions()
+    // openNativeLayouta();
     if (Platform.OS != "android") {
       console.log("Platform.OS", Platform.OS)
       Platform.OS == "ios" && VoipPushNotification.registerVoipToken();
       Platform.OS == "ios" && voipConfig();
     } else {
       checkPermission();
-      // openNativeLayouta()
-      // MyNativeModule.removeFlags()
       Splash.hide()
     }
+    MyNativeModule.CallerNumberOrNameSet("sager","123456789")
   }, [])
-
-
 
   const checkPermission = async () => {
     const result = await hasOverlayPermission();
@@ -138,7 +133,6 @@ function App() {
       console.error('Error requesting overlay permission:', error);
     }
   };
-
 
   return (
     <SafeAreaProvider>
