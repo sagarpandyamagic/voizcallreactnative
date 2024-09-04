@@ -223,7 +223,6 @@ class SipClinet {
 
       store.dispatch(updateSipState({ key: "userAgent", value: USERAGENT }))
       store.dispatch(updateSipState({ key: "registerer", value: registerer }))
-      console.log('UserAgent1 ==> Unregistered')
       USERAGENT.start()
         .then(() => {
           registerer.stateChange.addListener(async newState => {

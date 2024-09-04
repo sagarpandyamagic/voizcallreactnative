@@ -19,7 +19,6 @@ import android.app.NotificationManager;
 import android.app.Service;
 import androidx.core.app.NotificationCompat;
 import com.voizcallreactnative.NativeActivity;
-import android.app.PendingIntent;
 import android.os.Bundle;
 import android.view.WindowManager;
 import androidx.appcompat.app.AppCompatActivity;

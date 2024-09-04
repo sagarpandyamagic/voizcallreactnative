@@ -184,39 +184,42 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
             } else {
                 Log.e("NativeActivity", "ReactContext is null or CatalystInstance is not active");
             }
-        }, 1000);
+        }, 100);
     }
 
     @ReactMethod
     public void applyFlags() {
         Activity currentActivity = getCurrentActivity();
         if (currentActivity != null) {
-            if (isSamsungDevice()) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-                    currentActivity.setShowWhenLocked(true);
-                    currentActivity.setTurnScreenOn(true);
-                } else {
-                    currentActivity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                            WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-                }
-                KeyguardManager keyguardManager = (KeyguardManager) currentActivity
-                        .getSystemService(Context.KEYGUARD_SERVICE);
-                if (keyguardManager != null) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        keyguardManager.requestDismissKeyguard(currentActivity, null);
+            currentActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (isSamsungDevice()) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                            currentActivity.setShowWhenLocked(true);
+                            currentActivity.setTurnScreenOn(true);
+                        } else {
+                            currentActivity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+                        }
+                        KeyguardManager keyguardManager = (KeyguardManager) currentActivity
+                                .getSystemService(Context.KEYGUARD_SERVICE);
+                        if (keyguardManager != null) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                keyguardManager.requestDismissKeyguard(currentActivity, null);
+                            } else {
+                                keyguardManager.newKeyguardLock("VoizCall").disableKeyguard();
+                            }
+                        }
                     } else {
-                        keyguardManager.newKeyguardLock("VoizCall").disableKeyguard();
+                        currentActivity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
+                                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
+                                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
                     }
                 }
-            } else {
-                currentActivity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
-                        WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
-                        WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-            }
-
+            });
         }
-
     }
 
     @ReactMethod
@@ -281,8 +284,8 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void showSplashScreen() {
         wakeUpDevice();
-        Intent intent = new Intent(reactContext, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        reactContext.startActivity(intent);
+            Intent intent = new Intent(reactContext, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            reactContext.startActivity(intent);
     }
 }

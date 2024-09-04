@@ -34,6 +34,7 @@ const initialState = {
   UserActive:true,
   UserDND:false,
   AppOpenTimeRootChange:"SplashScreen",
+  terminationTime:0,
 }
 
 const counterSlice = createSlice({

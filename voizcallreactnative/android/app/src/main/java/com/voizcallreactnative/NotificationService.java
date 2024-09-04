@@ -18,7 +18,6 @@ import android.os.Build;
 import androidx.core.app.NotificationCompat;
 import com.voizcallreactnative.NativeActivity;
 import android.content.Intent;
-import android.app.PendingIntent;
 
 import android.graphics.PixelFormat;
 import android.view.Gravity;

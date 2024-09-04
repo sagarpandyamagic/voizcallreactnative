@@ -21,20 +21,12 @@ import PushNotification from 'react-native-push-notification';
 
 setInitTimeValue()
 const { MyNativeModule } = NativeModules;
-
-// const myNativeModuleEmitter = new NativeEventEmitter(MyNativeModule);
-// myNativeModuleEmitter.addListener(
-//   'onCallAccepted',
-//   (event) => {
-//     try {
-//       console.log('Call accepted');
-//       store.dispatch(updateSipState({ key: "CallScreenOpen", value: true }));
-//       store.dispatch(updateSipState({ key: "CallAns", value: false }));
-//     } catch (error) {
-//       console.error('Error handling onCallAccepted event:', error);
-//     }
-//   }
-// );
+try {
+  const appOpenTime = new Date().getTime();
+  store.dispatch(updateSipState({ key: "terminationTime", value: appOpenTime }));
+} catch (error) {
+  console.error('Error updating SIP state:', error);
+}
 
 PushNotification.configure({
   // (required) Called when a remote or local notification is opened or received
@@ -72,7 +64,6 @@ PushNotification.configure({
 
 })
 
-
 PushNotification.createChannel(
   {
     channelId: "call-channel",
@@ -85,7 +76,6 @@ PushNotification.createChannel(
   },
   (created) => console.log(`CreateChannel returned '${created}'`)
 );
-
 
 export const showCallNotification = (callerName) => {
   PushNotification.localNotification({
@@ -116,10 +106,18 @@ export const showCallNotification = (callerName) => {
 
 const openNativeLayouta = () => {
   if (MyNativeModule) {
-    // MyNativeModule.openNativeLayout();
-    MyNativeModule.showSplashScreen();
-    store.dispatch(updateSipState({ key: "AppOpenTimeRootChange", value: "TabBar" }));
-    // showCallNotification("John Doe");
+    const lastOpenTime = store.getState().sip.terminationTime || 0;
+    console.log("lastOpenTime", lastOpenTime)
+    const CurrntTime  = new Date().getTime();
+    console.log("currentTime", CurrntTime)
+    if (CurrntTime - lastOpenTime > 2000) { // 5000 milliseconds = 5 seconds
+      console.log("openNativeLayouta", "ActiveApp")
+      MyNativeModule.openNativeLayout();
+    } else {
+      console.log("openNativeLayouta", "Terminated")
+      MyNativeModule.showSplashScreen();
+      store.dispatch(updateSipState({ key: "AppOpenTimeRootChange", value: "TabBar" }));
+    }
   } else {
     console.error('MyNativeModule is not available');
   }
@@ -137,17 +135,16 @@ const applyFlags = () => {
 const firebaseListener = async (remoteMessage) => {
   BackgroundTimer.start();
   console.log('Message handled in the foreground!11', remoteMessage);
-
   
   await AppStoreData(StorageKey.CallKeepORNot, true);
 
-  // try {
-  //   applyFlags()
-  // } catch (error) {
-  //   console.error('Error calling applyFlags:', error);
-  // }
-
-
+  if (AppState.currentState == 'active' || AppState.currentState == 'background') {
+    try {
+      applyFlags()
+    } catch (error) {
+      console.error('Error calling applyFlags:', error);
+    }
+  }
 
   try {
     openNativeLayouta()

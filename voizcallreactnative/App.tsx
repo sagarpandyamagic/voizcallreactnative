@@ -56,7 +56,6 @@ function App() {
   const [isNotifcionCome, setisNotifcionCome] = useState("TabBar");
   const {AppOpenTimeRootChange} = useSelector((state) => state.sip);
 
-
   const openNativeLayouta = () => {
     if (MyNativeModule) {
       MyNativeModule.openNativeLayout();
