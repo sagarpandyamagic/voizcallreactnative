@@ -28,6 +28,10 @@ const SplashScreen = ({ navigation }) => {
     try {
       const value = await getStorageData(StorageKey.isLogin);
       if (value == true) {
+        // setLoading(true);
+        // navigation.navigate('TabBar')
+        // console.log("isgotologin", value)
+        // return
         setLoading(true);
         const pram = {
           "app_version":  Platform.OS === 'ios' ? IOSVersion : AndroidVersion

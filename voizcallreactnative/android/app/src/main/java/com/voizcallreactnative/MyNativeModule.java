@@ -34,6 +34,12 @@ import android.provider.Settings;
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.BaseActivityEventListener;
 import com.facebook.react.bridge.Promise;
+import android.os.PowerManager;
+import android.os.Bundle; // here
+import android.os.PowerManager;
+import android.view.WindowManager;
+import android.app.KeyguardManager;
+import android.app.Activity;
 
 @ReactModule(name = "MyNativeModule")
 public class MyNativeModule extends ReactContextBaseJavaModule {
@@ -41,7 +47,8 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
     private static ReactApplicationContext reactContext;
     private static final int OVERLAY_PERMISSION_REQ_CODE = 1;
     private Promise mPromise;
-    
+    private PowerManager.WakeLock wakeLock;
+
     MyNativeModule(ReactApplicationContext context) {
         super(context);
         reactContext = context;
@@ -88,8 +95,6 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
         }
     }
 
-    
-
     @Override
     public String getName() {
         return "MyNativeModule";
@@ -115,51 +120,71 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
 
     }
 
-    // @ReactMethod
-    // public void lockScreen(Callback errorCallback, Callback successCallback) {
-    //     try {
-    //         DevicePolicyManager devicePolicyManager = (DevicePolicyManager) reactContext
-    //                 .getSystemService(Context.DEVICE_POLICY_SERVICE);
-    //         ComponentName componentName = new ComponentName(reactContext, CustomDeviceAdminReceiver.class);
+    @ReactMethod
+    public void wakeUpDevice() {
+        PowerManager powerManager = (PowerManager) reactContext.getSystemService(Context.POWER_SERVICE);
+        wakeLock = powerManager.newWakeLock(
+                PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE,
+                "MyApp::MyWakelockTag");
+        wakeLock.acquire(10 * 60 * 1000L /* 10 minutes */);
 
-    //         if (devicePolicyManager == null) {
-    //             Log.e("TAG", "DevicePolicyManager is null");
-    //             errorCallback.invoke("DevicePolicyManager is null");
-    //             return;
-    //         }
+        // // Apply flags to show over lock screen
+        // applyFlags();
 
-    //         if (devicePolicyManager.isAdminActive(componentName)) {
-    //             Log.d("TAG", "Attempting to lock screen");
-    //             devicePolicyManager.lockNow();
-    //             successCallback.invoke("Screen locked successfully");
-    //         } else {
-    //             Log.w("TAG", "Admin is not active, requesting admin privileges");
-    //             Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
-    //             intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);
-    //             intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION,
-    //                     "We need this permission to lock the screen programmatically.");
-    //             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    //             reactContext.startActivity(intent);
-    //             errorCallback.invoke("Admin privileges not granted");
-    //         }
-    //     } catch (Exception e) {
-    //         Log.e("TAG", "Error locking screen", e);
-    //         errorCallback.invoke("Error: " + e.getMessage());
-    //     }
-    // }
+        // // Open your app's main activity
+
+        // final Activity activity = getCurrentActivity();
+        // if (activity != null) {
+        // activity.runOnUiThread(new Runnable() {
+        // @Override
+        // public void run() {
+        // try {
+        // openNativeLayout();
+        // } catch (Exception e) {
+        // Log.e("MyNativeModule", "Error clearing window flags", e);
+        // }
+        // }
+        // });
+        // }
+
+        releaseWakeLock();
+    }
+
+    @ReactMethod
+    public void releaseWakeLock() {
+        if (wakeLock != null && wakeLock.isHeld()) {
+            wakeLock.release();
+        }
+    }
 
     @ReactMethod
     public void acceptCall() {
         // Call your JavaScript method from here
+        Log.d("NativeActivity", "onCallAccepted");
+
         WritableMap params = Arguments.createMap();
         params.putBoolean("accepted", true);
-        sendEvent("onCallAccepted", params);
+        sendEvent("onCallAccepted", null);
     }
 
     private void sendEvent(String eventName, WritableMap params) {
-        reactContext
-                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                .emit(eventName, params);
+        // if (reactContext != null && reactContext.hasActiveCatalystInstance()) {
+        // reactContext
+        // .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+        // .emit(eventName, params);
+        // } else {
+        // Log.e("NativeActivity", "ReactContext or CatalystInstance is not active");
+        // }
+
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (reactContext != null && reactContext.hasActiveCatalystInstance()) {
+                reactContext
+                        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                        .emit(eventName, params);
+            } else {
+                Log.e("NativeActivity", "ReactContext is null or CatalystInstance is not active");
+            }
+        }, 1000);
     }
 
     @ReactMethod
@@ -177,7 +202,11 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
                 KeyguardManager keyguardManager = (KeyguardManager) currentActivity
                         .getSystemService(Context.KEYGUARD_SERVICE);
                 if (keyguardManager != null) {
-                    keyguardManager.requestDismissKeyguard(currentActivity, null);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        keyguardManager.requestDismissKeyguard(currentActivity, null);
+                    } else {
+                        keyguardManager.newKeyguardLock("VoizCall").disableKeyguard();
+                    }
                 }
             } else {
                 currentActivity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
@@ -185,6 +214,7 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
                         WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
                         WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
             }
+
         }
 
     }
@@ -202,6 +232,7 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
                         currentActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
                                 WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
                     }
+
                 } else {
                     removeFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
                             WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
@@ -236,4 +267,22 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
         }
     }
 
+    @ReactMethod
+    public void isDeviceLocked(Promise promise) {
+        KeyguardManager keyguardManager = (KeyguardManager) reactContext.getSystemService(Context.KEYGUARD_SERVICE);
+        if (keyguardManager != null) {
+            boolean isLocked = keyguardManager.isKeyguardLocked();
+            promise.resolve(isLocked);
+        } else {
+            promise.reject("ERROR", "KeyguardManager is null");
+        }
+    }
+
+    @ReactMethod
+    public void showSplashScreen() {
+        wakeUpDevice();
+        Intent intent = new Intent(reactContext, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        reactContext.startActivity(intent);
+    }
 }

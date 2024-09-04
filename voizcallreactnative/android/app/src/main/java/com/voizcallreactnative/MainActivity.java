@@ -37,17 +37,18 @@ public class MainActivity extends ReactActivity {
     // WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
     // WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
     // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-    //   setShowWhenLocked(true);
-    //   setTurnScreenOn(true);
+    // setShowWhenLocked(true);
+    // setTurnScreenOn(true);
 
-    //   KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
-    //   if (keyguardManager != null) {
-    //     keyguardManager.requestDismissKeyguard(this, null);
-    //   }
+    // KeyguardManager keyguardManager = (KeyguardManager)
+    // getSystemService(Context.KEYGUARD_SERVICE);
+    // if (keyguardManager != null) {
+    // keyguardManager.requestDismissKeyguard(this, null);
+    // }
     // } else {
-    //   getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-    //       | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-    //       | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+    // getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+    // | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+    // | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
     // }
 
     // // Add these flags for all Android versions
@@ -55,27 +56,29 @@ public class MainActivity extends ReactActivity {
 
     // // Disable the default lock screen
     // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-    //   ((KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE)).requestDismissKeyguard(this, null);
+    // ((KeyguardManager)
+    // getSystemService(Context.KEYGUARD_SERVICE)).requestDismissKeyguard(this,
+    // null);
     // }
     // ;
 
     super.onCreate(savedInstanceState);
   }
 
-  // @Override
-  //   protected void onResume() {
-  //       super.onResume();
-  //       // Reapply the flags in case they were cleared
-  //       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-  //           setShowWhenLocked(true);
-  //           setTurnScreenOn(true);
-  //       } else {
-  //           getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-  //                   | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-  //                   | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-  //       }
-  //       getWindow().addFlags(WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON);
-  //   }
+  @Override
+  protected void onResume() {
+    super.onResume();
+    // Reapply the flags in case they were cleared
+    // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+    //   setShowWhenLocked(true);
+    //   setTurnScreenOn(true);
+    // } else {
+    //   getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+    //       | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+    //       | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+    // }
+    // getWindow().addFlags(WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON);
+  }
 
   /**
    * Returns the instance of the {@link ReactActivityDelegate}. Here we use a util

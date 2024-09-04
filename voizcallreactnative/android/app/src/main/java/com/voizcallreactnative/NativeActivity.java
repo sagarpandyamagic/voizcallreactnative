@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Build;
 import android.content.Intent;
 
-
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
@@ -28,6 +27,8 @@ import android.widget.Button;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import com.facebook.react.bridge.CatalystInstance;
+
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.ReactInstanceManager;
 import com.voizcallreactnative.MyNativeModule;
@@ -39,31 +40,39 @@ import android.app.KeyguardManager;
 import android.os.Build;
 import android.app.KeyguardManager;
 import android.os.Handler;
+import com.voizcallreactnative.MainApplication;
 
 public class NativeActivity extends AppCompatActivity {
+
+    private MyNativeModule nativeCallModule;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
         if (isSamsungDevice()) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
                 setShowWhenLocked(true);
                 setTurnScreenOn(true);
             } else {
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                                     WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
             }
             KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
             if (keyguardManager != null) {
-                keyguardManager.requestDismissKeyguard(this, null);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    keyguardManager.requestDismissKeyguard(this, null);
+                } else {
+                    keyguardManager.newKeyguardLock("VoizCall").disableKeyguard();
+                }
             }
         } else {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
-                                 WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
-                                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                                 WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+                    WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
+                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         }
-        
+
         setContentView(R.layout.activity_native);
 
         LinearLayout button = findViewById(R.id.ll_incoming_call_name);
@@ -75,14 +84,7 @@ public class NativeActivity extends AppCompatActivity {
             }
         });
 
-        // new Handler().postDelayed(new Runnable() {
-        //     @Override
-        //     public void run() {
-        //         callReactNativeMethod();
-        //     }
-        // }, 2000);
-
-        wakeUpScreen();
+        // wakeUpScreen();
     }
 
     private boolean isSamsungDevice() {
@@ -90,38 +92,61 @@ public class NativeActivity extends AppCompatActivity {
         return manufacturer != null && manufacturer.toLowerCase().contains("samsung");
     }
 
-
     private void callReactNativeMethod() {
         try {
-            ReactInstanceManager reactInstanceManager = ((MainApplication) getApplication()).getReactNativeHost().getReactInstanceManager();
-            ReactContext reactContext = reactInstanceManager.getCurrentReactContext();
-            if (reactContext != null) {
-                MyNativeModule nativeCallModule = reactContext.getNativeModule(MyNativeModule.class);
-                if (nativeCallModule != null) {
-                    nativeCallModule.acceptCall();
-                    finish();
+
+            ReactInstanceManager reactInstanceManager = ((MainApplication) getApplication()).getReactNativeHost()
+                    .getReactInstanceManager();
+            if (reactInstanceManager.hasStartedCreatingInitialContext()) {
+                Log.i("NativeActivity", "hasStartedCreatingInitialContext");
+
+                ReactContext reactContext = reactInstanceManager.getCurrentReactContext();
+                if (reactContext != null) {
+                    nativeCallModule = reactContext.getNativeModule(MyNativeModule.class);
+                    if (nativeCallModule != null) {
+                        nativeCallModule.acceptCall();
+                        finish();
+                        Log.d("NativeActivity", "MyNativeModule initialized successfully");
+                    } else {
+                        Log.e("NativeActivity", "Failed to initialize MyNativeModule");
+                    }
                 } else {
-                    Log.e("NativeActivity", "MyNativeModule is null");
+                    reactInstanceManager.createReactContextInBackground();
+                    Log.e("NativeActivity", "React context is null");
                 }
             } else {
-                Log.e("NativeActivity", "ReactContext is null");
-                // Optionally, you can try to initialize the React context here
-                reactInstanceManager.createReactContextInBackground();
+                Log.i("NativeActivity", "React started creating initial context");
+                reactInstanceManager
+                        .addReactInstanceEventListener(new ReactInstanceManager.ReactInstanceEventListener() {
+                            @Override
+                            public void onReactContextInitialized(ReactContext context) {
+                                Log.i("NativeActivity", "React context initialized");
+                                nativeCallModule = context.getNativeModule(MyNativeModule.class);
+                                Log.i("NativeActivity", "nativeCallModule instance obtained");
+                                if (nativeCallModule != null) {
+                                    nativeCallModule.acceptCall();
+                                    finish();
+                                    Log.d("NativeActivity", "MyNativeModule initialized successfully");
+                                } else {
+                                    Log.e("NativeActivity", "Failed to initialize MyNativeModule");
+                                }
+                            }
+                        });
             }
         } catch (Exception e) {
-            Log.e("NativeActivity", "Error calling React Native method", e);
+            Log.e("NativeActivity-error", e.toString());
         }
     }
-    
 
     private void wakeUpScreen() {
         PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
         PowerManager.WakeLock wakeLock = powerManager.newWakeLock(
-            PowerManager.FULL_WAKE_LOCK |
-            PowerManager.ACQUIRE_CAUSES_WAKEUP |
-            PowerManager.ON_AFTER_RELEASE, "MyApp::NotificationWakeLock");
+                PowerManager.FULL_WAKE_LOCK |
+                        PowerManager.ACQUIRE_CAUSES_WAKEUP |
+                        PowerManager.ON_AFTER_RELEASE,
+                "MyApp::NotificationWakeLock");
 
-         wakeLock.acquire(3000); // Wake up the screen for 3 seconds
+        wakeLock.acquire(3000); // Wake up the screen for 3 seconds
 
         // Optionally release the wake lock immediately after waking up
         wakeLock.release();

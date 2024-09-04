@@ -7,6 +7,7 @@
 
 import React, { Component, useEffect, useState } from 'react';
 import {
+  AppState,
   NativeEventEmitter,
   NativeModules,
   Platform,
@@ -38,68 +39,86 @@ import { CallTimerDuraionProvider } from './src/hook/CallTimer';
 import { voipConfig } from './src/services/voipConfig';
 import VoipPushNotification from "react-native-voip-push-notification";
 import Splash from 'react-native-splash-screen'
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { updateSipState } from './src/store/sipSlice';
 import { hasOverlayPermission, requestOverlayPermission } from './src/HelperClass/OverlayPermission';
-
+import store from './src/store/store';
+import { setInitTimeValue } from './src/services/setInitVlaue';
+import messaging from '@react-native-firebase/messaging';
+import { firebaseListener, showCallNotification } from './index';
+import { useNavigation } from '@react-navigation/native';
 
 function App() {
   const Stack = createStackNavigator();
-  const dispatch = useDispatch();
   const { MyNativeModule } = NativeModules;
   const myNativeModuleEmitter = new NativeEventEmitter(MyNativeModule);
-
   const [hasPermission, setHasPermission] = useState(false);
+  const [isNotifcionCome, setisNotifcionCome] = useState("TabBar");
+  const {AppOpenTimeRootChange} = useSelector((state) => state.sip);
 
 
   const openNativeLayouta = () => {
     if (MyNativeModule) {
-      MyNativeModule.notificationService();
+      MyNativeModule.openNativeLayout();
+      //  showCallNotification("John Doe");
     } else {
       console.error('MyNativeModule is not available');
     }
   };
 
+  const applyFlags = () => {
+    if (MyNativeModule) {
+      MyNativeModule.applyFlags();
+    } else {
+      console.error('MyNativeModule is not available');
+    }
+  };
+
+
+  useEffect(() => {
+    if(AppOpenTimeRootChange === 'TabBar'){
+      openNativeLayouta();
+      applyFlags();
+    }
+  }, [AppOpenTimeRootChange]);
+
   useEffect(() => {
     const subscription = myNativeModuleEmitter.addListener(
       'onCallAccepted',
       (event) => {
-        console.log('Call accepted');
-      
-          // MyNativeModule.lockScreen(
-          //   (error: any) => {
-          //     console.error('Failed to lock screen:', error);
-          //   },
-          //   (success: any) => {
-          //     console.log('Screen locked:', success);
-          //   }
-          // );
-        dispatch(updateSipState({ key: "CallScreenOpen", value: true }));
-        dispatch(updateSipState({ key: "CallAns", value: false }));
+        try {
+          console.log('Call accepted');
+          store.dispatch(updateSipState({ key: "CallScreenOpen", value: true }));
+          store.dispatch(updateSipState({ key: "CallAns", value: false }));
+        } catch (error) {
+          console.error('Error handling onCallAccepted event:', error);
+        }
       }
     );
 
     return () => {
-      subscription.remove();
+      if (subscription) {
+        subscription.remove();
+      }
     };
-  }, [dispatch]);
+  }, []);
 
 
 
   useEffect(() => {
     requestUserPermission()
-     FCMDelegateMethod()
-     requestPermissions()
+    FCMDelegateMethod()
+    requestPermissions()
     if (Platform.OS != "android") {
       console.log("Platform.OS", Platform.OS)
       Platform.OS == "ios" && VoipPushNotification.registerVoipToken();
       Platform.OS == "ios" && voipConfig();
-    }else{
+    } else {
       checkPermission();
       // openNativeLayouta()
+      // MyNativeModule.removeFlags()
       Splash.hide()
     }
-    
   }, [])
 
 
@@ -126,7 +145,7 @@ function App() {
     <SafeAreaProvider>
       <NavigationContainer>
         <CallTimerDuraionProvider>
-          <Stack.Navigator initialRouteName='SplashScreen'>
+          <Stack.Navigator initialRouteName={AppOpenTimeRootChange}>
             <Stack.Screen options={{ headerShown: false }} name="SplashScreen" component={SplashScreen} />
             <Stack.Screen options={{ headerShown: false }} name="Login" component={Login} />
             <Stack.Screen
@@ -165,6 +184,7 @@ function App() {
               },
               headerTintColor: '#fff', // Change the header text color if needed
             }} />
+
             {/* <Stack.Screen name="AudioCallingScreen" component={AudioCallingScreen} options={{
             headerShown: false,
             headerStyle: {

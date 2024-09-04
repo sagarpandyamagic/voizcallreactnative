@@ -11,7 +11,6 @@ import com.facebook.soloader.SoLoader;
 import com.facebook.react.ReactInstanceManager;
 import android.content.Context;
 import java.lang.reflect.InvocationTargetException;
-import com.voizcallreactnative.DeviceLockModule;
 
 
 

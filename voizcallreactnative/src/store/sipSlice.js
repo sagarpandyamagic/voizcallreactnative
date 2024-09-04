@@ -32,7 +32,8 @@ const initialState = {
   AppISBackGround:false,
   registerer:{},
   UserActive:true,
-  UserDND:false
+  UserDND:false,
+  AppOpenTimeRootChange:"SplashScreen",
 }
 
 const counterSlice = createSlice({

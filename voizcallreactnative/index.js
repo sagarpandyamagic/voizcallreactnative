@@ -2,12 +2,11 @@
  * @format
  */
 
-import firestore from "@react-native-firebase/firestore";
 import messaging from "@react-native-firebase/messaging";
-import { AppRegistry, AppState, NativeModules, Platform } from 'react-native';
+import { AppRegistry, AppState, NativeEventEmitter, NativeModules, Platform } from 'react-native';
 import App from './App';
 import { name as appName } from './app.json';
-import { Provider, connect, useSelector } from 'react-redux';
+import { Provider, connect, useDispatch, useSelector } from 'react-redux';
 import store from './src/store/store';
 import RNCallKeep from "react-native-callkeep";
 import SipUA, { getContactTableData } from "./src/services/call/SipUA";
@@ -18,14 +17,117 @@ import { setInitTimeValue } from "./src/services/setInitVlaue";
 import { updateSipState } from "./src/store/sipSlice";
 import { AppStoreData } from "./src/components/utils/UserData";
 import { StorageKey } from "./src/HelperClass/Constant";
+import PushNotification from 'react-native-push-notification';
 
 setInitTimeValue()
 const { MyNativeModule } = NativeModules;
 
+// const myNativeModuleEmitter = new NativeEventEmitter(MyNativeModule);
+// myNativeModuleEmitter.addListener(
+//   'onCallAccepted',
+//   (event) => {
+//     try {
+//       console.log('Call accepted');
+//       store.dispatch(updateSipState({ key: "CallScreenOpen", value: true }));
+//       store.dispatch(updateSipState({ key: "CallAns", value: false }));
+//     } catch (error) {
+//       console.error('Error handling onCallAccepted event:', error);
+//     }
+//   }
+// );
+
+PushNotification.configure({
+  // (required) Called when a remote or local notification is opened or received
+  onNotification: function (notification) {
+    console.log('NOTIFICATIONcheck:', notification);
+    console.log("ACTION:", JSON.parse(notification.actions));
+    const actions = JSON.parse(notification.actions);
+    if (actions.includes("Answer")) {
+      console.log("Call answered");
+      const dispatch = store.dispatch();
+      dispatch(updateSipState({ key: "CallScreenOpen", value: true }));
+      dispatch(updateSipState({ key: "CallAns", value: false }));
+      PushNotification.cancelAllLocalNotifications();
+    } else if (actions.includes("Decline")) {
+      console.log("Call declined");
+      PushNotification.cancelAllLocalNotifications();
+    }
+  },
+  onNotification: (notification) => {
+    console.log('Notification received:', notification);
+    // Automatically open the app when a notification is received
+    console.log("ACTION:", JSON.parse(notification.actions));
+
+    PushNotification.invokeApp(notification);
+    const actions = JSON.parse(notification.actions);
+    if (actions.includes("Answer")) {
+      console.log("Call answered");
+    }
+  },
+  popInitialNotification: true,
+  requestPermissions: true,
+  onRegister: function (token) {
+    console.log("TOKEN:", token);
+  },
+
+})
+
+
+PushNotification.createChannel(
+  {
+    channelId: "call-channel",
+    channelName: "Call Notifications",
+    channelDescription: "Notifications for incoming calls",
+    playSound: true,
+    soundName: "default",
+    importance: 4,
+    vibrate: true,
+  },
+  (created) => console.log(`CreateChannel returned '${created}'`)
+);
+
+
+export const showCallNotification = (callerName) => {
+  PushNotification.localNotification({
+    /* Android Only Properties */
+    channelId: "call-channel",
+    ticker: "Incoming Call",
+    autoCancel: true,
+    largeIcon: "ic_launcher",
+    smallIcon: "ic_notification",
+    bigText: `Incoming call from ${callerName}`,
+    subText: "Tap to open",
+    vibrate: true,
+    vibration: 300,
+    tag: "incoming_call",
+    group: "call",
+    ongoing: true,
+
+    /* iOS and Android properties */
+    title: "Incoming Call",
+    message: callerName,
+    playSound: true,
+    soundName: "default",
+    number: 10,
+    actions: JSON.stringify(["Answer", "Decline"]),
+  });
+};
+
 
 const openNativeLayouta = () => {
   if (MyNativeModule) {
-    MyNativeModule.openNativeLayout();
+    // MyNativeModule.openNativeLayout();
+    MyNativeModule.showSplashScreen();
+    store.dispatch(updateSipState({ key: "AppOpenTimeRootChange", value: "TabBar" }));
+    // showCallNotification("John Doe");
+  } else {
+    console.error('MyNativeModule is not available');
+  }
+};
+
+const applyFlags = () => {
+  if (MyNativeModule) {
+    MyNativeModule.applyFlags();
   } else {
     console.error('MyNativeModule is not available');
   }
@@ -33,31 +135,38 @@ const openNativeLayouta = () => {
 
 
 const firebaseListener = async (remoteMessage) => {
-  // BackgroundTimer.start();
+  BackgroundTimer.start();
   console.log('Message handled in the foreground!11', remoteMessage);
 
+  
   await AppStoreData(StorageKey.CallKeepORNot, true);
 
-  // NativeModules.openNotificationService();
-  try {
-   MyNativeModule.applyFlags()
-  }catch (error) {
-    console.error('Error calling applyFlags:', error);
-  }
-  //  openNativeLayouta()
- 
+  // try {
+  //   applyFlags()
+  // } catch (error) {
+  //   console.error('Error calling applyFlags:', error);
+  // }
+
+
+
   try {
     openNativeLayouta()
-   }catch (error) {
-     console.error('Error calling applyFlags:', error);
-   }
-  
+    // Force app to foreground on Android
+    if (AppState.currentState !== 'active') {
+      if (Platform.OS === 'android') {
+      }
+    }
+  } catch (error) {
+    console.error('Error calling applyFlags:', error);
+  }
 
-  // BackgroundTimer.setTimeout(() => {
-  //   openNativeLayouta()
-  // }, 2000);
 
-  
+
+  // if (AppState.currentState !== 'active') {
+  //     PushNotification.invokeApp();
+  // }
+
+
 
 
   // const incomingCallAnswer = ({ callUUID }) => {
@@ -93,17 +202,22 @@ const firebaseListener = async (remoteMessage) => {
 };
 
 messaging().onMessage(async (remoteMessage) => {
-
   console.log('Message handled in the foreground!ee', remoteMessage);
-
   await AppStoreData(StorageKey.CallKeepORNot, true);
 
-  // NativeModules.openNotificationService();
-  //  MyNativeModule.applyFlags()
-  //  openNativeLayouta()
- 
-  openNativeLayouta()
-  
+  try {
+    applyFlags()
+  } catch (error) {
+    console.error('Error calling applyFlags:', error);
+  }
+
+  try {
+    openNativeLayouta()
+  } catch (error) {
+    console.error('Error calling applyFlags:', error);
+  }
+
+
   // BackgroundTimer.start();
   // console.log('Message handled in the foreground!ee', remoteMessage);
 
