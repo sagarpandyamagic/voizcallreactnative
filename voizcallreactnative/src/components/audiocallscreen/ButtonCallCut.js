@@ -6,6 +6,7 @@ import {
     Dimensions,
     TouchableOpacity,
     NativeModules,
+    Platform,
 } from 'react-native';
 import { React, useState } from 'react';
 import ic_decline_call from '../../../Assets/ic_decline_call.png'
@@ -34,13 +35,12 @@ const ButtonCallCut = () => {
             // console.log("activeseationkey",activeseationkey)
             SipUA.hangupSession(activeseationkey)
         } else {
-            incomingusebyClass.endIncomingcallAnswer();
+            if(Platform.OS  == "ios") {
+                incomingusebyClass.endIncomingcallAnswer();
+            }
             SipUA.hangupCall(phoneNumber[0])
             InCallManager.setSpeakerphoneOn(false);
             InCallManager.stop();
-            // setTimeout(() => {
-            //     MyNativeModule.removeFlags()
-            // }, 2000);
         }
 
     }

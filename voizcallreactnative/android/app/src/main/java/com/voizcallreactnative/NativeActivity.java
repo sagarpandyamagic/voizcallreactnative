@@ -40,15 +40,23 @@ import android.os.Build;
 import android.app.KeyguardManager;
 import android.os.Handler;
 import com.voizcallreactnative.MainApplication;
+import android.widget.TextView;
+import android.app.Activity;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.Observer;
+import com.voizcallreactnative.MyNativeModule;
+import androidx.lifecycle.Observer;
+import androidx.appcompat.app.AppCompatActivity;
+
 
 public class NativeActivity extends AppCompatActivity {
 
     private MyNativeModule nativeCallModule;
+    
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         if (isSamsungDevice()) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
                 setShowWhenLocked(true);
@@ -74,24 +82,77 @@ public class NativeActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_native);
 
-        LinearLayout button = findViewById(R.id.ll_incoming_call_name);
-        button.setOnClickListener(new View.OnClickListener() {
+        String name = String.valueOf(getIntent().getStringExtra("name"));
+        String number = String.valueOf(getIntent().getStringExtra("number"));
+
+        TextView txtIncomingCallName = findViewById(R.id.txt_incoming_call_name);
+        TextView txtIncomingCallNumber = findViewById(R.id.txt_incoming_call_number);
+
+        txtIncomingCallName.setText(name);
+        txtIncomingCallNumber.setText(number);
+
+        LinearLayout llIncomingAccept = findViewById(R.id.ll_incoming_accept);
+        llIncomingAccept.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                callReactNativeMethod();
+                callReactNativeMethodForCall(true);
                 Log.i("NativeActivity", "Button Click->");
             }
         });
 
-        // wakeUpScreen();
+        LinearLayout llIncomingDecline = findViewById(R.id.ll_incoming_decline);
+        llIncomingDecline.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                callReactNativeMethodForCall(false);
+                Log.i("NativeActivity", "Button Click->");
+            }
+        });
+
+        observeData();
     }
 
+    
+    public void dismissScreen() {
+        onBackPressed();
+    }
     private boolean isSamsungDevice() {
         String manufacturer = Build.MANUFACTURER;
         return manufacturer != null && manufacturer.toLowerCase().contains("samsung");
     }
 
-    private void callReactNativeMethod() {
+    private void observeData() {
+        // Assuming that `MyNativeModule` is properly instantiated in the ReactNative environment
+        // ReactInstanceManager reactInstanceManager = ((MainApplication) getApplication()).getReactNativeHost()
+        //         .getReactInstanceManager();
+
+        // if (reactInstanceManager.hasStartedCreatingInitialContext()) {
+        //     ReactContext reactContext = reactInstanceManager.getCurrentReactContext();
+        //     if (reactContext != null) {
+        //         nativeCallModule = reactContext.getNativeModule(MyNativeModule.class);
+        //         if (nativeCallModule != null) {
+        //             nativeCallModule.getLiveData().observe(this, new Observer<String>() {
+        //                 @Override
+        //                 public void onChanged(String data) {
+        //                     Log.d("NativeActivity", "Received data: " + data);
+        //                     handleDataUpdate(data);
+        //                 }
+        //             });
+        //         }
+        //     }
+        // }
+        MyNativeModule.getLiveData().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(String data) {
+                Log.d("NativeActivity", "LiveData changed: " + data);
+                // Perform operations based on updated data
+                dismissScreen(); 
+            }
+        });
+
+    }
+
+    private void callReactNativeMethodForCall(boolean isAcceptCall) {
         try {
 
             ReactInstanceManager reactInstanceManager = ((MainApplication) getApplication()).getReactNativeHost()
@@ -103,8 +164,13 @@ public class NativeActivity extends AppCompatActivity {
                 if (reactContext != null) {
                     nativeCallModule = reactContext.getNativeModule(MyNativeModule.class);
                     if (nativeCallModule != null) {
-                        nativeCallModule.acceptCall();
+                        if(isAcceptCall){
+                            nativeCallModule.acceptCall();
+                        }else{
+                            nativeCallModule.declineCall();
+                        }
                         finish();
+                        
                         Log.d("NativeActivity", "MyNativeModule initialized successfully");
                     } else {
                         Log.e("NativeActivity", "Failed to initialize MyNativeModule");
@@ -135,19 +201,5 @@ public class NativeActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.e("NativeActivity-error", e.toString());
         }
-    }
-
-    private void wakeUpScreen() {
-        PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(
-                PowerManager.FULL_WAKE_LOCK |
-                        PowerManager.ACQUIRE_CAUSES_WAKEUP |
-                        PowerManager.ON_AFTER_RELEASE,
-                "MyApp::NotificationWakeLock");
-
-        wakeLock.acquire(3000); // Wake up the screen for 3 seconds
-
-        // Optionally release the wake lock immediately after waking up
-        wakeLock.release();
     }
 }

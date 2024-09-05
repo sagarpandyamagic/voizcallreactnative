@@ -18,6 +18,7 @@ import { updateSipState } from "./src/store/sipSlice";
 import { AppStoreData } from "./src/components/utils/UserData";
 import { StorageKey } from "./src/HelperClass/Constant";
 import PushNotification from 'react-native-push-notification';
+import { getNameByPhoneNumber } from "./src/HelperClass/ContactNameGetCallTime";
 
 setInitTimeValue()
 const { MyNativeModule } = NativeModules;
@@ -103,17 +104,18 @@ export const showCallNotification = (callerName) => {
   });
 };
 
-const openNativeLayouta = () => {
+const NavigateToNativeLayout = (name,phoneNumber) => {
+  console.log("NavigateToNativeLayout", name, phoneNumber)
   if (MyNativeModule) {
     const lastOpenTime = store.getState().sip.terminationTime || 0;
     console.log("lastOpenTime", lastOpenTime)
     const CurrntTime  = new Date().getTime();
     console.log("currentTime", CurrntTime)
     if (CurrntTime - lastOpenTime > 2000) { // 5000 milliseconds = 5 seconds
-      console.log("openNativeLayouta", "ActiveApp")
-      MyNativeModule.openNativeLayout();
+      console.log("NavigateToNativeLayout", "ActiveApp")
+      MyNativeModule.openNativeLayout(name,phoneNumber);
     } else {
-      console.log("openNativeLayouta", "Terminated")
+      console.log("NavigateToNativeLayout", "Terminated")
       MyNativeModule.showSplashScreen();
       store.dispatch(updateSipState({ key: "AppOpenTimeRootChange", value: "TabBar" }));
     }
@@ -146,12 +148,7 @@ const firebaseListener = async (remoteMessage) => {
   }
 
   try {
-    openNativeLayouta()
-    // Force app to foreground on Android
-    if (AppState.currentState !== 'active') {
-      if (Platform.OS === 'android') {
-      }
-    }
+    NavigateToNativeLayout("Test",remoteMessage.from)
   } catch (error) {
     console.error('Error calling applyFlags:', error);
   }
@@ -168,8 +165,9 @@ messaging().onMessage(async (remoteMessage) => {
     console.error('Error calling applyFlags:', error);
   }
 
+ 
   try {
-    openNativeLayouta()
+    NavigateToNativeLayout("Test",remoteMessage.from)
   } catch (error) {
     console.error('Error calling applyFlags:', error);
   }

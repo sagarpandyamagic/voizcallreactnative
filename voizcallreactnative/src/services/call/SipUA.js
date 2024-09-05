@@ -243,10 +243,6 @@ class SipClinet {
                 break
               case RegistererState.Terminated:
                 store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
-                store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
-
-              
-
                 console.log('UserAgent ==> Terminated')
                 USERAGENT.stop()
                 break
@@ -369,19 +365,8 @@ class SipClinet {
                 // console.log('Terminating')
                 break
               case 'Terminated':
-                // console.log('Terminated Call')
-                // TimerActio('stop')
-
-                // const callLog = {
-                //   "number": number,
-                //   "direction": "Incomging",
-                //   "duration": callDuration,
-                //   "current_time": timeStore != "" ? format(timeStore, 'yyyy-MM-dd kk:mm:ss') : "00:00:00",
-                //   "name": store.getState().sip.Caller_Name == "" ? "Unknown" : store.getState().sip.Caller_Name,
-                //   "id": `${new Date().getTime()}`
-                // }
-                // CallLogStore(callLog)
-                // console.log('Terminated')
+                console.log('Terminated Call')
+               
                 store.dispatch(updateSipState({ key: "CallAns", value: false }))
                 store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
                 store.dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
@@ -391,16 +376,20 @@ class SipClinet {
                 store.dispatch(updateSipState({ key: "ISConfrenceTransfer", value: false }))
                 store.dispatch(updateSipState({ key: "Caller_Name", value: "" }))
                 store.dispatch(removeSession(invitation.id))
-                incomingusebyClass.endIncomingcallAnswer();
+                
                 inCallManager.stopProximitySensor(); // Disable
 
-                if (Platform.OS == "android"){
+                if (Platform.OS == "android") {
+                  console.log('RemoveIncomingScreen')
+
+                  MyNativeModule.RemoveIncomingScreen()
+
                   setTimeout(() => {
                     MyNativeModule.removeFlags()
                   }, 2000);
+                } else {
+                  incomingusebyClass.endIncomingcallAnswer();
                 }
-               
-                
                 break
               default:
               // console.log('Unknow Incomming Session state')
@@ -535,13 +524,15 @@ class SipClinet {
             store.dispatch(updateSipState({ key: "Caller_Name", value: "" }))
             console.log("session.id", session.id)
             store.dispatch(removeSession(session.id))
-            incomingusebyClass.endIncomingcallAnswer();
+
             inCallManager.stopProximitySensor();
-           
-            if (Platform.OS == "android"){
+
+            if (Platform.OS == "android") {
               setTimeout(() => {
                 MyNativeModule.removeFlags()
               }, 2000);
+            } else {
+              incomingusebyClass.endIncomingcallAnswer();
             }
             // if (session) {
             //   session.cancel();
@@ -667,7 +658,13 @@ class SipClinet {
     store.dispatch(updateSipState({ key: "ISAttendedTransfer", value: false }))
     store.dispatch(updateSipState({ key: "ISConfrenceTransfer", value: false }))
     store.dispatch(updateSipState({ key: "Caller_Name", value: "" }))
-    incomingusebyClass.endIncomingcallAnswer();
+    // if (Platform.OS == "android") {
+    //   setTimeout(() => {
+    //     MyNativeModule.removeFlags()
+    //   }, 1000);
+    // } else {
+    //   incomingusebyClass.endIncomingcallAnswer();
+    // }
   }
 
   accepctCall = () => {

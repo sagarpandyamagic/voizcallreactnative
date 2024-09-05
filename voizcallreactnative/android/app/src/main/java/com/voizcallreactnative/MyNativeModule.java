@@ -40,6 +40,10 @@ import android.os.PowerManager;
 import android.view.WindowManager;
 import android.app.KeyguardManager;
 import android.app.Activity;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.LiveData;
 
 @ReactModule(name = "MyNativeModule")
 public class MyNativeModule extends ReactContextBaseJavaModule {
@@ -48,11 +52,28 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
     private static final int OVERLAY_PERMISSION_REQ_CODE = 1;
     private Promise mPromise;
     private PowerManager.WakeLock wakeLock;
+    private static MutableLiveData<String> liveData = new MutableLiveData<>();
 
     MyNativeModule(ReactApplicationContext context) {
         super(context);
         reactContext = context;
         reactContext.addActivityEventListener(mActivityEventListener);
+    }
+
+    // Method to get LiveData
+    public static MutableLiveData<String> getLiveData() {
+        return liveData;
+    }
+
+    // Method to update LiveData
+    public void updateData(String data) {
+        liveData.postValue(data); // This will trigger observers
+    }
+
+    // For example: Use this method to trigger updates
+    @ReactMethod
+    public void triggerUpdateFromJS(String data) {
+        updateData(data); // Updating LiveData which will notify observers
     }
 
     private final ActivityEventListener mActivityEventListener = new BaseActivityEventListener() {
@@ -101,8 +122,12 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void openNativeLayout() {
+    public void openNativeLayout(String name, String number) {
+        Log.d("openNativeLayout", "Create event name: " + name
+                + " and Number: " + number);
         Intent intent = new Intent(reactContext, NativeActivity.class);
+        intent.putExtra("name", name);
+        intent.putExtra("number", number);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         reactContext.startActivity(intent);
     }
@@ -128,25 +153,6 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
                 "MyApp::MyWakelockTag");
         wakeLock.acquire(10 * 60 * 1000L /* 10 minutes */);
 
-        // // Apply flags to show over lock screen
-        // applyFlags();
-
-        // // Open your app's main activity
-
-        // final Activity activity = getCurrentActivity();
-        // if (activity != null) {
-        // activity.runOnUiThread(new Runnable() {
-        // @Override
-        // public void run() {
-        // try {
-        // openNativeLayout();
-        // } catch (Exception e) {
-        // Log.e("MyNativeModule", "Error clearing window flags", e);
-        // }
-        // }
-        // });
-        // }
-
         releaseWakeLock();
     }
 
@@ -165,6 +171,13 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
         WritableMap params = Arguments.createMap();
         params.putBoolean("accepted", true);
         sendEvent("onCallAccepted", null);
+    }
+
+    @ReactMethod
+    public void declineCall() {
+        WritableMap params = Arguments.createMap();
+        params.putBoolean("declined", true);
+        sendEvent("onCallDeclined", null);
     }
 
     private void sendEvent(String eventName, WritableMap params) {
@@ -281,10 +294,19 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
         reactContext.startActivity(intent);
     }
 
-    @ReactMethod
-    public void CallerNumberOrNameSet(String name, String number) {
-        Log.d("CallerNumberOrNameSet", "Create event name: " + name
-                + " and Number: " + number);
-    }
+    // @ReactMethod
+    // public void RemoveIncomingScreen() {
+    // Log.d("RemoveIncomingScreen", "RemoveIncomingScreen");
+    // NativeActivity.activity.onBackPressed();
+    // // NativeActivity.activity.finish();
+    // }
 
+    @ReactMethod
+    public void RemoveIncomingScreen() {
+        // Activity activity = getCurrentActivity();
+        // if (activity != null) {
+        //     activity.finish();
+        // }
+        triggerUpdateFromJS("dismiss");
+    }
 }

@@ -47,6 +47,7 @@ import { setInitTimeValue } from './src/services/setInitVlaue';
 import messaging from '@react-native-firebase/messaging';
 import { firebaseListener, showCallNotification } from './index';
 import { useNavigation } from '@react-navigation/native';
+import SipUA from './src/services/call/SipUA';
 
 function App() {
   const Stack = createStackNavigator();
@@ -56,9 +57,9 @@ function App() {
   const [isNotifcionCome, setisNotifcionCome] = useState("TabBar");
   const {AppOpenTimeRootChange} = useSelector((state) => state.sip);
 
-  const openNativeLayouta = () => {
+  const NavigateToNativeLayout = (name,phoneNumber) => {
     if (MyNativeModule) {
-      MyNativeModule.openNativeLayout();
+      MyNativeModule.openNativeLayout(name, phoneNumber);
       //  showCallNotification("John Doe");
     } else {
       console.error('MyNativeModule is not available');
@@ -75,7 +76,7 @@ function App() {
 
   useEffect(() => {
     if(AppOpenTimeRootChange === 'TabBar'){
-      openNativeLayouta();
+      NavigateToNativeLayout("test2", "5555555555");
       applyFlags();
     }
   }, [AppOpenTimeRootChange]);
@@ -101,11 +102,32 @@ function App() {
     };
   }, []);
 
+
+  useEffect(() => {
+    const subscription = myNativeModuleEmitter.addListener(
+      'onCallDeclined',
+      (event) => {
+        try {
+          console.log('Call Declined');
+          SipUA.hangupCall()
+        } catch (error) {
+          console.error('Error handling onCallDeclined event:', error);
+        }
+      }
+    );
+
+    return () => {
+      if (subscription) {
+        subscription.remove();
+      }
+    };
+  }, []);
+
+
   useEffect(() => {
     requestUserPermission()
-    FCMDelegateMethod()
+    // FCMDelegateMethod()
     requestPermissions()
-    // openNativeLayouta();
     if (Platform.OS != "android") {
       console.log("Platform.OS", Platform.OS)
       Platform.OS == "ios" && VoipPushNotification.registerVoipToken();
@@ -114,7 +136,6 @@ function App() {
       checkPermission();
       Splash.hide()
     }
-    MyNativeModule.CallerNumberOrNameSet("sager","123456789")
   }, [])
 
   const checkPermission = async () => {
