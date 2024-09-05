@@ -55,7 +55,7 @@ function App() {
   const myNativeModuleEmitter = new NativeEventEmitter(MyNativeModule);
   const [hasPermission, setHasPermission] = useState(false);
   const [isNotifcionCome, setisNotifcionCome] = useState("TabBar");
-  const {AppOpenTimeRootChange} = useSelector((state) => state.sip);
+  const {AppOpenTimeRootChange,IncomingCallNumber,soketConnect} = useSelector((state) => state.sip);
 
   const NavigateToNativeLayout = (name,phoneNumber) => {
     if (MyNativeModule) {
@@ -76,7 +76,7 @@ function App() {
 
   useEffect(() => {
     if(AppOpenTimeRootChange === 'TabBar'){
-      NavigateToNativeLayout("test2", "5555555555");
+      NavigateToNativeLayout("Voizcall User", IncomingCallNumber);
       applyFlags();
     }
   }, [AppOpenTimeRootChange]);
@@ -134,7 +134,9 @@ function App() {
       Platform.OS == "ios" && voipConfig();
     } else {
       checkPermission();
-      Splash.hide()
+      setTimeout(() => {
+        Splash.hide()
+      }, 2000);
     }
   }, [])
 

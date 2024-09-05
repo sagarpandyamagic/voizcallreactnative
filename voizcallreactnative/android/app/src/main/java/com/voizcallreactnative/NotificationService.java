@@ -34,7 +34,6 @@ public class NotificationService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        
         Log.i("ForegroundService", "Service created");
     }
 

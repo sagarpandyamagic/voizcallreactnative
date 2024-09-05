@@ -323,6 +323,8 @@ class SipClinet {
 
           store.dispatch(updateSipState({ key: "CallAns", value: true }))  // Change TEST
 
+          store.dispatch(updateSipState({ key: "CallInitial", value: true }));
+
           invitation.delegate = {
             //  Handle incoming onCancel request
             onRefer(referral) {
@@ -350,6 +352,7 @@ class SipClinet {
               case 'Initial':
                 console.log('incomming session state Initial')
                 inCallManager.startProximitySensor();
+                store.dispatch(updateSipState({ key: "CallInitial", value: true }))
 
                 break
               case 'Establishing':
@@ -358,7 +361,7 @@ class SipClinet {
               case 'Established':
                 timeStore = data
                 // TimerAction('start')
-                // console.log('Incoming Session state Established')
+                console.log('Incoming Session state Established')
                 setupRemoteMedia(invitation, false)
                 break
               case 'Terminating':
@@ -376,7 +379,8 @@ class SipClinet {
                 store.dispatch(updateSipState({ key: "ISConfrenceTransfer", value: false }))
                 store.dispatch(updateSipState({ key: "Caller_Name", value: "" }))
                 store.dispatch(removeSession(invitation.id))
-                
+                store.dispatch(updateSipState({ key: "CallInitial", value: false }))
+
                 inCallManager.stopProximitySensor(); // Disable
 
                 if (Platform.OS == "android") {

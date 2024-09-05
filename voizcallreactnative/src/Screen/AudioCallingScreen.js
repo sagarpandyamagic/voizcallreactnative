@@ -23,7 +23,7 @@ const { height, width } = Dimensions.get('window');
 
 function AudioCallingScreen() {
     InCallManager.start({ media: 'audio' }); // Start audio mode
-    const { CallScreenOpen, allSession, ISConfrenceTransfer ,session,CallType} = useSelector((state) => state.sip)
+    const { CallScreenOpen, allSession, ISConfrenceTransfer ,session,CallType,soketConnect,CallInitial} = useSelector((state) => state.sip)
     const [showtranspercall, setshowtranspercall] = useState(false)
     const dispatch = useDispatch()
     const transparentCall = () => {
@@ -38,10 +38,17 @@ function AudioCallingScreen() {
     }, [allSession])
 
     useEffect(() => {
-        if (session != {} && CallScreenOpen && CallType == "InComingCall") {
+        if (session != {} && CallScreenOpen && CallType == "InComingCall" && soketConnect&&CallInitial) {
             session && session.accept()
         }
     }, [CallScreenOpen]);
+
+    useEffect(() => {
+
+        if (session != {} && CallScreenOpen && CallType == "InComingCall" && soketConnect&&CallInitial) {
+            session && session.accept()
+        }
+    }, [CallInitial]);
 
 
     return (

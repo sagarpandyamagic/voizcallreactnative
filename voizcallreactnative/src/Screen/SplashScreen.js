@@ -7,14 +7,15 @@ import { React, useEffect, useState } from 'react';
 import { getSwitchConfig, POSTAPICALL } from '../services/auth';
 import LottieView from 'lottie-react-native';
 import { AppStoreData, getStorageData } from '../components/utils/UserData';
-import { AndroidVersion, IOSVersion, StorageKey, userprofilealias } from '../HelperClass/Constant';
+import { AndroidVersion, IOSVersion, StorageKey, THEME_COLORS, userprofilealias } from '../HelperClass/Constant';
 import { getConfigParamValue } from '../data/profileDatajson';
 import store from '../store/store';
 import SipUA from '../services/call/SipUA';
 import { APIURL } from '../HelperClass/APIURL';
 import { inticalluserData } from '../store/sipSlice';
 import UpdateApp from '../components/loginscreen/UpdateApp';
-import LodingJson from '../HelperClass/LodingJson';
+import LodingJsonFistScreen from '../HelperClass/LodingJsonFistScreen';
+import LoginTopSideVw from '../components/loginscreen/LoginTopSideVw';
 
 LogBox.ignoreLogs(['Warning: ...']);
 LogBox.ignoreAllLogs();
@@ -28,10 +29,6 @@ const SplashScreen = ({ navigation }) => {
     try {
       const value = await getStorageData(StorageKey.isLogin);
       if (value == true) {
-        // setLoading(true);
-        // navigation.navigate('TabBar')
-        // console.log("isgotologin", value)
-        // return
         setLoading(true);
         const pram = {
           "app_version":  Platform.OS === 'ios' ? IOSVersion : AndroidVersion
@@ -85,14 +82,15 @@ const SplashScreen = ({ navigation }) => {
   }, [navigation])
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center',backgroundColor:THEME_COLORS.black }}>
       {
-        <LodingJson loading={loading} setLoading={setLoading} />
+        <LodingJsonFistScreen loading={loading} setLoading={setLoading} />
       }
       {
         appUpdate ? <UpdateApp/> : <></>
       }
-      <Text style={{ fontSize: 25, textAlign: 'center' }}>Voiz Call</Text>
+       <LoginTopSideVw />
+      {/* <Text style={{ fontSize: 25, textAlign: 'center' }}>Voiz Call</Text> */}
     </View>
   )
 }

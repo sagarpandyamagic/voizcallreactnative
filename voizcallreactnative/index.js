@@ -147,8 +147,10 @@ const firebaseListener = async (remoteMessage) => {
     }
   }
 
+  await AppStoreData(StorageKey.IncomingCallNumber, remoteMessage.from);
+
   try {
-    NavigateToNativeLayout("Test",remoteMessage.from)
+    NavigateToNativeLayout("Voizcall User",remoteMessage.from)
   } catch (error) {
     console.error('Error calling applyFlags:', error);
   }

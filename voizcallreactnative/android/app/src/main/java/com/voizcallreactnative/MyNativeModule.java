@@ -50,6 +50,10 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
 
     private static ReactApplicationContext reactContext;
     private static final int OVERLAY_PERMISSION_REQ_CODE = 1;
+    public static  boolean IS_CALL_DECLINED = false;
+    public static  boolean IS_CALL_DECLINED_NATIVEACTIVITY = false;
+
+
     private Promise mPromise;
     private PowerManager.WakeLock wakeLock;
     private static MutableLiveData<String> liveData = new MutableLiveData<>();
@@ -67,6 +71,7 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
 
     // Method to update LiveData
     public void updateData(String data) {
+        Log.d("NativeActivity", "liveDatapostValue " + data);
         liveData.postValue(data); // This will trigger observers
     }
 
@@ -303,10 +308,12 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void RemoveIncomingScreen() {
-        // Activity activity = getCurrentActivity();
-        // if (activity != null) {
-        //     activity.finish();
-        // }
-        triggerUpdateFromJS("dismiss");
+        Log.d("RemoveIncomingScreen", "triggerUpdateFromJS");
+        if(IS_CALL_DECLINED_NATIVEACTIVITY){
+            IS_CALL_DECLINED_NATIVEACTIVITY = false;
+        }else{
+            IS_CALL_DECLINED = true;
+            triggerUpdateFromJS("dismiss");
+        }
     }
 }

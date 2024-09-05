@@ -52,7 +52,8 @@ import androidx.appcompat.app.AppCompatActivity;
 public class NativeActivity extends AppCompatActivity {
 
     private MyNativeModule nativeCallModule;
-    
+    private Observer<String> dataObserver = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,7 +115,7 @@ public class NativeActivity extends AppCompatActivity {
 
     
     public void dismissScreen() {
-        onBackPressed();
+        finish();
     }
     private boolean isSamsungDevice() {
         String manufacturer = Build.MANUFACTURER;
@@ -122,34 +123,38 @@ public class NativeActivity extends AppCompatActivity {
     }
 
     private void observeData() {
-        // Assuming that `MyNativeModule` is properly instantiated in the ReactNative environment
-        // ReactInstanceManager reactInstanceManager = ((MainApplication) getApplication()).getReactNativeHost()
-        //         .getReactInstanceManager();
+        if (dataObserver == null) {
+            dataObserver = new Observer<String>() {
+                @Override
+                public void onChanged(String data) {
+                    Log.d("NativeActivity", "LiveData changed: " + data);
+                    // Perform operations based on updated data
+                    if(MyNativeModule.IS_CALL_DECLINED){
+                        dismissScreen();
+                        Log.d("NativeActivity", "dismissScreen" + data);
+                        MyNativeModule.IS_CALL_DECLINED = false;
+                    }
+                }
+            };
+        }
+        MyNativeModule.getLiveData().observe(this, dataObserver);
+    }
 
-        // if (reactInstanceManager.hasStartedCreatingInitialContext()) {
-        //     ReactContext reactContext = reactInstanceManager.getCurrentReactContext();
-        //     if (reactContext != null) {
-        //         nativeCallModule = reactContext.getNativeModule(MyNativeModule.class);
-        //         if (nativeCallModule != null) {
-        //             nativeCallModule.getLiveData().observe(this, new Observer<String>() {
-        //                 @Override
-        //                 public void onChanged(String data) {
-        //                     Log.d("NativeActivity", "Received data: " + data);
-        //                     handleDataUpdate(data);
-        //                 }
-        //             });
-        //         }
-        //     }
-        // }
-        MyNativeModule.getLiveData().observe(this, new Observer<String>() {
-            @Override
-            public void onChanged(String data) {
-                Log.d("NativeActivity", "LiveData changed: " + data);
-                // Perform operations based on updated data
-                dismissScreen(); 
-            }
-        });
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("NativeActivity", "onResume Observer");
+       
+    }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (dataObserver != null) {
+            Log.d("NativeActivity", "onDestroy Observer");
+            MyNativeModule.getLiveData().removeObserver(dataObserver);
+            dataObserver = null;
+        }
     }
 
     private void callReactNativeMethodForCall(boolean isAcceptCall) {
@@ -170,7 +175,8 @@ public class NativeActivity extends AppCompatActivity {
                             nativeCallModule.declineCall();
                         }
                         finish();
-                        
+                        MyNativeModule.IS_CALL_DECLINED = false;
+                        MyNativeModule.IS_CALL_DECLINED_NATIVEACTIVITY = true;
                         Log.d("NativeActivity", "MyNativeModule initialized successfully");
                     } else {
                         Log.e("NativeActivity", "Failed to initialize MyNativeModule");
