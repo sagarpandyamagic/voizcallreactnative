@@ -309,6 +309,7 @@ class SipClinet {
 
           if (valueDND) {
             invitation.reject();
+            incomingusebyClass.endIncomingcallAnswer();
             return
           }
 
@@ -324,6 +325,21 @@ class SipClinet {
           store.dispatch(updateSipState({ key: "CallAns", value: true }))  // Change TEST
 
           store.dispatch(updateSipState({ key: "CallInitial", value: true }));
+
+          const { AppISBackGround } = store.getState().sip
+          console.log('AppISBackGround ==>',AppISBackGround)
+          if(AppISBackGround == true && Platform.OS == "android"){ 
+            try {
+              if (MyNativeModule) {
+                MyNativeModule.openNativeLayout("Voizcall User", number);
+              } else {
+                console.error('MyNativeModule is not available');
+              }
+            } catch (error) {
+              console.error('Error calling applyFlags:', error);
+            }
+          }
+         
 
           invitation.delegate = {
             //  Handle incoming onCancel request
@@ -352,7 +368,7 @@ class SipClinet {
               case 'Initial':
                 console.log('incomming session state Initial')
                 inCallManager.startProximitySensor();
-                store.dispatch(updateSipState({ key: "CallInitial", value: true }))
+                // store.dispatch(updateSipState({ key: "CallInitial", value: true }))
 
                 break
               case 'Establishing':
@@ -360,7 +376,6 @@ class SipClinet {
                 break
               case 'Established':
                 timeStore = data
-                // TimerAction('start')
                 console.log('Incoming Session state Established')
                 setupRemoteMedia(invitation, false)
                 break
@@ -369,7 +384,7 @@ class SipClinet {
                 break
               case 'Terminated':
                 console.log('Terminated Call')
-               
+
                 store.dispatch(updateSipState({ key: "CallAns", value: false }))
                 store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
                 store.dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
@@ -430,7 +445,7 @@ class SipClinet {
       const data = new Date()
       const sip_aor = `sip:${destination}@${store.getState().sip.Server}`
       const uri = UserAgent.makeURI(sip_aor)//`sip:${destination}@${"s1.netcitrus.com:7443"}`)
-      const _headers = []
+      const _headers = []//['X-effective_caller_id_number:' + "1234455555"]
       const earlyMedia = true
       const inviteOptions = {
         sessionDescriptionHandlerOptions: {
@@ -472,6 +487,7 @@ class SipClinet {
       // console.log("SessionID",SessionID)
       store.dispatch(addSession({ sessionID: SessionID, session: session }))
 
+      store.dispatch(updateSipState({ key: "CallInitial", value: true }));
 
 
 
@@ -511,11 +527,15 @@ class SipClinet {
             setupRemoteMedia(session, video)
             console.debug('Session has been ==> Established')
             console.debug('Session has been ==> Established')
-            RNCallKeep.startCall(incomingusebyClass.getCurrentCallId(), '1234567890', '1234567890');
-            incomingusebyClass.backToForeground()
-            BackgroundTimer.setTimeout(() => {
-              RNCallKeep.setCurrentCallActive(incomingusebyClass.getCurrentCallId());
-            }, 1000);
+            if (Platform.OS === 'ios') {
+              try {
+                incomingusebyClass.backToForeground()
+                RNCallKeep.startCall(incomingusebyClass.getCurrentCallId(), destination, destination);
+                RNCallKeep.setCurrentCallActive(incomingusebyClass.getCurrentCallId());
+              } catch (error) {
+                console.error('CallKeep error:', error);
+              }
+            }
             inCallManager.startProximitySensor();
             break
           case SessionState.Terminated:
@@ -526,6 +546,8 @@ class SipClinet {
             store.dispatch(updateSipState({ key: "ISAttendedTransfer", value: false }))
             store.dispatch(updateSipState({ key: "ISConfrenceTransfer", value: false }))
             store.dispatch(updateSipState({ key: "Caller_Name", value: "" }))
+            store.dispatch(updateSipState({ key: "CallInitial", value: false }));
+
             console.log("session.id", session.id)
             store.dispatch(removeSession(session.id))
 
@@ -538,30 +560,6 @@ class SipClinet {
             } else {
               incomingusebyClass.endIncomingcallAnswer();
             }
-            // if (session) {
-            //   session.cancel();
-            // }
-            // const callLog = {
-            //   "number": userNumber,
-            //   "direction": "OutGoing",
-            //   "duration": callDuration,
-            //   "current_time": format(timeStore, 'yyyy-MM-dd kk:mm:ss'),
-            //   "name": store.getState().sip.Caller_Name,
-            //   "id": `${new Date().getTime()}`
-            // }
-
-            // CallLogStore(callLog)
-            // console.log("newState->", session)
-            // if (Callcount == 1) {
-            //   store.dispatch(updateSipState({ key: "phoneNumber", value: [] }))
-            //   store.dispatch(updateSipState({ key: "allSession", value: {} }))
-            //   // incomingusebyClass.endIncomingcallAnswer();
-            // } else {
-            //   const SessionID = session?._id
-            //   store.dispatch(removeSession({ key: SessionID, value: session }))
-            // }
-            // console.log("phoneNumber->", store.getState.phoneNumber)
-            // console.log("allSession->", store.getState.allSession)
             break
           default:
             break

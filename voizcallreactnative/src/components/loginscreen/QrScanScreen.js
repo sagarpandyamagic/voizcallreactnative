@@ -22,6 +22,8 @@ import { inticalluserData } from '../../store/sipSlice';
 import store from '../../store/store';
 import SipUA from '../../services/call/SipUA';
 import { generateUniqueId } from '../../HelperClass/InstanceID';
+import LodingJson from '../../HelperClass/LodingJson';
+import { PushSubScribeNotificaion } from '../../services/PushSubScribeNotificaion';
 
 const QrScanScreen = ({ navigation }) => {
   const [flashMode, setFlashMode] = useState(RNCamera.Constants.FlashMode.off);
@@ -30,13 +32,9 @@ const QrScanScreen = ({ navigation }) => {
   const [systemName, setsystemName] = useState('');
   const [loading, setLoading] = useState(false);
 
-
   useEffect(() => {
     getDeviceId()
   }, [])
-
-  
-
 
   const toggleFlashlight = () => {
     setFlashMode((prevFlashMode) =>
@@ -52,7 +50,9 @@ const QrScanScreen = ({ navigation }) => {
       const deviceModel = DeviceInfo.getModel(); // Get the device model
       const systemName = DeviceInfo.getSystemName();
 
-      setdeviceId(deviceId)
+      const cleanedString = deviceId.replace(/-/g, '');
+      setdeviceId(cleanedString)
+      console.log('deviceId', deviceId);
       setdeviceModel(deviceModel)
       setsystemName(systemName)
       // console.log('Device ID:', deviceId);
@@ -71,16 +71,19 @@ const QrScanScreen = ({ navigation }) => {
 
       setLoading(true);
 
-      await AppStoreData(StorageKey.instance_id,generateUniqueId())
-       
+      await AppStoreData(StorageKey.instance_id, deviceId)
+      const Instanceid = await getStorageData(StorageKey.instance_id)
+      const FcmTokan = await getStorageData(StorageKey.FCM)
+
       const pram = {
         "qr_code": e.data,
-        "instance_id": await getStorageData(StorageKey.instance_id),
-        "device_token": deviceId,
-        "device_type": (Platform.IOS) ? "ios" : "android",
+        "instance_id": Instanceid,
+        "device_type": Platform.OS,
         "device_model": deviceModel,
-        "device_os": systemName
+        "device_os": systemName,
+        "device_token": FcmTokan
       }
+
       console.log(pram)
 
       setLoading(true);
@@ -91,19 +94,24 @@ const QrScanScreen = ({ navigation }) => {
       if (configInfo.success) {
         await AppStoreData(StorageKey.userData, configInfo.data.data)
         await AppStoreData(StorageKey.access_token, configInfo.data.access_token)
+        await AppStoreData(StorageKey.auth_type, configInfo.data.data.auth_type)
         await AppStoreData(StorageKey.isLogin, true)
+
         const value = await getStorageData(StorageKey.isLogin)
-        // console.log(value)
         const profileInfo = await getProfile()
+        console.log("profileInfo", profileInfo)
         if (profileInfo.success) {
-           await AppStoreData(StorageKey.userprofiledata, profileInfo.data.account_properties)
-           const sipusername = await getConfigParamValue(userprofilealias.sip_username)
-           const password = await getConfigParamValue(userprofilealias.sip_password)
-           const sipserver = await getConfigParamValue(userprofilealias.sip_sipServer)
-           const sipport = "7443"
-           store.dispatch(inticalluserData({sipusername,password,sipserver,sipport}))
-           SipUA.connect()
-           navigation.navigate('TabBar')
+          await AppStoreData(StorageKey.userprofiledata, profileInfo.data.account_properties)
+          const sipusername = await getConfigParamValue(userprofilealias.sip_username)
+          const password = await getConfigParamValue(userprofilealias.sip_password)
+          const sipserver = await getConfigParamValue(userprofilealias.sip_sipServer)
+          const sipport = "7443"
+          store.dispatch(inticalluserData({ sipusername, password, sipserver, sipport }))
+
+          await PushSubScribeNotificaion(configInfo.data.data)
+
+          SipUA.connect()
+          navigation.navigate('TabBar')
         }
         setLoading(false);
       } else {

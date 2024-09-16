@@ -17,7 +17,8 @@ export const APIURL = {
     CDRDelte: '/cdr/delete',
     PushSubscribeDelete: '/push/subscribe',
     GETENTERPRISEDIC: '/directory/get-enterprise_directory-detail',
-
+    VERIFY_OTP: '/auth/verify-otp',
+    RESETD_OTP: '/auth/resend-otp'
 
 }
 

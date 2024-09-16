@@ -10,6 +10,7 @@ export const setInitTimeValue = async () => {
     const isDND = await getStorageData(StorageKey.UserDND);
 
     const value = await getStorageData(StorageKey.isLogin);
+    console.log("userprofilealias.sip_username", userprofilealias.sip_username)
     if (value) {
         const sipusername = await getConfigParamValue(userprofilealias.sip_username)
         const password = await getConfigParamValue(userprofilealias.sip_password)

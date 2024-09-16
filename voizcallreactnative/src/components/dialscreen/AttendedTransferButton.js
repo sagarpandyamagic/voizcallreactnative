@@ -11,7 +11,7 @@ import { showAlert } from '../../HelperClass/CommonAlert';
 import store from '../../store/store';
 
 
-const AttendedTransferButton = ({ onRemove,navigation,setCode,code }) => {
+const AttendedTransferButton = ({ navigation,setCode,code }) => {
     const dispatch = useDispatch()
 
     const handleMakeCall = async (code) => {
@@ -38,7 +38,7 @@ const AttendedTransferButton = ({ onRemove,navigation,setCode,code }) => {
                 </TouchableOpacity>
             </View>
 
-            {
+            {/* {
                 setCode.length > 0 ? <TouchableOpacity style={[styles.callBtn, { width:60,borderRadius:20, backgroundColor: THEME_COLORS.black, justifyContent: 'center', alignSelf: 'center', position: 'absolute', right: 20 }]}
                 onPress={onRemove}
                 >
@@ -47,7 +47,7 @@ const AttendedTransferButton = ({ onRemove,navigation,setCode,code }) => {
                     resizeMode="cover"
                     style={[styles.callBtnImage]}></Image>
             </TouchableOpacity> : <></>
-            }
+            } */}
             
         </View>
     );

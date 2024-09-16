@@ -3,6 +3,7 @@ import { API_BASE_URL, StorageKey } from "../../HelperClass/Constant";
 import { AppStoreData, getStorageData } from "./UserData";
 import { POSTAPICALL } from "../../services/auth";
 import { APIURL } from "../../HelperClass/APIURL";
+import { showAlert } from "../../HelperClass/CommonAlert";
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -12,11 +13,10 @@ axiosInstance.interceptors.request.use(
   async (config) => {
     let access_token =  await getStorageData(StorageKey.access_token)
     if (access_token) {
-        // console.log("axios",access_token)
+        console.log("axios",access_token)
         config.headers.Authorization = `Bearer ${access_token}`;
     }
     // console.log("config",config)
-
     return config;
   },
   (error) => {
@@ -31,9 +31,11 @@ axiosInstance.interceptors.response.use(
   },
   async function (error) {
       const originalRequest = error.config;
-      console.debug('orrr', originalRequest)
+      // console.log('orrr', error.response?.data)
+      console.debug('error.data', error)
+
       if (error.response.status === 401 && !originalRequest._retry) {
-        originalRequest._retry = true; // Mark the request as retried
+         originalRequest._retry = true; // Mark the request as retried
 
           let refresh_token = await getStorageData(StorageKey.access_token)
           if (refresh_token) {
@@ -73,9 +75,10 @@ axiosInstance.interceptors.response.use(
               // return window.location.href = '/login'
           }
 
+      }else{
+        showAlert("error", error.response.data.message);
       }
-
-      return Promise.reject(error);
+      return Promise.reject(error.response);
   }
 );
 

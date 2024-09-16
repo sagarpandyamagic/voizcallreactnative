@@ -3,7 +3,7 @@ import { View, Text, Button, StyleSheet } from 'react-native';
 import { AppCommon_Font, THEME_COLORS } from '../../HelperClass/Constant';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
-const OTPTimer = ({ duration, onTimeUp }) => {
+const OTPTimer = ({ duration, onTimeUp,resendRequestAPI }) => {
     const [timeLeft, setTimeLeft] = useState(duration);
     const intervalRef = useRef(null);
 
@@ -35,6 +35,7 @@ const OTPTimer = ({ duration, onTimeUp }) => {
     const resetTimer = () => {
         setTimeLeft(duration);
         startTimer();
+        resendRequestAPI()
     };
 
     return (

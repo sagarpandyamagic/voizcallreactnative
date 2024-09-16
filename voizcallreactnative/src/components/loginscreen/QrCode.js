@@ -18,9 +18,7 @@ const QrCode = ({navigation}) => {
             </View>
             <View style={[styles.InputTextView, { borderWidth: 0 }]} >
                 <TouchableOpacity style={styles.linearGradient} onPress={() => {
-                   
                    navigation.navigate('QrScanScreen')    
-
                 }}>
                     <View style={{ justifyContent: 'center', flex: 1, alignItems: 'center', }}>
                         <Text style={[styles.buttonText, { alignSelf: 'center' }]}>

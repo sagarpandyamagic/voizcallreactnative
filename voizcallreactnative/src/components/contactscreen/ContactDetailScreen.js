@@ -23,6 +23,9 @@ import ic_Call from '../../../Assets/ic_call.png';
 import ic_Email from '../../../Assets/ic_email_dtl.png';
 import ic_favourite_S from '../../../Assets/ic_favourite_S.png';
 import { THEME_COLORS } from '../../HelperClass/Constant';
+import { updateSipState } from '../../store/sipSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import SipUA from '../../services/call/SipUA';
 
 const db = SQLite.openDatabase(
     {
@@ -35,8 +38,12 @@ const db = SQLite.openDatabase(
 
 const ContactDetailScreen = ({ route, navigation }) => {
     const data = route.params?.data
+    console.log("data", data.recordID)
+    const { allSession } = useSelector((state) => state.sip)
+
     const [userBlock, setUserBlock] = useState(false)
     const [favourite, setfavourite] = useState(0)
+    const dispatch = useDispatch()
 
     const FistLetter = () => {
         console.log("data", data.thumbnailPath)
@@ -91,6 +98,20 @@ const ContactDetailScreen = ({ route, navigation }) => {
         ToastAndroid.show('Add updated successfully!', ToastAndroid.SHORT);
     }
 
+    const AudioCall = (number) => {
+        dispatch(updateSipState({ key: "Caller_Name", value: data.callee }))
+        dispatch(updateSipState({ key: "CallScreenOpen", value: true }))
+        // console.log("SessionCount",allSession)
+        if(Object.keys(allSession).length > 0){
+            dispatch(updateSipState({ key: "ISConfrenceTransfer", value: true }))
+            SipUA.toggelHoldCall(true) 
+        }else{
+            dispatch(updateSipState({ key: "phoneNumber", value: [] }))
+        }
+        SipUA.makeCall(number, false)
+        navigation.navigate('AudioCallingScreen')
+    }
+
     useEffect(() => {
         getFavoriteContactsFromDatabase()
     }, [])
@@ -98,28 +119,28 @@ const ContactDetailScreen = ({ route, navigation }) => {
 
     const getFavoriteContactsFromDatabase = () => {
         db.transaction((tx) => {
-          tx.executeSql(
-            'SELECT * FROM ContactList WHERE isfavourite = 1', // Updated query
-            [],
-            (tx, results) => {
-              const rows = results.rows;
-              const favoriteContacts = [];
-    
-              for (let i = 0; i < rows.length; i++) {
-                console.log('favoriteContacts', rows.item(i))
-                const contact = rows.item(i);
-                favoriteContacts.push(contact);
-                if (contact.recordid ===  data.recordID) {
-                    setfavourite(1)
-                  }
-              }
-            },
-            (error) => {
-              console.error('Error retrieving data:', error);
-            }
-          );
+            tx.executeSql(
+                'SELECT * FROM ContactList WHERE isfavourite = 1.0', // Updated query
+                [],
+                (tx, results) => {
+                    const rows = results.rows;
+                    const favoriteContacts = [];
+                    for (let i = 0; i < rows.length; i++) {
+                        console.log('favoriteContacts', rows.item(i))
+                        const contact = rows.item(i);
+                        console.log("dataf", contact.recordID)
+                        favoriteContacts.push(contact);
+                        if (contact.recordid == data.recordID) {
+                            setfavourite(1)
+                        }
+                    }
+                },
+                (error) => {
+                    console.error('Error retrieving data:', error);
+                }
+            );
         });
-      }
+    }
 
 
     const setContactAddORRemoveInFavourite = () => {
@@ -159,8 +180,9 @@ const ContactDetailScreen = ({ route, navigation }) => {
                                     <View style={{ justifyContent: 'center', alignItems: 'center', marginRight: 10, height: 40, width: 40, borderRadius: 20, flexDirection: 'row' }}>
                                         <TouchableOpacity style={{ marginRight: 15 }} onPress={() => {
                                             const str = item.number.replace(/[^a-z0-9,. ]/gi, '');
-                                            // makeCall(str.replace(/ /g, ''))
                                             navigation.navigate('Dialpad')
+                                            AudioCall(str.replace(/ /g, ''))
+                                            
                                         }}>
                                             <View style={{ justifyContent: 'center', marginLeft: 10 }}>
                                                 <Image style={{ height: 20, width: 20 }} source={ic_Call}></Image>
@@ -169,7 +191,7 @@ const ContactDetailScreen = ({ route, navigation }) => {
                                         <TouchableOpacity style={{ marginRight: 30 }} onPress={() => {
                                             setContactAddORRemoveInFavourite()
                                         }}>
-                                         <Image style={{ height: 20, width: 20, tintColor: THEME_COLORS.black }} source={favourite == 1 ? ic_favourite_S : ic_Heart}></Image>
+                                            <Image style={{ height: 20, width: 20, tintColor: THEME_COLORS.black }} source={favourite == 1 ? ic_favourite_S : ic_Heart}></Image>
                                         </TouchableOpacity>
                                     </View>
                                 </View>
@@ -187,7 +209,7 @@ const ContactDetailScreen = ({ route, navigation }) => {
                                         <Text style={{ fontSize: 15, color: 'black', marginTop: 10, marginLeft: 15 }}>{item.label}</Text>
                                         <Text style={{ fontSize: 12, color: 'black', marginTop: 5, marginLeft: 15, marginBottom: 10 }}>{item.email} </Text>
                                     </View>
-                                    <View style={{ justifyContent: 'center', alignItems: 'center', right: 10, height: 40, width: 40, borderRadius: 20,position:'absolute' }}>
+                                    <View style={{ justifyContent: 'center', alignItems: 'center', right: 10, height: 40, width: 40, borderRadius: 20, position: 'absolute' }}>
                                         <Image style={{ tintColor: THEME_COLORS.black }} source={ic_Email}></Image>
                                     </View>
                                 </View>

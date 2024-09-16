@@ -47,13 +47,20 @@ import androidx.lifecycle.Observer;
 import com.voizcallreactnative.MyNativeModule;
 import androidx.lifecycle.Observer;
 import androidx.appcompat.app.AppCompatActivity;
+import android.media.AudioManager;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 
 
 public class NativeActivity extends AppCompatActivity {
 
     private MyNativeModule nativeCallModule;
     private Observer<String> dataObserver = null;
-
+    private Ringtone ringtone;
+    private Vibrator vibrator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,19 +150,85 @@ public class NativeActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        handleIncomingCall();
         Log.d("NativeActivity", "onResume Observer");
-       
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        stopVibration();
+        stopRingtone();
         if (dataObserver != null) {
             Log.d("NativeActivity", "onDestroy Observer");
             MyNativeModule.getLiveData().removeObserver(dataObserver);
             dataObserver = null;
         }
     }
+
+    public void handleIncomingCall() {
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        int ringerMode = audioManager.getRingerMode();
+
+        // Handle based on the ringer mode
+        switch (ringerMode) {
+            case AudioManager.RINGER_MODE_SILENT:
+                Log.d("RingerMode", "Device is in Silent mode.");
+                // Optionally, vibrate or notify the user some other way
+                break;
+                
+            case AudioManager.RINGER_MODE_VIBRATE:
+                Log.d("RingerMode", "Device is in Vibrate mode.");
+                long[] vibrationPattern = new long[]{0, 1000, 500, 1000};
+                startVibration(vibrationPattern);
+                break;
+
+            case AudioManager.RINGER_MODE_NORMAL:
+                Log.d("RingerMode", "Device is in Normal (Ringing) mode.");
+                playRingtone();
+                break;
+
+            default:
+                Log.d("RingerMode", "Unknown ringer mode.");
+        }
+    }
+
+    
+    private void startVibration(long[] pattern) {
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (vibrator != null) {
+                vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1)); // -1 means no repeat
+            }
+        } else {
+            if (vibrator != null) {
+                vibrator.vibrate(pattern, -1); // -1 means no repeat for older versions
+            }
+        }
+    }
+
+    private void stopVibration() {
+        if (vibrator != null) {
+            vibrator.cancel(); // Stop the vibration
+        }
+    }
+
+    private void playRingtone() {
+        Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+        ringtone = RingtoneManager.getRingtone(getApplicationContext(), notification);
+        if (ringtone != null) {
+            ringtone.play();
+        }
+    }
+
+    private void stopRingtone() {
+        if (ringtone != null) {
+            ringtone.stop(); // Stop the ringtone
+        }
+    }
+
+
 
     private void callReactNativeMethodForCall(boolean isAcceptCall) {
         try {

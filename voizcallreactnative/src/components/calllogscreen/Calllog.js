@@ -9,13 +9,25 @@ import CallLogDeletePopup from './CallLogDeletePopup';
 import LodingJson from '../../HelperClass/LodingJson';
 import loadinganimaion from '../../../Assets/animation.json';
 
-const Calllog = ({ DataType,navigation }) => {
+const Calllog = ({ DataType, navigation }) => {
     const [list, setList] = useState([]);
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [hasMoreData, setHasMoreData] = useState(true);
     const [deletePopupVisible, setDeletePopupVisible] = useState(false);
     const [uuidItme, setuuidItme] = useState(false);
+    const [videoCall, setVideoCall] = useState(false);
+
+    useEffect(() => {
+        videoCallEnableCheck()
+    }, []);
+
+    const videoCallEnableCheck = async () => {
+        const value = await getConfigParamValue(userprofilealias.video_enableVideo)
+        if (value) {
+            setVideoCall(value)
+        }
+    }
 
     const fetchData = async (pageNumber) => {
         setLoading(true);
@@ -32,7 +44,7 @@ const Calllog = ({ DataType,navigation }) => {
             console.error(e)
         }
         setLoading(false);
-       
+
     };
 
     useEffect(() => {
@@ -64,10 +76,11 @@ const Calllog = ({ DataType,navigation }) => {
             {
                 page == 1 && <LodingJson loading={loading} setLoading={setLoading} />
             }
-            <FlatList
+           {list.length >0 ? 
+              (<FlatList
                 data={list}
                 renderItem={({ item }) =>
-                    <CallLogList data={item} navigation = {navigation} onDelete={() => actionBtnDelete(item.uuid)} />
+                    <CallLogList data={item} navigation={navigation} onDelete={() => actionBtnDelete(item.uuid)} videoCall={videoCall}/>
                 }
                 keyExtractor={(item) => item.id.toString()}
                 onEndReached={handleLoadMore}
@@ -81,8 +94,12 @@ const Calllog = ({ DataType,navigation }) => {
                         loop
                         style={{ width: '100%', height: 50 }}
                     />
-                ) : null}
-            />
+                ) : null}/>) :  (
+                    <View style={styles.notFoundContainer}>
+                      <Text style={styles.notFoundText}>Data not found</Text>
+                    </View>
+                  )
+            }
             <CallLogDeletePopup
                 visible={deletePopupVisible}
                 ActaionCancle={() => setDeletePopupVisible(false)}
@@ -91,7 +108,20 @@ const Calllog = ({ DataType,navigation }) => {
         </View>
     );
 };
+
 const styles = StyleSheet.create({
+
+    notFoundContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingTop: "100%", // Adjust this value to center the text better
+      },
+      notFoundText: {
+        fontSize: 18,
+        color: 'gray',
+        position: 'absolute'
+      },
 
 });
 export default Calllog;

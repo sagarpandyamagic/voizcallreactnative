@@ -7,11 +7,9 @@
 
 import React, { Component, useEffect, useState } from 'react';
 import {
-  AppState,
   NativeEventEmitter,
   NativeModules,
   Platform,
-  StyleSheet,
   View,
 } from 'react-native';
 import 'react-native-gesture-handler';
@@ -22,7 +20,7 @@ import Login from './src/Screen/Login';
 import SplashScreen from './src/Screen/SplashScreen';
 import TabBar from './src/Screen/TabBar';
 import LanguagesSelecaion from './src/components/settingscreen/LanguagesSelecaion';
-import { THEME_COLORS } from './src/HelperClass/Constant';
+import { THEME_COLORS, userprofilealias } from './src/HelperClass/Constant';
 import privacyPoilcyScreen from './src/components/settingscreen/privacyPoilcyScreen';
 import ContactDetailScreen from './src/components/contactscreen/ContactDetailScreen';
 import ContactsList from './src/components/contactscreen/ContactsList';
@@ -48,16 +46,18 @@ import messaging from '@react-native-firebase/messaging';
 import { firebaseListener, showCallNotification } from './index';
 import { useNavigation } from '@react-navigation/native';
 import SipUA from './src/services/call/SipUA';
+import { getConfigParamValue } from './src/data/profileDatajson';
 
 function App() {
   const Stack = createStackNavigator();
   const { MyNativeModule } = NativeModules;
-  const myNativeModuleEmitter = new NativeEventEmitter(MyNativeModule);
   const [hasPermission, setHasPermission] = useState(false);
   const [isNotifcionCome, setisNotifcionCome] = useState("TabBar");
-  const {AppOpenTimeRootChange,IncomingCallNumber,soketConnect} = useSelector((state) => state.sip);
-
-  const NavigateToNativeLayout = (name,phoneNumber) => {
+  const { AppOpenTimeRootChange, IncomingCallNumber, soketConnect } = useSelector((state) => state.sip);
+  const myNativeModuleEmitter = MyNativeModule ? new NativeEventEmitter(MyNativeModule) : null;
+  
+  
+  const NavigateToNativeLayout = (name, phoneNumber) => {
     if (MyNativeModule) {
       MyNativeModule.openNativeLayout(name, phoneNumber);
       //  showCallNotification("John Doe");
@@ -75,60 +75,65 @@ function App() {
   };
 
   useEffect(() => {
-    if(AppOpenTimeRootChange === 'TabBar'){
+    if (AppOpenTimeRootChange === 'TabBar') {
       NavigateToNativeLayout("Voizcall User", IncomingCallNumber);
       applyFlags();
     }
   }, [AppOpenTimeRootChange]);
 
   useEffect(() => {
-    const subscription = myNativeModuleEmitter.addListener(
-      'onCallAccepted',
-      (event) => {
-        try {
-          console.log('Call accepted');
-          store.dispatch(updateSipState({ key: "CallScreenOpen", value: true }));
-          store.dispatch(updateSipState({ key: "CallAns", value: false }));
-        } catch (error) {
-          console.error('Error handling onCallAccepted event:', error);
+    if (Platform.OS == 'android') {
+      const subscription = myNativeModuleEmitter.addListener(
+        'onCallAccepted',
+        (event) => {
+          try {
+            console.log('Call accepted');
+            store.dispatch(updateSipState({ key: "CallScreenOpen", value: true }));
+            store.dispatch(updateSipState({ key: "CallAns", value: false }));
+          } catch (error) {
+            console.error('Error handling onCallAccepted event:', error);
+          }
         }
-      }
-    );
+      );
 
-    return () => {
-      if (subscription) {
-        subscription.remove();
-      }
-    };
+      return () => {
+        if (subscription) {
+          subscription.remove();
+        }
+      };
+    }
+
   }, []);
 
 
   useEffect(() => {
-    const subscription = myNativeModuleEmitter.addListener(
-      'onCallDeclined',
-      (event) => {
-        try {
-          console.log('Call Declined');
-          SipUA.hangupCall()
-        } catch (error) {
-          console.error('Error handling onCallDeclined event:', error);
+    if (Platform.OS == 'android') {
+      const subscription = myNativeModuleEmitter.addListener(
+        'onCallDeclined',
+        (event) => {
+          try {
+            console.log('Call Declined');
+            SipUA.hangupCall()
+          } catch (error) {
+            console.error('Error handling onCallDeclined event:', error);
+          }
         }
-      }
-    );
+      );
 
-    return () => {
-      if (subscription) {
-        subscription.remove();
-      }
-    };
+      return () => {
+        if (subscription) {
+          subscription.remove();
+        }
+      };
+    }
   }, []);
 
 
   useEffect(() => {
     requestUserPermission()
-    // FCMDelegateMethod()
-    requestPermissions()
     if (Platform.OS != "android") {
+      FCMDelegateMethod()
+      requestPermissions()
       console.log("Platform.OS", Platform.OS)
       Platform.OS == "ios" && VoipPushNotification.registerVoipToken();
       Platform.OS == "ios" && voipConfig();
@@ -139,6 +144,8 @@ function App() {
       }, 2000);
     }
   }, [])
+
+
 
   const checkPermission = async () => {
     const result = await hasOverlayPermission();
@@ -159,8 +166,9 @@ function App() {
 
   return (
     <SafeAreaProvider>
+      <CallTimerDuraionProvider>
       <NavigationContainer>
-        <CallTimerDuraionProvider>
+        
           <Stack.Navigator initialRouteName={AppOpenTimeRootChange}>
             <Stack.Screen options={{ headerShown: false }} name="SplashScreen" component={SplashScreen} />
             <Stack.Screen options={{ headerShown: false }} name="Login" component={Login} />
@@ -200,16 +208,6 @@ function App() {
               },
               headerTintColor: '#fff', // Change the header text color if needed
             }} />
-
-            {/* <Stack.Screen name="AudioCallingScreen" component={AudioCallingScreen} options={{
-            headerShown: false,
-            headerStyle: {
-              backgroundColor: THEME_COLORS.black, // Change the background color
-              shadowColor: THEME_COLORS.transparent, // Remove the shadow
-              elevation: 0
-            },
-            headerTintColor: '#fff', // Change the header text color if needed
-          }} /> */}
             <Stack.Screen name="ForgotPasswordScreen" component={ForgotPasswordScreen} options={{
               title: "",
               headerStyle: {
@@ -252,8 +250,8 @@ function App() {
           <View>
             <AudioCallingScreen />
           </View>
-        </CallTimerDuraionProvider>
       </NavigationContainer>
+      </CallTimerDuraionProvider>
     </SafeAreaProvider>
   );
 }

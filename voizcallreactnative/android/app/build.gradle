@@ -113,7 +113,7 @@ dependencies {
     implementation 'com.facebook.react:react-native:+'
 
     implementation project(':react-native-contacts')
-    implementation project(':react-native-push-notification')
+    // implementation project(':react-native-push-notification')
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {

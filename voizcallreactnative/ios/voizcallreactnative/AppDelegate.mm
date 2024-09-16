@@ -58,7 +58,6 @@
 - (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type withCompletionHandler:(void (^)(void))completion {
   
  // [self scheduleLocalNotification];
-
   
   NSLog(@"Received incoming push notification with payload: %@", payload.dictionaryPayload);
   

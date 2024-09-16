@@ -6,11 +6,13 @@ import { getConfigParamValue } from '../../data/profileDatajson';
 
 
 
-const CallIDList = () => {
+const CallIDList = ({addCallerID}) => {
     const [data,setdata] = useState([])
+    
 
     const getsipCallerid = async () => {
         const value =  await getConfigParamValue(userprofilealias.sip_callerid)
+        console.log("getsipCallerid",value)
         setdata([value])
     }
 
@@ -18,14 +20,25 @@ const CallIDList = () => {
         getsipCallerid()
     },[])
 
+    const handleItemPress = (item) => {
+        // Set the selected item when tapped
+        // setSelectedItem(item);
+        console.log('Selected item:', item);
+
+        addCallerID(item)
+    };
+
     const renderItem = ({ item }) => (
-        <View style={styles.item}>
+        <TouchableOpacity style={styles.item} onPress={() => handleItemPress(item)}>
             <Text style={styles.title}>{item}</Text>
             <View style={{height:20,width:20}}>
               <Image style={{height:"100%",width:"100%"}} source={ic_correct_CallerID}></Image>
             </View>
-        </View>
+        </TouchableOpacity>
     );
+
+    
+
     return (
         <View style={styles.mainContain}>
             <Text style={{ alignSelf: 'center', color: 'black', fontSize: 12, padding: 10 }}>Select the caller ID you would like to use now</Text>

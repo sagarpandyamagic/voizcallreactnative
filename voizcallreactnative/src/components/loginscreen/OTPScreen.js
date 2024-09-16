@@ -3,25 +3,33 @@ import { View, Image, StyleSheet, Text, SafeAreaView, TextInput, TouchableOpacit
 import backarrowR from '../../../Assets/backarrowR.png';
 import { THEME_COLORS, AppCommon_Font } from '../../HelperClass/Constant';
 import { SendOTPAPI } from '../../services/auth';
+import LodingJson from '../../HelperClass/LodingJson';
 
 const OTPScreen = ({ navigation, configData }) => {
-    const [otpnumber, setotpnumber] = useState(0);
+    const [otpnumber, setotpnumber] = useState();
+    const [loading, setLoading] = useState(false);
+
 
     const GetOTPAPICall = async () => {
+        setLoading(true)
         const data = {
             "user_type": "mobile",
             "user_data": otpnumber,
             "usr_country_phonecode": configData.default_country.country_phonecode
         }
         const OptApiData = await SendOTPAPI(data)
-        console.log(OptApiData)
+        console.log("OptApiData", OptApiData)
         if (OptApiData.success) {
-            navigation.navigate('OTPFillScreen',{OTPInfo:configData.otp})    
+            setLoading(false)
+            navigation.navigate('OTPFillScreen', { OTPInfo: configData.otp, OptApiData: OptApiData })
         }
     }
 
     return (
         <>
+            {
+                <LodingJson loading={loading} setLoading={setLoading} />
+            }
             <View style={styles.InputTextView}>
                 <TouchableOpacity style={styles.InputTextSideImgView} onPress={() => {
                     navigation.navigate('Pick Your County')
@@ -29,6 +37,7 @@ const OTPScreen = ({ navigation, configData }) => {
                     <Text style={styles.Text} >+{configData.default_country.country_phonecode}</Text>
                 </TouchableOpacity>
                 <TextInput style={styles.InpuText} keyboardType='number-pad' placeholder='Enter mobile number' placeholderTextColor={"#4F6EB4"} onChangeText={(text) => setotpnumber(text)}>
+                    {otpnumber}
                 </TextInput>
             </View>
             <View style={[styles.InputTextView, { borderWidth: 0 }]} >

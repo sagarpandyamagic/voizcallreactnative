@@ -23,8 +23,7 @@ const imageSize = width * 0.17; // Example: 10% of screen width
 const itemSpacing = 40;      // Space between each Image+Text pair
 
 const ButtonCallCut = () => {
-    const { phoneNumber, sessionID, allSession, ISConfrenceTransfer } = useSelector((state) => state.sip)
-    const { MyNativeModule } = NativeModules;
+    const { phoneNumber, CallInitial, allSession, ISConfrenceTransfer } = useSelector((state) => state.sip)
 
     const handelToggleHungup = () => {
         // console.log("ISConfrenceTransfer",ISConfrenceTransfer)
@@ -48,7 +47,7 @@ const ButtonCallCut = () => {
     return (
         <View style={style.container}>
             <View style={style.item}>
-                <TouchableOpacity style={[style.imageVw, { backgroundColor: 'red' }]} onPress={handelToggleHungup}>
+                <TouchableOpacity style={[style.imageVw, { backgroundColor: 'red' ,opacity: !CallInitial ? 0.5 : 1}]} disabled={!CallInitial} onPress={handelToggleHungup}>
                     <Image source={ic_decline_call} style={style.image}>
                     </Image>
                 </TouchableOpacity>

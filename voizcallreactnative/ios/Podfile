@@ -4,7 +4,8 @@ require Pod::Executable.execute_command('node', ['-p',
     "react-native/scripts/react_native_pods.rb",
     {paths: [process.argv[1]]},
   )', __dir__]).strip
-
+require_relative '../node_modules/react-native/scripts/react_native_pods'
+require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
@@ -28,6 +29,7 @@ target 'voizcallreactnative' do
    pod 'FirebaseCoreInternal', :modular_headers => true
    pod 'GoogleUtilities', :modular_headers => true
    pod 'FirebaseCore', :modular_headers => true
+   pod 'RNDeviceInfo', :path => '../node_modules/react-native-device-info'
 
   use_react_native!(
     :path => config[:reactNativePath],

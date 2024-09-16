@@ -89,7 +89,7 @@ const EnterPriseList = ({ navigation }) => {
 
     const EnterPriceListAPI = async () => {
         const value = await GETAPICALL(APIURL.GETENTERPRISEDIC);
-        if(value.success) {
+        if (value.success) {
             const transformedContacts = value.data.map(contact => {
                 // Ensure contact fields are not undefined
                 const fullName = `${contact.ed_first_name || ''} ${contact.ed_last_name || ''}`;
@@ -97,7 +97,7 @@ const EnterPriseList = ({ navigation }) => {
                 const landline = contact.ed_landline || '';
                 const extension = contact.ed_extension || '';
                 const familyName = ""
-                
+
                 return {
                     givenName: fullName.trim(),
                     displayName: fullName.trim(),
@@ -116,7 +116,7 @@ const EnterPriseList = ({ navigation }) => {
             setContacts(transformedContacts)
             setLoading(false)
         }
-       
+
 
         console.log("transformedContacts->", transformedContacts);
     };
@@ -149,7 +149,7 @@ const EnterPriseList = ({ navigation }) => {
     return (
         <SafeAreaView style={styles.container}>
             {
-                <LodingJson loading = {loading} setLoading = {setLoading} />
+                <LodingJson loading={loading} setLoading={setLoading} />
             }
             <ScrollView
                 contentContainerStyle={styles.scrollView}
@@ -166,23 +166,31 @@ const EnterPriseList = ({ navigation }) => {
                             style={styles.input}
                         />
                     </View>
-                    <SectionList
-                        sections={getData()}
-                        renderItem={({ item }) => (
-                            <ListItem
-                                key={item.recordID}
-                                item={item}
-                                onPress={openContact}
-                            />
-                        )}
-                        keyExtractor={item => item.recordID}
-                        renderSectionHeader={({ section: { title } }) => (
-                            <View style={{ justifyContent: 'center' }}>
-                                <Image style={{ resizeMode: 'contain' }} source={gradiant_border} />
-                                <Text style={styles.header}>{title}</Text>
-                            </View>
-                        )}
-                    />
+                    {
+                        getData().length > 0 ?(
+                            <SectionList
+                                sections={getData()}
+                                renderItem={({ item }) => (
+                                    <ListItem
+                                        key={item.recordID}
+                                        item={item}
+                                        onPress={openContact}
+                                    />
+                                )}
+                                keyExtractor={item => item.recordID}
+                                renderSectionHeader={({ section: { title } }) => (
+                                    <View style={{ justifyContent: 'center' }}>
+                                        <Image style={{ resizeMode: 'contain' }} source={gradiant_border} />
+                                        <Text style={styles.header}>{title}</Text>
+                                    </View>
+                                )}
+                            />) : (
+                                <View style={styles.notFoundContainer}>
+                                  <Text style={styles.notFoundText}>Data not found</Text>
+                                </View>
+                              )
+
+                    }
                 </View>
             </ScrollView>
             <AddContactButton navigation={navigation} />
@@ -200,8 +208,8 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 15,
         paddingLeft: 10,
-        position:'absolute',
-        justifyContent:'center'
+        position: 'absolute',
+        justifyContent: 'center'
     },
     searchBar: {
         backgroundColor: '#f0eded',
@@ -241,6 +249,17 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    notFoundContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingTop: "100%", // Adjust this value to center the text better
+    },
+    notFoundText: {
+        fontSize: 18,
+        color: 'gray',
+        position: 'absolute'
     },
 });
 

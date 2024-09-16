@@ -36,9 +36,7 @@ const SplashScreen = ({ navigation }) => {
         const versionCheck = await POSTAPICALL(APIURL.VersionNotify,pram)
         console.log("versionCheck",versionCheck)
         if (versionCheck.data.is_updated == "0") {
-        //   const ProfileConfigData = await POSTAPICALL(APIURL.ProfileConfigData,pram)
-        //   console.log("ProfileConfigData", ProfileConfigData.data)
-        //   console.log("versionCheck.success", versionCheck.success)
+          console.log("versionCheck.success", versionCheck.success)
 
           // if (versionCheck.success) {
             // const sipusername = await getConfigParamValue(userprofilealias.sip_username)

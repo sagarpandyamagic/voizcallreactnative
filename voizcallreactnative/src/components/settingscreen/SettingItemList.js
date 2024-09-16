@@ -22,8 +22,8 @@ const SettingItemList = ({naviagion}) => {
             <SettingdetailList title='About' image={ic_information} navigation={naviagion} />
             <SeparatorLine marginVertical={0}/>
             <SettingdetailList title='Privacy Policy' image={privacyicon} navigation={naviagion}  />
-            <SeparatorLine marginVertical={0}/>
-            <SettingdetailList title='On Touch Voicemail' image={voicemailicon} navigation={naviagion} />
+            {/* <SeparatorLine marginVertical={0}/>
+            <SettingdetailList title='On Touch Voicemail' image={voicemailicon} navigation={naviagion} /> */}
             <SeparatorLine marginVertical={0}/>
             <SettingdetailList title='Logout' image={logout} navigation={naviagion} />
         </>

@@ -1,21 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { View, Image, TouchableOpacity, StyleSheet, Text, Platform } from 'react-native';
-import { AppCommon_Font, StorageKey, THEME_COLORS } from '../../HelperClass/Constant';
+import { AppCommon_Font, StorageKey, THEME_COLORS, userprofilealias } from '../../HelperClass/Constant';
 import LogoutModal from './LogoutModal';
 import { getStorageData, RemoveStorageData } from '../utils/UserData';
 import SipUA from '../../services/call/SipUA';
 import LottieView from 'lottie-react-native';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { DLETEAPICAll } from '../../services/auth';
 import { APIURL } from '../../HelperClass/APIURL';
 import LodingJson from '../../HelperClass/LodingJson';
 import DeviceInfo from 'react-native-device-info';
+import { updateSipState } from '../../store/sipSlice';
+import { getConfigParamValue } from '../../data/profileDatajson';
 
 const SettingdetailList = ({ title, image, navigation }) => {
     const [isLogoutModalVisible, setLogoutModalVisible] = useState(false);
     const [loading, setLoading] = useState(false);
     const { soketConnect } = useSelector((state) => state.sip)
-    
+    const { allSession } = useSelector((state) => state.sip)
+    const dispatch = useDispatch()
+
     const handlenavigation = () => {
         if (title == "Pull Configration") {
             setLoading(true)
@@ -35,6 +39,7 @@ const SettingdetailList = ({ title, image, navigation }) => {
             console.log(title)
         }
         else if (title == "On Touch Voicemail") {
+            AudioCall()
             console.log(title)
         }
         else if (title == "Logout") {
@@ -43,22 +48,52 @@ const SettingdetailList = ({ title, image, navigation }) => {
         }
     };
 
-    const handleLogout = async () => {
-        setLogoutModalVisible(false);
-        SipUA.disconnectSocket()
-        console.log(data)
-        const pram = {
-            "instance_id": await getStorageData(StorageKey.instance_id),
-            "device_type": (Platform.IOS) ? "ios" : "android",
-            "auth_type": await getStorageData(StorageKey.auth_type),
+    const AudioCall = async () => {
+        const number = await getConfigParamValue(userprofilealias.call_voicemailNumber)
+        console.log("number", number)
+        try {
+            dispatch(updateSipState({ key: "Caller_Name", value: "Voicemail" }))
+            dispatch(updateSipState({ key: "CallScreenOpen", value: true }))
+            // console.log("SessionCount",allSession)
+            if (Object.keys(allSession).length > 0) {
+                dispatch(updateSipState({ key: "ISConfrenceTransfer", value: true }))
+                SipUA.toggelHoldCall(true)
+            } else {
+                dispatch(updateSipState({ key: "phoneNumber", value: [] }))
+            }
+            SipUA.makeCall(number, false)
+            navigation.navigate('AudioCallingScreen')
+        } catch (error) {
+            console.log("error", error)
         }
-        console.log(pram)
+    }
 
-        const data = await DLETEAPICAll(APIURL.PushSubscribeDelete, pram)
-        console.log(data)
-        if (data.success) {
-            RemoveStorageData(StorageKey.isLogin)
-            navigation.navigate('SplashScreen')
+
+    const handleLogout = async () => {
+        try {
+
+            setLoading(true)
+            setLogoutModalVisible(false);
+            SipUA.disconnectSocket()
+            console.log(data)
+            const pram = {
+                "instance_id": await getStorageData(StorageKey.instance_id),
+                "device_type": Platform.OS,
+                "auth_type": await getStorageData(StorageKey.auth_type),
+            }
+            console.log(pram)
+            const data = await DLETEAPICAll(APIURL.PushSubscribeDelete, pram)
+            console.log("PushSubscribeDelete", data)
+            if (data.success) {
+                await RemoveStorageData(StorageKey.isLogin)
+                setLoading(false)
+                navigation.navigate('SplashScreen')
+            } else {
+                setLoading(false)
+            }
+
+        } catch (error) {
+            console.log("handleLogouterror", error)
         }
     };
 
@@ -92,6 +127,7 @@ const SettingdetailList = ({ title, image, navigation }) => {
         </>
     );
 };
+
 const styles = StyleSheet.create({
     copntain: {
         height: 70,

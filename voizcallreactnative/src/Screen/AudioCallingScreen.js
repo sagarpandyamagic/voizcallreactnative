@@ -44,7 +44,6 @@ function AudioCallingScreen() {
     }, [CallScreenOpen]);
 
     useEffect(() => {
-
         if (session != {} && CallScreenOpen && CallType == "InComingCall" && soketConnect&&CallInitial) {
             session && session.accept()
         }
@@ -63,7 +62,7 @@ function AudioCallingScreen() {
                     <CallerInfo />
                 </View>
                 <View style={{ backgroundColor: THEME_COLORS.black }}>
-                    <View style={style.container}>
+                    <View style={[style.container]}>
                         <ButtonRowFirstThree />
                         <ButtonRowSecondThree transparentCall={transparentCall} />
                         <ButtonCallCut />

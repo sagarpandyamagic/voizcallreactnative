@@ -3,7 +3,7 @@
  */
 
 import messaging from "@react-native-firebase/messaging";
-import { AppRegistry, AppState, NativeEventEmitter, NativeModules, Platform } from 'react-native';
+import { AppRegistry, AppState, NativeModules, Platform } from 'react-native';
 import App from './App';
 import { name as appName } from './app.json';
 import { Provider, connect, useDispatch, useSelector } from 'react-redux';
@@ -17,11 +17,11 @@ import { setInitTimeValue } from "./src/services/setInitVlaue";
 import { updateSipState } from "./src/store/sipSlice";
 import { AppStoreData } from "./src/components/utils/UserData";
 import { StorageKey } from "./src/HelperClass/Constant";
-import PushNotification from 'react-native-push-notification';
 import { getNameByPhoneNumber } from "./src/HelperClass/ContactNameGetCallTime";
 
 setInitTimeValue()
-const { MyNativeModule } = NativeModules;
+
+
 try {
   const appOpenTime = new Date().getTime();
   store.dispatch(updateSipState({ key: "terminationTime", value: appOpenTime }));
@@ -29,54 +29,54 @@ try {
   console.error('Error updating SIP state:', error);
 }
 
-PushNotification.configure({
-  // (required) Called when a remote or local notification is opened or received
-  onNotification: function (notification) {
-    console.log('NOTIFICATIONcheck:', notification);
-    console.log("ACTION:", JSON.parse(notification.actions));
-    const actions = JSON.parse(notification.actions);
-    if (actions.includes("Answer")) {
-      console.log("Call answered");
-      const dispatch = store.dispatch();
-      dispatch(updateSipState({ key: "CallScreenOpen", value: true }));
-      dispatch(updateSipState({ key: "CallAns", value: false }));
-      PushNotification.cancelAllLocalNotifications();
-    } else if (actions.includes("Decline")) {
-      console.log("Call declined");
-      PushNotification.cancelAllLocalNotifications();
-    }
-  },
-  onNotification: (notification) => {
-    console.log('Notification received:', notification);
-    // Automatically open the app when a notification is received
-    console.log("ACTION:", JSON.parse(notification.actions));
+// PushNotification.configure({
+//   // (required) Called when a remote or local notification is opened or received
+//   onNotification: function (notification) {
+//     console.log('NOTIFICATIONcheck:', notification);
+//     console.log("ACTION:", JSON.parse(notification.actions));
+//     const actions = JSON.parse(notification.actions);
+//     if (actions.includes("Answer")) {
+//       console.log("Call answered");
+//       const dispatch = store.dispatch();
+//       dispatch(updateSipState({ key: "CallScreenOpen", value: true }));
+//       dispatch(updateSipState({ key: "CallAns", value: false }));
+//       PushNotification.cancelAllLocalNotifications();
+//     } else if (actions.includes("Decline")) {
+//       console.log("Call declined");
+//       PushNotification.cancelAllLocalNotifications();
+//     }
+//   },
+//   onNotification: (notification) => {
+//     console.log('Notification received:', notification);
+//     // Automatically open the app when a notification is received
+//     console.log("ACTION:", JSON.parse(notification.actions));
 
-    PushNotification.invokeApp(notification);
-    const actions = JSON.parse(notification.actions);
-    if (actions.includes("Answer")) {
-      console.log("Call answered");
-    }
-  },
-  popInitialNotification: true,
-  requestPermissions: true,
-  onRegister: function (token) {
-    console.log("TOKEN:", token);
-  },
+//     PushNotification.invokeApp(notification);
+//     const actions = JSON.parse(notification.actions);
+//     if (actions.includes("Answer")) {
+//       console.log("Call answered");
+//     }
+//   },
+//   popInitialNotification: true,
+//   requestPermissions: true,
+//   onRegister: function (token) {
+//     console.log("TOKEN:", token);
+//   },
 
-})
+// })
 
-PushNotification.createChannel(
-  {
-    channelId: "call-channel",
-    channelName: "Call Notifications",
-    channelDescription: "Notifications for incoming calls",
-    playSound: true,
-    soundName: "default",
-    importance: 4,
-    vibrate: true,
-  },
-  (created) => console.log(`CreateChannel returned '${created}'`)
-);
+// PushNotification.createChannel(
+//   {
+//     channelId: "call-channel",
+//     channelName: "Call Notifications",
+//     channelDescription: "Notifications for incoming calls",
+//     playSound: true,
+//     soundName: "default",
+//     importance: 4,
+//     vibrate: true,
+//   },
+//   (created) => console.log(`CreateChannel returned '${created}'`)
+// );
 
 export const showCallNotification = (callerName) => {
   PushNotification.localNotification({
@@ -104,16 +104,18 @@ export const showCallNotification = (callerName) => {
   });
 };
 
-const NavigateToNativeLayout = (name,phoneNumber) => {
+const NavigateToNativeLayout = (name, phoneNumber) => {
   console.log("NavigateToNativeLayout", name, phoneNumber)
+  const { MyNativeModule } = NativeModules;
+
   if (MyNativeModule) {
     const lastOpenTime = store.getState().sip.terminationTime || 0;
     console.log("lastOpenTime", lastOpenTime)
-    const CurrntTime  = new Date().getTime();
+    const CurrntTime = new Date().getTime();
     console.log("currentTime", CurrntTime)
     if (CurrntTime - lastOpenTime > 2000) { // 5000 milliseconds = 5 seconds
       console.log("NavigateToNativeLayout", "ActiveApp")
-      MyNativeModule.openNativeLayout(name,phoneNumber);
+      MyNativeModule.openNativeLayout(name, phoneNumber);
     } else {
       console.log("NavigateToNativeLayout", "Terminated")
       MyNativeModule.showSplashScreen();
@@ -125,6 +127,7 @@ const NavigateToNativeLayout = (name,phoneNumber) => {
 };
 
 const applyFlags = () => {
+  const { MyNativeModule } = NativeModules;
   if (MyNativeModule) {
     MyNativeModule.applyFlags();
   } else {
@@ -134,9 +137,9 @@ const applyFlags = () => {
 
 
 const firebaseListener = async (remoteMessage) => {
-  BackgroundTimer.start();
+  // BackgroundTimer.start();
   console.log('Message handled in the foreground!11', remoteMessage);
-  
+
   await AppStoreData(StorageKey.CallKeepORNot, true);
 
   if (AppState.currentState == 'active' || AppState.currentState == 'background') {
@@ -146,11 +149,14 @@ const firebaseListener = async (remoteMessage) => {
       console.error('Error calling applyFlags:', error);
     }
   }
-
-  await AppStoreData(StorageKey.IncomingCallNumber, remoteMessage.from);
+  try {
+    store.dispatch(updateSipState({ key: "IncomingCallNumber", value: remoteMessage.from }));
+  } catch (error) {
+    console.error('Error fetching name:', error);
+  }
 
   try {
-    NavigateToNativeLayout("Voizcall User",remoteMessage.from)
+    NavigateToNativeLayout("Voizcall User", remoteMessage.from)
   } catch (error) {
     console.error('Error calling applyFlags:', error);
   }
@@ -160,19 +166,24 @@ const firebaseListener = async (remoteMessage) => {
 messaging().onMessage(async (remoteMessage) => {
   console.log('Message handled in the foreground!ee', remoteMessage);
   await AppStoreData(StorageKey.CallKeepORNot, true);
-
+  
   try {
-    applyFlags()
+    store.dispatch(updateSipState({ key: "AppISBackGround", value: true }));
   } catch (error) {
-    console.error('Error calling applyFlags:', error);
+    console.error('Error fetching name:', error);
   }
 
- 
-  try {
-    NavigateToNativeLayout("Test",remoteMessage.from)
-  } catch (error) {
-    console.error('Error calling applyFlags:', error);
-  }
+  // try {
+  //   applyFlags()
+  // } catch (error) {
+  //   console.error('Error calling applyFlags:', error);
+  // }
+
+  // try {
+  //   NavigateToNativeLayout("Voizcall User", remoteMessage.from)
+  // } catch (error) {
+  //   console.error('Error calling applyFlags:', error);
+  // }
 });
 
 Platform.OS == "android" && messaging().setBackgroundMessageHandler(firebaseListener);
@@ -189,3 +200,4 @@ AppRegistry.registerHeadlessTask('RNCallKeepBackgroundMessage', () => ({ name, c
 });
 
 AppRegistry.registerComponent(appName, () => appRedux);
+// AppRegistry.registerComponent('voizcallreactnative', () => appRedux);

@@ -1,5 +1,6 @@
 import axiosInstance from "../components/utils/axios";
 import { APIURL } from "../HelperClass/APIURL";
+import { showAlert } from "../HelperClass/CommonAlert";
 
 export const Login = async () => {
   try {
@@ -64,7 +65,7 @@ export const Qr_login = async (data) => {
     }
     return { success: false, data: res.data.data };
   } catch (error) {
-    console.log(error);
+    console.log(error.data);
     return { success: false, message: error.message };
   }
 };
@@ -101,14 +102,30 @@ export const POSTAPICALL = async (APIURL, data) => {
   try {
     const res = await axiosInstance.post(APIURL, data);
     if (res.data.status == 'SUCCESS') {
-      return { success: true, data: res.data.data };
+      return {success: true, data: res.data.data };
     }
-    return { success: false, data: res.data.data};
+    return {success: false, data: res.data.data};
   } catch (error) {
     console.log(error);
-    return { success: false, message: error.message};
+    return {success: false, message: error.message};
   }
 };
+
+
+export const RESETPOSTAPICALL = async (APIURL, data) => {
+  console.log('APIURL', APIURL)
+  try {
+    const res = await axiosInstance.post(APIURL, data);
+    if (res.data.status == 'SUCCESS') {
+      return {success: true, data: res.data };
+    }
+    return {success: false, data: res.data};
+  } catch (error) {
+    console.log(error);
+    return {success: false, message: error.message};
+  }
+};
+
 
 export const CDRLAPICALL = async (APIURL, data) => {
   console.log('APIURL', APIURL)

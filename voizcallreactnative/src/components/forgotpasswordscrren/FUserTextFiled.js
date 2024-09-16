@@ -3,26 +3,28 @@ import { View, Image, StyleSheet, Text, SafeAreaView, TextInput, TouchableOpacit
 import icUser from '../../../Assets/ic_user.png';
 import backarrowR from '../../../Assets/backarrowR.png';
 import { AppCommon_Font, THEME_COLORS } from '../../HelperClass/Constant';
-import { POSTAPICALL } from '../../services/auth';
+import { RESETPOSTAPICALL } from '../../services/auth';
 import { APIURL } from '../../HelperClass/APIURL';
+import LodingJson from '../../HelperClass/LodingJson';
 
 const FUserTextFiled = ({ navigation }) => {
-    const [username, setusername] = useState('TestUser11');
+    const [username, setusername] = useState('voizCallS1@123');
+    const [loading, setLoading] = useState(false);
 
     const ResetPasswordAPICAll = async () => {
+        setLoading(true)
         const prma = {
-            "usr_username": username
+            "usr_username": username,
+            "user_type": "mobile",
         }
-        const data = await POSTAPICALL(APIURL.ResetPassword, prma)
+        console.log(prma)
+        const data = await RESETPOSTAPICALL(APIURL.ResetPassword, prma)
+        console.log(data)
+        setLoading(false)
         Alert.alert(
-            'Alert!',
-            `${data.message}`,
+            `${data.data.status}`,
+            `${data.data.message}`,
             [
-                {
-                    text: 'cancel',
-                    onPress: () => console.log('Cancel Pressed'),
-                    style: 'cancel',
-                },
                 {
                     text: 'Ok',
                     onPress: async () => {
@@ -37,6 +39,9 @@ const FUserTextFiled = ({ navigation }) => {
 
     return (
         <>
+            {
+                <LodingJson loading={loading} setLoading={setLoading} />
+            }
             <View style={styles.InputTextView}>
                 <View style={styles.InputTextSideImgView}>
                     <Image style={{ height: "45%", width: "40%", tintColor: THEME_COLORS.black }}

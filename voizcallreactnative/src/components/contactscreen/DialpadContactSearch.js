@@ -1,29 +1,29 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { FlatList, View, Text, StyleSheet, TextInput, SectionList, Button, RefreshControl, SafeAreaView, ScrollView, Modal, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { FlatList, View, Text, StyleSheet, SectionList, SafeAreaView, ScrollView } from 'react-native';
 import Contacts from 'react-native-contacts';
 import { PermissionsAndroid } from 'react-native';
 import ListItem from './ListItem';
-import { ro } from 'date-fns/locale';
 
-const DialpadContactSearch = ({ search }) => {
+const DialpadContactSearch = ({ search,setNumber,numberMatch }) => {
 
     let [contacts, setContacts] = useState([]);
     let [tempcontacts, settempContacts] = useState([]);
 
     useEffect(() => {
-        // if (Platform.OS === 'android') {
-        //     PermissionsAndroid.request(
-        //         PermissionsAndroid.PERMISSIONS.READ_CONTACTS, {
-        //         title: 'Contacts',
-        //         message: 'This app would like to view your contacts.',
-        //     }).then(() => {
-        //         loadContacts();
-        //     }
-        //     );
-        // } else {
-        //     loadContacts();
-        // }
+        GetcontactPermissions()
     }, []);
+
+    const GetcontactPermissions = async () =>{
+        if (Platform.OS === 'android') {
+            const granted = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_CONTACTS);
+            if (!granted) {
+                return;
+            }
+            loadContacts();
+        } else {
+            loadContacts();
+        }
+    }
 
     const getData = () => {
         let contactsarray = []
@@ -48,22 +48,33 @@ const DialpadContactSearch = ({ search }) => {
     }
 
     const loadContacts = () => {
-        Contacts.getAll()
+          Contacts.getAll()
             .then(contacts => {
-                const simplifiedContacts = contacts.map(contact => ({
-                    recordID: contact.recordID, // Keep the ID for key extraction
-                    givenName: contact.givenName,
-                    familyName: contact.familyName,
-                    phoneNumbers: contact.phoneNumbers, // Include only phone numbers
-                }));
-                simplifiedContacts.sort((a, b) => a.givenName.toLowerCase().localeCompare(b.givenName.toLowerCase()));
-                setContacts(simplifiedContacts);
-                settempContacts(simplifiedContacts)
+              if (contacts.length === 0) {
+                console.log('No contacts found');
+              } else {
+                contacts = contacts.filter(contact => contact.givenName);
+                // Sort contacts by givenName
+                contacts.sort((a, b) => {
+                  const nameA = a.givenName.toLowerCase();
+                  const nameB = b.givenName.toLowerCase();
+                  return nameA.localeCompare(nameB);
+                });
+        
+                
+
+                setContacts(contacts);
+                settempContacts(contacts)
+              }
+              setLoading(false);
             })
             .catch(e => {
-                alert('Permission to access contacts was denied');
-                console.warn('Permission to access contacts was denied');
+              setLoading(false)
+              // alert('Permission to access contacts was denied',e);
+              Alert.alert('Error', 'Failed to load contacts');
+              console.warn('Error loading contacts:', error.message);
             });
+
 
     };
 
@@ -88,9 +99,23 @@ const DialpadContactSearch = ({ search }) => {
                     const fullName = `${contact.givenName} ${contact.familyName}`.toLowerCase();
                     const matchesName = fullName.includes(lowerText);
                     const matchesPhone = contact.phoneNumbers.some(phone => phone.number.includes(text));
-    
                     return matchesName || matchesPhone;
                 });
+                if(filteredContacts.length == 1 ){
+                    console.log("filteredContacts",search)
+                    const contact = filteredContacts[0];
+                    console.log("filteredContacts",contact)
+                    const matchingPhoneNumber = contact.phoneNumbers.find(phone => 
+                        phone.number.replace(/[^0-9+]/g, '') === text.replace(/[^0-9+]/g, '')
+                    );
+                    if (matchingPhoneNumber) {
+                        numberMatch(true);
+                    } else {
+                        numberMatch(false);
+                    }
+                }else{
+                    numberMatch(false)
+                }
                 setContacts(filteredContacts);
                 // console.log("Filtered contacts:", filteredContacts);
             }
@@ -112,6 +137,16 @@ const DialpadContactSearch = ({ search }) => {
                                     key={contact.item.recordID}
                                     item={contact.item}
                                     textColor={'W'}
+                                    onPress={() => {
+                                        searchContact(contact.item.givenName);
+                                        if (contact.item.phoneNumbers && contact.item.phoneNumbers.length > 0) {
+                                            console.log("Phone number:", contact.item.phoneNumbers[0].number);
+                                            const number = contact.item.phoneNumbers[0].number.replace(/[^0-9+]/g, '')
+                                            const newNumbers = [number.toString()];  
+                                            console.log(newNumbers)                  
+                                            setNumber(newNumbers);
+                                        }
+                                    }}
                                 />
                             );
                         }}
@@ -122,9 +157,7 @@ const DialpadContactSearch = ({ search }) => {
         </SafeAreaView>
     );
 };
-
 export default DialpadContactSearch;
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,

@@ -6,45 +6,20 @@ import { Dropdown } from 'react-native-element-dropdown';
 import down_arrow from '../../../Assets/ic_dwon_arrow.png';
 
 
-const CallIdShow = ({callIDShow,setCallerID}) => {
-    const local_data = [
-        {
-            value: '1',
-            lable: 'Country 1',
-        },
-        {
-            value: '2',
-            lable: 'Country 2',
-        },
-        {
-            value: '3',
-            lable: 'Country 3',
-        },
-        {
-            value: '4',
-            lable: 'Country 4',
-        },
-        {
-            value: '5',
-            lable: 'Country 5',
-        },
-    ];
-
-    const [country, setCountry] = useState('1');
+const CallIdShow = ({setCallerIDShow,callID}) => {
     const [showIDList, setshowIDList] = useState(true);
-
 
     const hundelCallerID = () => {
         setshowIDList(!showIDList)
-        setCallerID(showIDList)
+        setCallerIDShow(showIDList)
     }
 
     return (
         <>
-        <View style={styles.CallId}>
-            <TouchableOpacity style={{flex:1, flexDirection: 'row', alignItems: 'center',marginLeft:15}} onPress={hundelCallerID}>
-                <Text style={{ alignSelf: 'center', fontSize: 15, fontFamily: AppCommon_Font.Font }}>Caller ID</Text>
-                <View style={{alignItems:'flex-end',flex:1,marginRight:10}}>
+        <View style={styles.CallIdContainer}>
+            <TouchableOpacity style={{flex:1, flexDirection: 'row', alignItems: 'center',justifyContent:'center'}} onPress={hundelCallerID}>
+                <Text style={styles.callIdText}>{callID}</Text>
+                <View style={{position:'absolute',right:15}}>
                 <Image
                     style={{ height: 15, width: 15 }}
                     source={down_arrow}
@@ -53,44 +28,27 @@ const CallIdShow = ({callIDShow,setCallerID}) => {
                 </View>
             </TouchableOpacity>
         </View>
-       
         </>
-
-        // <View style={styles.CallId}>
-        //     <Dropdown
-        //         style={[styles.dropdown]}
-        //         selectedTextStyle={styles.selectedTextStyle}
-        //         placeholderStyle={styles.placeholderStyle}
-        //         iconStyle={styles.iconStyle}
-        //         maxHeight={200}
-        //         value={country}
-        //         data={local_data}
-        //         searchStyle={styles.searchStyle} // Add this line
-        //         valueField="value"
-        //         labelField="lable"
-        //         imageField="image"
-        //         placeholder="Select country"
-        //         searchPlaceholder="Search..."
-        //         onChange={e => {
-        //             setCountry(e.value);
-        //         }}
-        //     />
-        // </View>
-
     );
 };
 const styles = StyleSheet.create({
-    CallId: {
-        height: 40,
+    CallIdContainer: {
+        height: 35,
         width: '50%',
         backgroundColor: '#fff',
-        marginTop: -20,
+        marginTop: -15,
         borderRadius: 20,
         shadowColor: '#000', // Shadow color
         shadowOffset: { width: 0, height: 2 }, // Shadow offset
         shadowOpacity: 0.3, // Shadow opacity
         shadowRadius: 4, // Shadow radius
         elevation: 5, // Elevation level for Android
+        justifyContent: 'center',
+    },
+    callIdText: {
+        fontSize: 18,
+        fontFamily: AppCommon_Font.Font,
+        marginRight: 10, // Add some space between text and arrow
     },
     dropdown: {
         height: 40,

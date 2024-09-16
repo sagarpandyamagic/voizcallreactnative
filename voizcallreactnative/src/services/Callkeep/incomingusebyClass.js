@@ -87,6 +87,8 @@ class IncomingCall {
   startCall = ({ handle, localizedCallerName }) => {
     console.log("Start Call")
     RNCallKeep.startCall(this.getCurrentCallId(), handle, localizedCallerName);
+    RNCallKeep.setCurrentCallActive(this.getCurrentCallId());
+
   };
 
   // IncomingCallPikcup = () => {

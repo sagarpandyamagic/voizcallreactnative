@@ -7,7 +7,7 @@ export const THEME_COLORS = {
     , transparent: 'transparent'
 }
 
-export const API_BASE_URL = "https://panel-api.voizcall.com/v1.50.22/api"
+export const API_BASE_URL = "https://panel-api.voizcall.com/v1.50.26/api"
 
 export const IOSVersion = '1.0.2'
 export const AndroidVersion = "1.0.2"
@@ -54,7 +54,7 @@ export const userprofilealias = {
     "sip_register_interval": "sip.register.interval",
     "sip_register_respectServerExpires": "sip.register.respectServerExpires",
     "call_encryption": "call.encryption",
-    "call_onetouch_voicemailNumber": "call.onetouch.voicemailNumber",
+    "call_voicemailNumber": "call.voicemailNumber",
     "call_allowHold": "call.allowHold",
     "call_allowTransfer": "call.allowTransfer",
     "sms_status": "sms.status",

@@ -16,13 +16,14 @@ import SipUA from '../../services/call/SipUA';
 import { inticalluserData } from '../../store/sipSlice';
 import { PushSubScribeNotificaion } from '../../services/PushSubScribeNotificaion';
 import LodingJson from '../../HelperClass/LodingJson';
+import { showAlert } from '../../HelperClass/CommonAlert';
 
 const PhoneOrEmailLogin = ({ navi }) => {
     const [deviceId, setdeviceId] = useState('');
     const [deviceModel, setdeviceModel] = useState('');
     const [systemName, setsystemName] = useState('');
-    const [username, setusername] = useState('TestUser11');
-    const [userpassword, setuserpassword] = useState('Sagar@123');
+    const [username, setusername] = useState('voizCallS1@123');
+    const [userpassword, setuserpassword] = useState('voizCallS1@123');
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -34,7 +35,6 @@ const PhoneOrEmailLogin = ({ navi }) => {
             const deviceId = await DeviceInfo.getUniqueId();
             const deviceModel = DeviceInfo.getModel(); // Get the device model
             const systemName = DeviceInfo.getSystemName();
-
             const cleanedString = deviceId.replace(/-/g, '');
             setdeviceId(cleanedString)
             console.log('deviceId', deviceId);
@@ -48,14 +48,14 @@ const PhoneOrEmailLogin = ({ navi }) => {
     const LoginAPICall = async () => {
         try {
             await AppStoreData(StorageKey.instance_id, deviceId)
-            const Instanceid =  await getStorageData(StorageKey.instance_id)
+            const Instanceid = await getStorageData(StorageKey.instance_id)
             const FcmTokan = await getStorageData(StorageKey.FCM)
             const pram = {
                 "usr_username": username,
                 "usr_password": userpassword,
                 "instance_id": Instanceid,
                 "device_token": FcmTokan,
-                "device_type": Platform.OS ,
+                "device_type": Platform.OS,
                 "device_model": deviceModel,
                 "device_os": systemName
             }
@@ -65,12 +65,11 @@ const PhoneOrEmailLogin = ({ navi }) => {
             console.log("configInfo", configInfo)
 
             if (configInfo.success) {
-                console.log(configInfo.access_token)
-                console.log(configInfo.data.data)
+                console.log("configInfo.access_token",configInfo.data.access_token)
+                console.log("configInfo.data.data",configInfo.data.data)
                 await AppStoreData(StorageKey.userData, configInfo.data.data)
                 await AppStoreData(StorageKey.access_token, configInfo.data.access_token)
                 await AppStoreData(StorageKey.auth_type, configInfo.data.data.auth_type)
-
                 await AppStoreData(StorageKey.isLogin, true)
                 const value = await getStorageData(StorageKey.isLogin)
                 const profileInfo = await getProfile()
@@ -81,9 +80,7 @@ const PhoneOrEmailLogin = ({ navi }) => {
                     const sipserver = await getConfigParamValue(userprofilealias.sip_sipServer)
                     const sipport = "7443"
                     store.dispatch(inticalluserData({ sipusername, password, sipserver, sipport }))
-
-                    await PushSubScribeNotificaion(configInfo.data.data)
-
+                    const PushSubScribe = await PushSubScribeNotificaion(configInfo.data.data)
                     SipUA.connect()
                     navi.navigate('TabBar')
                 }

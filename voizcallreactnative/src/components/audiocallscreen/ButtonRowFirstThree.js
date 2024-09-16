@@ -24,7 +24,7 @@ const imageSize = width * 0.17; // Example: 10% of screen width
 const itemSpacing = 40;      // Space between each Image+Text pair
 
 const ButtonRowFirstThree = () => {
-    const { phoneNumber, sessionID, allSession } = useSelector((state) => state.sip)
+    const { CallInitial } = useSelector((state) => state.sip)
     const [togglemute, settogglemute] = useState(false)
     const [isSpeker, setSpeker] = useState(false)
 
@@ -40,8 +40,8 @@ const ButtonRowFirstThree = () => {
 
     return (
         <View style={style.container}>
-            <View style={style.item}>
-                <TouchableOpacity style={style.imageVw} onPress={handelToggelMute}>
+            <View style={[style.item]}>
+                <TouchableOpacity style={[style.imageVw,{opacity: !CallInitial ? 0.5 : 1}]} disabled={!CallInitial} onPress={handelToggelMute}>
                     {
                         togglemute ? 
                          <Image source={mute_ic} style={style.image}>
@@ -57,7 +57,7 @@ const ButtonRowFirstThree = () => {
                 </Text>
             </View>
             <View style={style.item}>
-                <TouchableOpacity style={style.imageVw} onPress={() => {
+                <TouchableOpacity style={[style.imageVw,{opacity: !CallInitial ? 0.5 : 1}]} disabled={!CallInitial} onPress={() => {
                     store.dispatch(updateSipState({ key: "DTMFSCreen", value: true }))
                 }}>
                     <Image source={ic_Tab_DialPad} style={style.image}>
@@ -68,7 +68,7 @@ const ButtonRowFirstThree = () => {
                 </Text>
             </View>
             <View style={style.item}>
-                <TouchableOpacity style={style.imageVw} onPress={handelToggelSpeker}>
+                <TouchableOpacity style={[style.imageVw,{opacity: !CallInitial ? 0.5 : 1}]} disabled={!CallInitial} onPress={handelToggelSpeker}>
                 {
                     isSpeker ?<Image source={speaker_activate} style={style.image}>
                     </Image> : <Image source={speaker_deactivate} style={style.image}>
@@ -90,7 +90,7 @@ const style = StyleSheet.create({
         alignContent: 'center',
         alignItems: 'center',
         flex: 1,
-        // backgroundColor:'red',
+
     },
     image: {
         height: '50%',
@@ -113,6 +113,7 @@ const style = StyleSheet.create({
         shadowOpacity: 0.2,  // Set shadow opacity
         shadowRadius: 4,  // Set shadow blur radius
         elevation: 2,  // Android-specific shadow property
+        
 
     },
     text: {
@@ -128,5 +129,9 @@ const style = StyleSheet.create({
         width: imageSize,  // Set the width of the image
         height: imageSize,
     },
+    disabledButton: {
+        backgroundColor: '#d3d3d3', // Gray color for disabled state
+        opacity: 0.6, // Reduce opacity to show it as disabled
+    }
 })
 export default ButtonRowFirstThree

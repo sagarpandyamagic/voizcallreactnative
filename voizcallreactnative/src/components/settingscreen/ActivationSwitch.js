@@ -8,6 +8,7 @@ import { AppStoreData, getStorageData } from '../utils/UserData';
 import SipUA from '../../services/call/SipUA';
 import { setInitTimeValue } from '../../services/setInitVlaue';
 import { useSelector } from 'react-redux';
+import store from '../../store/store';
 
 const ActivationSwitch = () => {
     const { UserActive,UserDND} = useSelector((state) => state.sip)
@@ -51,6 +52,7 @@ const ActivationSwitch = () => {
     }
 
     const MangeDND = async () => {
+        console.log("isEnabledDND",isEnabledDND)
         const value = await AppStoreData(StorageKey.UserDND,isEnabledDND);
         store.dispatch(updateSipState({ key: "UserDND", value: isEnabledDND }))
     }

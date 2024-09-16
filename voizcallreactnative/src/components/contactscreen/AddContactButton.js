@@ -5,13 +5,14 @@ import ic_plus from '../../../Assets/ic_plus.png';
 
 const AddContactButton = ({navigation}) => {
     return (
-        <View style={styles.container}>
-            <TouchableOpacity style={styles.button} onPress={() => {
-               navigation.navigate('AddNewContact')
-            }} >
-                <Image style={styles.imge} source={ic_plus} />
-            </TouchableOpacity>
-        </View>
+        // <View style={styles.container}>
+        //     <TouchableOpacity style={styles.button} onPress={() => {
+        //        navigation.navigate('AddNewContact')
+        //     }} >
+        //         <Image style={styles.imge} source={ic_plus} />
+        //     </TouchableOpacity>
+        // </View>
+        <></>
     );
 };
 const styles = StyleSheet.create({

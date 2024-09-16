@@ -9,8 +9,10 @@ export const PushSubScribeNotificaion = async (configData) => {
     const FcmTokan = await getStorageData(StorageKey.FCM)
     let sip_username_with_instance;
     try {
-        const instanceId = await getStorageData(StorageKey.instance_id);
+        const instanceId = await getStorageData(StorageKey.instance_id)
         const sipUsername = await getConfigParamValue(userprofilealias.sip_username);
+        console.log('sipUsername', sipUsername)
+
         let Toakn;
         if(Platform.OS == 'ios'){
             Toakn = await getStorageData(StorageKey.VOIP)
@@ -42,7 +44,7 @@ export const PushSubScribeNotificaion = async (configData) => {
         console.log("pushsubscribe", data)
 
         const pushsubscribe = await POSTAPICALL(APIURL.PushSubScribe, data)
-        // console.log("pushsubscribe", pushsubscribe)
+        console.log("pushsubscribe responce", pushsubscribe)
     } catch (error) {
         console.error('Error:', error.message);
     }

@@ -21,7 +21,7 @@ const CallerInfo = () => {
                 {DialNumber}
             </Text>
             <Text style={[style.Text,{fontSize:15}]}>
-                {callTimer == "00:00:00" ? "Calling...." : callTimer}
+                {callTimer == "00:00:00" ? (CallInitial == false ? "Connecting....." : "Calling....") : callTimer}
             </Text>
         </View>
     )

@@ -1,6 +1,10 @@
 import React from 'react';
 import { View, Image, StyleSheet, TouchableOpacity, Text, Dimensions, FlatList } from 'react-native';
 import { AppCommon_Font, THEME_COLORS } from '../../HelperClass/Constant';
+import phoneLogo from '../../../Assets/ic_call.png';
+import ic_remove_number from '../../../Assets/ic_remove_number.png';
+import voicemailicon from '../../../Assets/voicemailicon.png';
+
 // import { FlatList } from 'react-native-gesture-handler';
 const { width } = Dimensions.get('window')
 
@@ -10,7 +14,7 @@ const pinMaxSize = pinContainersize / pinLength
 const pinSpacing = 7
 const pinSize = pinMaxSize - pinSpacing * 1.1
 
-const dialPad = [1, 2, 3, 4, 5, 6, 7, 8, 9, '*', 0, '#']//, '', 'call', 'del']
+const dialPad = [1, 2, 3, 4, 5, 6, 7, 8, 9, '*', 0, '#']//, 'voizcall', 'call', 'del']
 const dinlPadAlphabat = ['', 'A B C', "D E F", "G H I", "J K L", "M N O", "P Q R S", "T U V", "W X Y Z", "", "+", "", "", "", ""]
 const dialPadSize = width * .16
 const dialPadTextSize = dialPadSize * .38
@@ -39,13 +43,16 @@ function Number({ onPress }: { onPress: (item: typeof dialPad[number]) => void }
                                     <Image style={{
                                         width: dialPadSize / 2,
                                         height: dialPadSize / 3, resizeMode: 'contain',
-                                    }} source={removeLogo} />
+                                    }} source={ic_remove_number} />
                                     : (item === 'call'
                                         ? <Image style={{
                                             width: dialPadSize - 5,
                                             height: dialPadSize - 5
                                         }} source={phoneLogo} />
-                                        : <Text style={{ fontSize: dialPadTextSize, fontFamily: AppCommon_Font.Font, color: THEME_COLORS.black }}>{item}</Text>
+                                        : (item === "voizcall")? <Image style={{
+                                            width: dialPadSize - 5,
+                                            height: dialPadSize - 5
+                                        }} source={voicemailicon} />  :  <Text style={{ fontSize: dialPadTextSize, fontFamily: AppCommon_Font.Font, color: THEME_COLORS.black }}>{item}</Text>
                                     )
                             }
                             {
@@ -71,6 +78,8 @@ const DialPad = ({dialnumber,addNumber}) => {
                 } else if (item.toString() == "call") {
                     handleMakeCall(number)
                 } else if (item.toString() == '*' || item.toString() == '#') {
+                    const newNumbers = dialnumber.length === 0 ? [item.toString()] : [...dialnumber, item.toString()];
+                    addNumber(newNumbers)
                 } else {
                     const newNumbers = dialnumber.length === 0 ? [item.toString()] : [...dialnumber, item.toString()];
                     addNumber(newNumbers)
@@ -79,6 +88,7 @@ const DialPad = ({dialnumber,addNumber}) => {
         </View>
     );
 };
+
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#fff',

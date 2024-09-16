@@ -27,7 +27,7 @@ const imageSize = width * 0.17; // Example: 10% of screen width
 const itemSpacing = 40;      // Space between each Image+Text pair
 
 const ButtonRowSecondThree = ({ transparentCall }) => {
-    const { phoneNumber, sessionID, allSession, ISConfrenceTransfer, SessionCount } = useSelector((state) => state.sip)
+    const { phoneNumber, sessionID, allSession, ISConfrenceTransfer, SessionCount,CallInitial } = useSelector((state) => state.sip)
     const [hold, sethold] = useState(false)
     const [swip, setswip] = useState(false)
 
@@ -67,7 +67,7 @@ const ButtonRowSecondThree = ({ transparentCall }) => {
             {
                 !ISConfrenceTransfer && <>
                     <View style={style.item}>
-                        <TouchableOpacity style={[style.imageVw, { backgroundColor: 'gray' }]} onPress={() =>
+                        <TouchableOpacity style={[style.imageVw, { backgroundColor: 'gray',opacity: !CallInitial ? 0.5 : 1}]}  disabled={!CallInitial} onPress={() =>
                             transparentCall()
                         } >
                             <Image source={ic_transfercall} style={[style.image, { tintColor: 'white' }]}>
@@ -86,7 +86,7 @@ const ButtonRowSecondThree = ({ transparentCall }) => {
                             allSession && Object.keys(allSession).length == 2 && 
                             <>
                                 <View style={[style.item]}>
-                                    <TouchableOpacity style={[style.imageVw, { backgroundColor: 'gray' }]} onPress={handelToggelSwip}>
+                                    <TouchableOpacity style={[style.imageVw, { backgroundColor: 'gray',opacity: !CallInitial ? 0.5 : 1 }]} disabled={!CallInitial} onPress={handelToggelSwip}>
                                         <Image source={ic_call_swipe} style={[style.image, { tintColor: 'white' }]}>
                                         </Image>
                                     </TouchableOpacity>
@@ -99,7 +99,7 @@ const ButtonRowSecondThree = ({ transparentCall }) => {
 
                     </> : <>
                         <View style={[style.item]}>
-                            <TouchableOpacity style={[style.imageVw, { backgroundColor: 'gray' }]} onPress={handelToggelHold}>
+                            <TouchableOpacity style={[style.imageVw, { backgroundColor: 'gray',opacity: !CallInitial ? 0.5 : 1 }]} disabled={!CallInitial} onPress={handelToggelHold}>
                                 {
                                      hold ? <Image source={ic_hold} style={[style.image, { tintColor: 'red' }]}>
                                     </Image> : <Image source={ic_hold} style={[style.image, { tintColor: 'white' }]}>
@@ -119,7 +119,7 @@ const ButtonRowSecondThree = ({ transparentCall }) => {
             {
                 ISConfrenceTransfer ? <>
                     <View style={style.item}>
-                        <TouchableOpacity style={[style.imageVw, { backgroundColor: 'gray' }]} onPress={() => {
+                        <TouchableOpacity style={[style.imageVw, { backgroundColor: 'gray',opacity: !CallInitial ? 0.5 : 1 }]} disabled={!CallInitial} onPress={() => {
                             SipUA.toggelHoldCall(false)
                             dispatch(updateSipState({ key: "ISConfrenceTransfer", value: false }))
                             store.dispatch(updateSipState({ key: "DialNumber", value: "Confrence" }))
@@ -134,7 +134,7 @@ const ButtonRowSecondThree = ({ transparentCall }) => {
 
                 </> : <>
                     <View style={style.item}>
-                        <TouchableOpacity style={[style.imageVw, { backgroundColor: 'gray' }]} onPress={() => {
+                        <TouchableOpacity style={[style.imageVw, { backgroundColor: 'gray',opacity: !CallInitial ? 0.5 : 1 }]} disabled={!CallInitial} onPress={() => {
                             store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
                         }}>
                             <Image source={confeence} style={style.image}>

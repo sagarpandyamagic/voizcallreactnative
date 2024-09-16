@@ -23,21 +23,17 @@ const FavouriteContact = ({ navigation }) => {
   let [contacts, setContacts] = useState([]);
   const headerArray = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
   const [refreshing, setRefreshing] = useState(false);
+  const favoriteIds = new Set();
 
   useEffect(() => {
     // createContactTable();
     getFavoriteContactsFromDatabase()
-    if (Platform.OS === 'android') {
-      requestAndroidPermissions().then(loadContacts);
-    } else {
-      loadContacts();
-    }
   }, []);
 
 
   const fetchData = () => {
     setTimeout(() => {
-      loadContacts();
+      getFavoriteContactsFromDatabase()
       setRefreshing(false);
     }, 1500);
   };
@@ -46,7 +42,7 @@ const FavouriteContact = ({ navigation }) => {
     setRefreshing(true);
     fetchData();
   };
-  
+
   const getData = () => {
     return headerArray.map(letter => {
       const filteredContacts = contacts.filter(contact =>
@@ -66,21 +62,20 @@ const FavouriteContact = ({ navigation }) => {
   const getFavoriteContactsFromDatabase = () => {
     db.transaction((tx) => {
       tx.executeSql(
-        'SELECT * FROM ContactList WHERE isfavourite = "1"',
+        'SELECT * FROM ContactList WHERE isfavourite = "1.0"',
         [],
         (tx, results) => {
           const rows = results.rows;
-          const favoriteIds = new Set();
-
+          favoriteIds.clear();
           for (let i = 0; i < rows.length; i++) {
             favoriteIds.add(rows.item(i).recordid);
           }
-
-          setContacts((prevContacts) =>
-            prevContacts.filter(contact => favoriteIds.has(contact.recordID))
-          );
-
-          console.error('favoriteContacts', favoriteContacts);
+          if (Platform.OS === 'android') {
+            requestAndroidPermissions().then(loadContacts);
+          } else {
+            loadContacts();
+          }
+          console.log('favoriteContacts', favoriteIds);
         },
         (error) => {
           console.error('Error retrieving data:', error);
@@ -139,34 +134,21 @@ const FavouriteContact = ({ navigation }) => {
 
   const loadContacts = () => {
     Contacts.getAll()
-      .then(allContacts => {
-        // Fetch favorite contacts from the database
-        db.transaction(tx => {
-          tx.executeSql(
-            'SELECT recordid FROM ContactList WHERE isfavourite = "1"',
-            [],
-            (tx, results) => {
-              const favoriteIds = new Set();
-              for (let i = 0; i < results.rows.length; i++) {
-                favoriteIds.add(results.rows.item(i).recordid);
-              }
+      .then(contacts => {
+        if (contacts.length === 0) {
+          console.log('No contacts found');
+        } else {
+          contacts = contacts.filter(contact => contact.givenName && favoriteIds.has(contact.recordID));
 
-              // Filter to get only favorite contacts
-              const favoriteContacts = allContacts.filter(contact =>
-                favoriteIds.has(contact.recordID)
-              );
-
-              // Update the database with the new favorite contacts
-              updateDatabaseWithNewFavoriteContacts(favoriteContacts);
-
-              // Update the state with favorite contacts
-              setContacts(favoriteContacts);
-            },
-            (error) => {
-              console.error('Error retrieving favorite contacts:', error);
-            }
-          );
-        });
+          // Sort contacts by givenName
+          contacts.sort((a, b) => {
+            const nameA = a.givenName.toLowerCase();
+            const nameB = b.givenName.toLowerCase();
+            return nameA.localeCompare(nameB);
+          });
+          
+          setContacts(contacts);
+        }
       })
       .catch(e => {
         alert('Permission to access contacts was denied');
@@ -213,31 +195,31 @@ const FavouriteContact = ({ navigation }) => {
             />
           </View>
           {
-          getData().length > 0 ? (
-            <SectionList
-              sections={getData()}
-              renderItem={(contact) => {
-                return (
-                  <ListItem
-                    key={contact.item.recordID}
-                    item={contact.item}
-                    onPress={openContact}
-                  />
-                );
-              }}
-              keyExtractor={item => item.recordID}
-              renderSectionHeader={({ section: { title } }) => (
-                <View style={{ justifyContent: 'center', }}>
-                  <Image style={{ resizeMode: 'contain' }} source={gradiant_border}></Image>
-                  <Text style={styles.header} >{title}</Text>
-                </View>
-              )}
-            />
-          ) : (
-            <View style={styles.notFoundContainer}>
-              <Text style={styles.notFoundText}>Data not found</Text>
-            </View>
-          )}
+            getData().length > 0 ? (
+              <SectionList
+                sections={getData()}
+                renderItem={(contact) => {
+                  return (
+                    <ListItem
+                      key={contact.item.recordID}
+                      item={contact.item}
+                      onPress={openContact}
+                    />
+                  );
+                }}
+                keyExtractor={item => item.recordID}
+                renderSectionHeader={({ section: { title } }) => (
+                  <View style={{ justifyContent: 'center', }}>
+                    <Image style={{ resizeMode: 'contain' }} source={gradiant_border}></Image>
+                    <Text style={styles.header} >{title}</Text>
+                  </View>
+                )}
+              />
+            ) : (
+              <View style={styles.notFoundContainer}>
+                <Text style={styles.notFoundText}>Data not found</Text>
+              </View>
+            )}
         </View>
       </ScrollView>
       <AddContactButton navigation={navigation} />
@@ -255,8 +237,8 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 15,
     paddingLeft: 10,
-    position:'absolute',
-    justifyContent:'center'
+    position: 'absolute',
+    justifyContent: 'center'
   },
   searchBar: {
     backgroundColor: '#f0eded',
@@ -306,7 +288,7 @@ const styles = StyleSheet.create({
   notFoundText: {
     fontSize: 18,
     color: 'gray',
-    position:'absolute'
+    position: 'absolute'
   },
 });
 

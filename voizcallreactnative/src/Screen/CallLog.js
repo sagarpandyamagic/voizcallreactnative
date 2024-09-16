@@ -26,8 +26,6 @@ const CallLog = ({ navigation }) => {
         >
             <Tab.Screen name="All" component={(props) => <Calllog {...props} navigation={navigation} DataType={""} /> } />
             <Tab.Screen name="Missed" component={(props) => <Calllog {...props} navigation={navigation} DataType={"missedCall"} /> } />
-
-
         </Tab.Navigator>
     )
 }
