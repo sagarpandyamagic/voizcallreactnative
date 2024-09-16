@@ -34,7 +34,7 @@ const CallIdShow = ({setCallerIDShow,callID}) => {
 const styles = StyleSheet.create({
     CallIdContainer: {
         height: 35,
-        width: '50%',
+        width: '35%',
         backgroundColor: '#fff',
         marginTop: -15,
         borderRadius: 20,

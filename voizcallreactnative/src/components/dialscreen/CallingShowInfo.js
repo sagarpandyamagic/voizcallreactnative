@@ -13,7 +13,7 @@ const CallingShowInfo = () => {
     return (
         <View style={{
             height: 50
-            , width: "80%"
+            , width: "60%"
             , backgroundColor: '#4F6EB4'
             , alignSelf: 'center'
             , marginTop: 10

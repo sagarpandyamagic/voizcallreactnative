@@ -2,11 +2,13 @@ import {
     View,
     StyleSheet,
     Text,
+    Image,
 } from 'react-native';
 import { React} from 'react';
 import { AppCommon_Font, THEME_COLORS } from '../../HelperClass/Constant';
 import { useSelector } from 'react-redux';
 import { useCallTimerContext } from '../../hook/useCallTimer';
+import ic_user from '../../../Assets/ic_user.png'
 
 const CallerInfo = () => {
     const {phoneNumber,DialNumber,CallInitial} = useSelector((state) => state.sip)
@@ -14,9 +16,12 @@ const CallerInfo = () => {
 
     return (
         <View style={style.container}>
-            <Text style={[style.Text,{fontWeight:'bold'}]}>
+            {/* <Text style={[style.Text,{fontWeight:'bold'}]}>
                 {CallInitial == true ? "Unknown" : ""}
-            </Text>
+            </Text> */}
+            <View style={{width: 80, height: 80,backgroundColor:'white',borderRadius:40,alignItems:'center',justifyContent:'center'}}>
+                <Image style={{width: 50, height: 50}} source={ic_user} />
+            </View>
             <Text style={[style.Text,{fontSize:15,marginTop:15}]}>
                 {DialNumber}
             </Text>

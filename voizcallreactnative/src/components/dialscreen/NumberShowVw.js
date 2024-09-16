@@ -3,50 +3,61 @@ import { View, Image, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import ic_more from '../../../Assets/ic_more.png';
 import ic_remove_number from '../../../Assets/ic_remove_number.png';
 import { THEME_COLORS } from '../../HelperClass/Constant';
+import { TextInput } from 'react-native-gesture-handler';
 
 
-const NumberShowVw = ({ number, onRemove }) => {
+const NumberShowVw = ({ number, onRemove, setNumber }) => {
   const [showCursor, setShowCursor] = useState(true);
   const [cursorPosition, setCursorPosition] = useState(number.length);
 
-  useEffect(() => {
-    if (number.length > 0) {
-      const cursorInterval = setInterval(() => {
-        setShowCursor((prev) => !prev);
-      }, 500);
-      return () => {
-        clearInterval(cursorInterval);
-      };
-    } else {
-      setShowCursor(false);
-    }
-  }, [number]);
 
   const renderNumberWithCursor = () => {
     if (number.length === 0) {
       return <Text style={styles.numberText}></Text>;
     }
-    const beforeCursor = number.slice(0, cursorPosition);
-    const afterCursor = number.slice(cursorPosition);
     return (
-      <Text style={styles.numberText}>
-        {afterCursor}
-        <Text style={styles.cursor}>{showCursor ? '|' : ' '}</Text>
-        {beforeCursor}
-      </Text>
+      // <Text style={styles.numberText}>
+      //   {afterCursor}
+      //   <Text style={styles.cursor}>{showCursor ? '|' : ' '}</Text>
+      //   {beforeCursor}
+      // </Text>
+      <TextInput style={styles.numberText}
+        selection={{ start: cursorPosition, end: cursorPosition }}
+        onSelectionChange={(event) => setCursorPosition(event.nativeEvent.selection.start)}
+        value={number}
+        keyboardType="numeric"
+        onKeyPress={handleKeyPress}
+        onChangeText={handleChangeText}
+      >
+        {number}
+      </TextInput>
     );
   };
+
+  const handleKeyPress = ({ nativeEvent }) => {
+    if (nativeEvent.key === 'Backspace' && number.length > 0) {
+      setNumber(number.slice(0, -1));
+    }
+  };
+
+
+  const handleChangeText = (text) => {
+    const formattedNumber = text.split(',');
+    console.log("formattedNumber",formattedNumber)
+    setNumber(formattedNumber);
+  };
+
+
   return (
-    
     <View style={styles.container}>
       <View style={styles.numberContainer}>
         {
-        renderNumberWithCursor()
+          renderNumberWithCursor()
         }
         {
-        number.length > 0 && <TouchableOpacity style={[styles.callBtn]}
+          number.length > 0 && <TouchableOpacity style={[styles.callBtn]}
             onPress={onRemove}
-          > 
+          >
             <Image
               source={ic_remove_number}
               resizeMode="cover"

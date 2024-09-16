@@ -194,7 +194,7 @@ const DialpadMain = ({ navigation }) => {
                     <CallIdShow callIDShow={callIDShow} setCallerIDShow={setcallIDShow} callID={callerID} />
                     {
                     callIDShow && <CallIDList addCallerID={(id) => handleAddCallerID(id)} />}
-                    <NumberShowVw number={code} onRemove={handleRemove} />
+                    <NumberShowVw number={code} onRemove={handleRemove} setNumber={setCode} />
                     {
                         !numberMatch && code.length > 0 &&
                         <TouchableOpacity onPress={

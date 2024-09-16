@@ -47,7 +47,6 @@ import { firebaseListener, showCallNotification } from './index';
 import { useNavigation } from '@react-navigation/native';
 import SipUA from './src/services/call/SipUA';
 import { getConfigParamValue } from './src/data/profileDatajson';
-
 function App() {
   const Stack = createStackNavigator();
   const { MyNativeModule } = NativeModules;
@@ -55,8 +54,8 @@ function App() {
   const [isNotifcionCome, setisNotifcionCome] = useState("TabBar");
   const { AppOpenTimeRootChange, IncomingCallNumber, soketConnect } = useSelector((state) => state.sip);
   const myNativeModuleEmitter = MyNativeModule ? new NativeEventEmitter(MyNativeModule) : null;
-  
-  
+
+
   const NavigateToNativeLayout = (name, phoneNumber) => {
     if (MyNativeModule) {
       MyNativeModule.openNativeLayout(name, phoneNumber);

@@ -20,7 +20,7 @@ const dialPadSize = width * .16
 const dialPadTextSize = dialPadSize * .38
 const _spacing = 20;
 
-function Number({ onPress }: { onPress: (item: typeof dialPad[number]) => void }) {
+function Number({ onPress,onLongPress }: { onPress: (item: typeof dialPad[number]) => void }) {
     return (
         <FlatList
             numColumns={3}
@@ -36,7 +36,11 @@ function Number({ onPress }: { onPress: (item: typeof dialPad[number]) => void }
                         disabled={item === ''}
                         onPress={() => {
                             onPress(item)
-                        }} >
+                        }} 
+                        onLongPress={() => onLongPress(item)}
+                        delayLongPress={500} // Adjust this value as needed
+
+                        >
                         <View style={[styles.DialPadNumber, { backgroundColor: item === '' ? '#fff' : item === 'call' ? '#fff' : item === 'del' ? '#fff' : '#E8EFFF', borderWidth: item === '' ? 0 : item === 'call' ? 0 : item === 'del' ? 0 : 1 }]} >
                             {
                                 item === 'del' ?
@@ -68,6 +72,14 @@ function Number({ onPress }: { onPress: (item: typeof dialPad[number]) => void }
 }
 
 const DialPad = ({dialnumber,addNumber}) => {
+    const handleLongPress = (item) => {
+        if (item === 0) {
+            const pressTime = new Date().toISOString();
+            console.log(`Long press on "+" button at: ${pressTime}`);
+            addNumber([...dialnumber, '+']);
+        }
+    };
+
     return (
         <View >
             <Number code={dialnumber.length ? {} : dialnumber} onPress={(item) => {
@@ -84,7 +96,10 @@ const DialPad = ({dialnumber,addNumber}) => {
                     const newNumbers = dialnumber.length === 0 ? [item.toString()] : [...dialnumber, item.toString()];
                     addNumber(newNumbers)
                 }
-            }} />
+            }} 
+            onLongPress={handleLongPress}
+
+            />
         </View>
     );
 };
