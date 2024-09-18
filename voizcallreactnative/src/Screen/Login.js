@@ -16,16 +16,12 @@ import { AppCommon_Font, THEME_COLORS } from '../HelperClass/Constant';
 import Footer from '../components/loginscreen/Footer';
 import LoginTabBar from '../components/loginscreen/LoginTabBar';
 import LoginTopSideVw from '../components/loginscreen/LoginTopSideVw';
-import i18next from 'i18next';
-import {useTranslation} from 'react-i18next';
-import languagesList from '../services/languagesList.json';
 
 const Login = ({ navigation, route }) => {
   const { configData } = route.params || {};
   console.log(configData)
   const [selectedIndex, setSelectedIndex] = useState(0);
   const { height: screenHeight } = Dimensions.get('window');
-  const {t} = useTranslation();
 
   return (
     <>
@@ -36,7 +32,7 @@ const Login = ({ navigation, route }) => {
             <View style={[style.DownView]}>
               <View style={{ alignContent: 'center', alignSelf: 'center', padding: 20 }}>
                 {
-                  selectedIndex == 2 ? <Text style={style.hederText}>{t('Scan to Login')}</Text> : <Text style={style.hederText}> Login Your Account </Text>
+                  selectedIndex == 2 ? <Text style={style.hederText}>Scan to Login</Text> : <Text style={style.hederText}> Login Your Account </Text>
                 }
               </View>
               <LoginTabBar selectedIndex={selectedIndex} setSelectedIndex={setSelectedIndex} configData={configData} />

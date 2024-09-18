@@ -50,7 +50,7 @@ const DialpadMain = ({ navigation }) => {
     const [appState, setAppState] = useState(AppState.currentState);
     const dispatch = useDispatch()
 
-    console.log("allSessionState->", allSession)
+    // console.log("allSessionState->", allSession)
 
     useEffect(() => {
         if (CallType == "OutGoComingCall" && sesstionState == 'Establishing') {
@@ -63,7 +63,9 @@ const DialpadMain = ({ navigation }) => {
             console.log("allSessionkeys->", keys)
             const session = allSession[keys]
             if (session &&  typeof session === "object") {
-                TimerAction('stop')
+                if (!callStart) {
+                  TimerAction('stop')
+                }
                 console.log("session.Media", session.state)
                 if (session.state === 'Established') {
                     console.log("Established...........");
@@ -196,13 +198,19 @@ const DialpadMain = ({ navigation }) => {
                     callIDShow && <CallIDList addCallerID={(id) => handleAddCallerID(id)} />}
                     <NumberShowVw number={code} onRemove={handleRemove} setNumber={setCode} />
                     {
-                        !numberMatch && code.length > 0 &&
+                        !numberMatch && code.length > 0 ?
                         <TouchableOpacity onPress={
                             () => addContact(code.join(''))}>
                             <Text style={{ color: THEME_COLORS.black, fontWeight: 'bold', fontSize: 12 }}>
                                 Add to Contact
                             </Text>
                         </TouchableOpacity>
+                        :
+                        <View>
+                             <Text style={{ color: THEME_COLORS.transparent, fontWeight: 'bold', fontSize: 12 }}>
+                                Add to Contact
+                            </Text>
+                        </View>
                     }
                     <SeparatorLine style={{ marginVertical: 5 }} />
                     <DialPad dialnumber={code} addNumber={setCode} />

@@ -242,7 +242,11 @@ class SipClinet {
                 // console.log('UserAgent ==> Unregistered')
                 break
               case RegistererState.Terminated:
-                store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
+                const allSession = store.getState().sip.allSession
+
+                if (allSession.length == null) {
+                  store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
+                }
                 console.log('UserAgent ==> Terminated')
                 USERAGENT.stop()
                 break
@@ -285,7 +289,6 @@ class SipClinet {
           // console.log('invitation?.request?.callId', invitation?.request?.callId)
 
           store.dispatch(updateSipState({ key: "session", value: invitation }))
-          // invitation.accept()
           // incoming = true
 
           // getContactTableData(number)
@@ -327,8 +330,8 @@ class SipClinet {
           store.dispatch(updateSipState({ key: "CallInitial", value: true }));
 
           const { AppISBackGround } = store.getState().sip
-          console.log('AppISBackGround ==>',AppISBackGround)
-          if(AppISBackGround == true && Platform.OS == "android"){ 
+          console.log('AppISBackGround ==>', AppISBackGround)
+          if (AppISBackGround == true && Platform.OS == "android") {
             try {
               if (MyNativeModule) {
                 MyNativeModule.openNativeLayout("Voizcall User", number);
@@ -339,7 +342,7 @@ class SipClinet {
               console.error('Error calling applyFlags:', error);
             }
           }
-         
+
 
           invitation.delegate = {
             //  Handle incoming onCancel request
@@ -349,9 +352,13 @@ class SipClinet {
 
             onCancel(message) {
               // console.log('ON CANCEL - message ==> ', message)
+              const allSession = store.getState().sip.allSession
+
+              if (allSession.length == null) {
               store.dispatch(updateSipState({ key: "CallAns", value: false }))
               store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
               store.dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
+              }
 
               // RNCallKeep.clearInitialEvents();
               if (invitation) {
@@ -384,31 +391,38 @@ class SipClinet {
                 break
               case 'Terminated':
                 console.log('Terminated Call')
-
-                store.dispatch(updateSipState({ key: "CallAns", value: false }))
-                store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
-                store.dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
-                store.dispatch(updateSipState({ key: "phoneNumber", value: [] }))
-                store.dispatch(updateSipState({ key: "ISCallTransfer", value: false }))
-                store.dispatch(updateSipState({ key: "ISAttendedTransfer", value: false }))
-                store.dispatch(updateSipState({ key: "ISConfrenceTransfer", value: false }))
-                store.dispatch(updateSipState({ key: "Caller_Name", value: "" }))
+                const allSession = store.getState().sip.allSession
                 store.dispatch(removeSession(invitation.id))
-                store.dispatch(updateSipState({ key: "CallInitial", value: false }))
+                
+                console.debug('Session Has Been Terminated',Platform.OS)
+                console.debug('Session Has Been Terminated',Object.keys(allSession).length)
+                if (Object.keys(allSession).length == 0) {
+                  store.dispatch(updateSipState({ key: "CallAns", value: false }))
+                  store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
+                  store.dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
+                  store.dispatch(updateSipState({ key: "phoneNumber", value: [] }))
+                  store.dispatch(updateSipState({ key: "ISCallTransfer", value: false }))
+                  store.dispatch(updateSipState({ key: "ISAttendedTransfer", value: false }))
+                  store.dispatch(updateSipState({ key: "ISConfrenceTransfer", value: false }))
+                  store.dispatch(updateSipState({ key: "Caller_Name", value: "" }))
+                  // store.dispatch(removeSession(invitation.id))
+                  store.dispatch(updateSipState({ key: "CallInitial", value: false }))
 
-                inCallManager.stopProximitySensor(); // Disable
+                  inCallManager.stopProximitySensor(); // Disable
 
-                if (Platform.OS == "android") {
-                  console.log('RemoveIncomingScreen')
+                  if (Platform.OS == "android") {
+                    console.log('RemoveIncomingScreen')
 
-                  MyNativeModule.RemoveIncomingScreen()
+                    MyNativeModule.RemoveIncomingScreen()
 
-                  setTimeout(() => {
-                    MyNativeModule.removeFlags()
-                  }, 2000);
-                } else {
-                  incomingusebyClass.endIncomingcallAnswer();
+                    setTimeout(() => {
+                      MyNativeModule.removeFlags()
+                    }, 2000);
+                  } else {
+                    incomingusebyClass.endIncomingcallAnswer();
+                  }
                 }
+                
                 break
               default:
               // console.log('Unknow Incomming Session state')
@@ -466,6 +480,26 @@ class SipClinet {
       // console.log("sip.userAgent", store.getState().sip.userAgent)
       const session = new Inviter(store.getState().sip.userAgent, uri, inviteOptions)
 
+      // Add this to your SipUA class or relevant method
+      // session.on('trackAdded', () => {
+      //   const remoteStream = new MediaStream(session.getRemoteStreams()[0].getTracks());
+      //   store.dispatch(updateSipState({ key: "remoteStreamVideo", value: remoteStream }))
+      //   // Dispatch this to your Redux store or use a callback to update the component
+      // });
+
+      // session.on('trackAdded', () => {
+      //   const pc = session.sessionDescriptionHandler.peerConnection;
+      //   const remoteStream = new MediaStream();
+
+      //   pc.getReceivers().forEach(receiver => {
+      //     if (receiver.track) {
+      //       remoteStream.addTrack(receiver.track);
+      //     }
+      //   });
+
+      //   store.dispatch(updateSipState({ key: "remoteStreamVideo", value: remoteStream }));
+      // });
+
       store.dispatch(storeContactNumber({ key: "phoneNumber", value: destination }))
       store.dispatch(updateSipState({ key: "DialNumber", value: destination }))
 
@@ -501,13 +535,16 @@ class SipClinet {
       //   myCandidateTimeout = setTimeout(candidate.ready, 2000);
       // })
 
+
+
+
       session.stateChange.addListener(async newState => {
         store.dispatch(updateSipState({ key: "sesstionState", value: newState }))
         // console.log("newState", newState)
         switch (newState) {
           case SessionState.Establishing:
             if (video == true) {
-              store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: true }))
+              // store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: true }))
             } else {
               store.dispatch(updateSipState({ key: "CallScreenOpen", value: true }))
             }
@@ -539,26 +576,33 @@ class SipClinet {
             inCallManager.startProximitySensor();
             break
           case SessionState.Terminated:
-            console.debug('Session Has Been Terminated')
-            store.dispatch(updateSipState({ key: "IncomingScrrenOpen", value: false }))
-            store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
-            store.dispatch(updateSipState({ key: "ISCallTransfer", value: false }))
-            store.dispatch(updateSipState({ key: "ISAttendedTransfer", value: false }))
-            store.dispatch(updateSipState({ key: "ISConfrenceTransfer", value: false }))
-            store.dispatch(updateSipState({ key: "Caller_Name", value: "" }))
-            store.dispatch(updateSipState({ key: "CallInitial", value: false }));
-
-            console.log("session.id", session.id)
             store.dispatch(removeSession(session.id))
+            const allSession = store.getState().sip.allSession
+            console.debug('Session Has Been Terminated',Platform.OS)
 
-            inCallManager.stopProximitySensor();
+            console.debug('Session Has Been Terminated',Object.keys(allSession).length)
 
-            if (Platform.OS == "android") {
-              setTimeout(() => {
-                MyNativeModule.removeFlags()
-              }, 2000);
-            } else {
-              incomingusebyClass.endIncomingcallAnswer();
+            if (Object.keys(allSession).length == 0) {
+              store.dispatch(updateSipState({ key: "IncomingScrrenOpen", value: false }))
+              store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
+              store.dispatch(updateSipState({ key: "ISCallTransfer", value: false }))
+              store.dispatch(updateSipState({ key: "ISAttendedTransfer", value: false }))
+              store.dispatch(updateSipState({ key: "ISConfrenceTransfer", value: false }))
+              store.dispatch(updateSipState({ key: "Caller_Name", value: "" }))
+              store.dispatch(updateSipState({ key: "CallInitial", value: false }));
+
+              console.log("session.id", session.id)
+             
+
+              inCallManager.stopProximitySensor();
+
+              if (Platform.OS == "android") {
+                setTimeout(() => {
+                  MyNativeModule.removeFlags()
+                }, 2000);
+              } else {
+                incomingusebyClass.endIncomingcallAnswer();
+              }
             }
             break
           default:
@@ -610,7 +654,11 @@ class SipClinet {
       session
         .invite(inviteOptionsOB)
         .then(() => {
-          store.dispatch(updateSipState({ key: "CallScreenOpen", value: true }))
+          if (video == true) {
+
+          } else {
+            store.dispatch(updateSipState({ key: "CallScreenOpen", value: true }))
+          }
           console.log('Successfully sent INVITE ....')
           // console.log(request);
         })

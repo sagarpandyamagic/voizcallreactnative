@@ -47,6 +47,7 @@ import { firebaseListener, showCallNotification } from './index';
 import { useNavigation } from '@react-navigation/native';
 import SipUA from './src/services/call/SipUA';
 import { getConfigParamValue } from './src/data/profileDatajson';
+import VideoCallScreen from './src/components/dialscreen/VideoCallScreen';
 function App() {
   const Stack = createStackNavigator();
   const { MyNativeModule } = NativeModules;
@@ -249,6 +250,9 @@ function App() {
           <View>
             <AudioCallingScreen />
           </View>
+          {/* <View>
+            <VideoCallScreen />
+          </View> */}
       </NavigationContainer>
       </CallTimerDuraionProvider>
     </SafeAreaProvider>

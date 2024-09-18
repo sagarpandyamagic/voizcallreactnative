@@ -36,6 +36,7 @@ const initialState = {
   AppOpenTimeRootChange:"SplashScreen",
   terminationTime:0,
   CallInitial:false,
+  remoteStreamVideo : {},
 }
 
 const counterSlice = createSlice({

@@ -24,7 +24,7 @@ const NumberShowVw = ({ number, onRemove, setNumber }) => {
       <TextInput style={styles.numberText}
         selection={{ start: cursorPosition, end: cursorPosition }}
         onSelectionChange={(event) => setCursorPosition(event.nativeEvent.selection.start)}
-        value={number}
+        // value={number}
         keyboardType="numeric"
         onKeyPress={handleKeyPress}
         onChangeText={handleChangeText}
