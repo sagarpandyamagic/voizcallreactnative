@@ -15,15 +15,27 @@ const AttendedTransferButton = ({ navigation,setCode,code }) => {
     const dispatch = useDispatch()
 
     const handleMakeCall = async (code) => {
-        
         const number = code.join('')
         if (number == "") {
-            showAlert('Empty Number!',"please enter phonenumber")
-        }else{
+            showAlert('Empty Number!', "please enter phonenumber")
+        } else {
             number.toString()
             console.log(number)
-            store.dispatch(updateSipState({ key: "ISAttendedTransfer", value: false }))
-        }    
+            store.dispatch(updateSipState({ key: "Caller_Name", value: number }))
+            store.dispatch(updateSipState({ key: "CallScreenOpen", value: true }))
+            console.log("SessionCount", allSession)
+            if (Object.keys(allSession).length > 0) {
+                store.dispatch(updateSipState({ key: "ISConfrenceTransfer", value: true }))
+                store.dispatch(updateSipState({ key: "ISAttendedTransfer", value: false }))
+                SipUA.toggelHoldCall(true)
+            } else {
+                store.dispatch(updateSipState({ key: "phoneNumber", value: [] }))
+            }
+            console.log("ISConfrenceTransfer", ISConfrenceTransfer)
+            SipUA.makeCall(number, false)
+            navigation.navigate('AudioCallingScreen')
+        }
+
     };
     return (
         <View style={{ flexDirection: 'row', backgroundColor: '#fff', height: 80, justifyContent: 'center' }} >

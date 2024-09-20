@@ -10,6 +10,7 @@ import AddContactButton from '../AddContactButton';
 import { GETAPICALL } from '../../../services/auth';
 import { APIURL } from '../../../HelperClass/APIURL';
 import LodingJson from '../../../HelperClass/LodingJson';
+import { THEME_COLORS } from '../../../HelperClass/Constant';
 
 const db = SQLite.openDatabase(
     {
@@ -249,6 +250,7 @@ const EPriceAllContact = ({ navigation }) => {
                         <TextInput
                             onChangeText={search}
                             placeholder="Search Contact"
+                            placeholderTextColor={THEME_COLORS.black}
                             style={styles.input}
                         />
                     </View>
@@ -321,7 +323,9 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         marginRight: 10,
         height: 20,
-        width: 20
+        width: 20,
+        tintColor: THEME_COLORS.black,
+
     },
     input: {
         height: 40,

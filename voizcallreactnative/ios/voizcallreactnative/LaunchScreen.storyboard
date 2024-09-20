@@ -24,7 +24,7 @@
                             </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
-                        <color key="backgroundColor" red="0.33740144970000002" green="0.46501010659999997" blue="0.7092228532" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" red="0.93725490196078431" green="0.30980392156862746" blue="0.30980392156862746" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="S1n-RA-Fzj" firstAttribute="leading" secondItem="fpB-Bo-vGA" secondAttribute="trailing" constant="8" id="Jxh-eS-7gY"/>
                             <constraint firstItem="S1n-RA-Fzj" firstAttribute="height" secondItem="Ze5-6b-2t3" secondAttribute="height" multiplier="0.142857" id="QmX-2G-MqK"/>
@@ -43,7 +43,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="voizcall_icon" width="200" height="194"/>
-        <image name="voizcall_logo" width="1100" height="286"/>
+        <image name="voizcall_icon" width="63" height="99"/>
+        <image name="voizcall_logo" width="451" height="88"/>
     </resources>
 </document>

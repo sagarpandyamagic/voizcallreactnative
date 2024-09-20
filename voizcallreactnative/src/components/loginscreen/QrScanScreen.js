@@ -31,6 +31,8 @@ const QrScanScreen = ({ navigation }) => {
   const [deviceModel, setdeviceModel] = useState('');
   const [systemName, setsystemName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isCameraOn, setIsCameraOn] = useState(true);
+
 
   useEffect(() => {
     getDeviceId()
@@ -43,6 +45,8 @@ const QrScanScreen = ({ navigation }) => {
         : RNCamera.Constants.FlashMode.off
     );
   };
+
+ 
 
   async function getDeviceId() {
     try {
@@ -62,6 +66,7 @@ const QrScanScreen = ({ navigation }) => {
   }
 
   const onBarCodeRead = async (e) => {
+    setIsCameraOn(false);
     console.log(e.data)
     try {
 
@@ -129,7 +134,7 @@ const QrScanScreen = ({ navigation }) => {
       }
 
       <View style={{ flex: 1 }}>
-        <RNCamera
+        {isCameraOn ? (<RNCamera
           style={styles.preview}
           onBarCodeRead={onBarCodeRead}
           captureAudio={false}
@@ -141,7 +146,11 @@ const QrScanScreen = ({ navigation }) => {
               <Text style={styles.text}>Scan the QR Code</Text>
             </View>
           </View>
-        </RNCamera>
+        </RNCamera>) :
+          <View style={styles.cameraOffContainer}>
+            <Text style={styles.cameraOffText}>QR Code Successfully Scanned.Please Wait...</Text>
+          </View>
+        }
         <View style={{ backgroundColor: 'white', flex: 1, alignContent: 'center', alignItems: 'center' }}>
           <Text style={{ marginTop: 25, fontSize: 18, color: 'black' }} >Scan a code to login</Text>
           <TouchableOpacity onPress={toggleFlashlight}
@@ -188,6 +197,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     position: 'absolute',
     bottom: 20,
+  },
+  cameraOffContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'black',
+  },
+  cameraOffText: {
+    color: 'white',
+    fontSize: 16,
+    textAlign: 'center',
   },
 });
 

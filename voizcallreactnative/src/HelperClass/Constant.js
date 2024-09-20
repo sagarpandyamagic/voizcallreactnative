@@ -3,8 +3,12 @@ export const AppCommon_Font = {
 }
 
 export const THEME_COLORS = {
-      black: '#3E5DA3'
-    , transparent: 'transparent'
+    //   black: '#3E5DA3'
+      black:'#EF4F4F',
+      transparent: 'transparent',
+      ConfrencecllListColor:'#c74242' //'#4F6EB4'
+
+
 }
 
 export const API_BASE_URL = "https://panel-api.voizcall.com/v1.50.26/api"

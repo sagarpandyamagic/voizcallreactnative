@@ -7,7 +7,7 @@ import voizLogoicon from '../../../Assets/voizcall_icon.png'
 const LoginTopSideVw = () => {
     return (
         <View style={styles.TopView}>
-        <Image style={{ width: "10%", height: "10%", padding: 20 }}
+        <Image style={{ width: "10%", height: "10%", padding: 20 }} resizeMode='contain'
           source={voizLogoicon} />
         <View style={{ width: 15 }}>
         </View>

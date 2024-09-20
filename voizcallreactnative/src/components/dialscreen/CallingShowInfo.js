@@ -4,6 +4,7 @@ import { updateSipState } from '../../store/sipSlice';
 import phoneLogo from '../../../Assets/phone-call.png';
 import ArrowGoCall from '../../../Assets/ic_next_arrow.png';
 import { useDispatch, useSelector } from 'react-redux';
+import { THEME_COLORS } from '../../HelperClass/Constant';
 
 
 const CallingShowInfo = () => {
@@ -14,7 +15,7 @@ const CallingShowInfo = () => {
         <View style={{
             height: 50
             , width: "60%"
-            , backgroundColor: '#4F6EB4'
+            , backgroundColor: THEME_COLORS.ConfrencecllListColor
             , alignSelf: 'center'
             , marginTop: 10
             , justifyContent: 'center'

@@ -8,7 +8,7 @@ import { APIURL } from '../../HelperClass/APIURL';
 import LodingJson from '../../HelperClass/LodingJson';
 
 const FUserTextFiled = ({ navigation }) => {
-    const [username, setusername] = useState('voizCallS1@123');
+    const [username, setusername] = useState('');
     const [loading, setLoading] = useState(false);
 
     const ResetPasswordAPICAll = async () => {
@@ -47,7 +47,7 @@ const FUserTextFiled = ({ navigation }) => {
                     <Image style={{ height: "45%", width: "40%", tintColor: THEME_COLORS.black }}
                         source={icUser} />
                 </View>
-                <TextInput style={styles.InpuText} placeholder='Username' defaultValue={username} placeholderTextColor={"#4F6EB4"} onChangeText={(text) => setusername(text)}>
+                <TextInput style={styles.InpuText} placeholder='Username' defaultValue={username} placeholderTextColor={THEME_COLORS.black} onChangeText={(text) => setusername(text)}>
                 </TextInput>
             </View>
 

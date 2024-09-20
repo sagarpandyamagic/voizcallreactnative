@@ -24,7 +24,7 @@ const CallerInfo = () => {
         <View style={{
             height: 50
             , width: 250
-            , backgroundColor: '#4F6EB4'
+            , backgroundColor: THEME_COLORS.ConfrencecllListColor
             , alignSelf: 'center'
             , marginTop: 10
             , justifyContent: 'center'

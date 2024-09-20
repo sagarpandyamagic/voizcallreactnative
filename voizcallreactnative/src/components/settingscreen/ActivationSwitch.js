@@ -63,7 +63,7 @@ const ActivationSwitch = () => {
                 <LinearGradient
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
-                    colors={['#3b5998', '#4c669f']}
+                    colors={[THEME_COLORS.black, '#4c669f']}
                     style={{ height: 130, width: screenWidth * 0.42, borderRadius: 10 }}
                 >
                     <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
@@ -90,7 +90,7 @@ const ActivationSwitch = () => {
                 <LinearGradient
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
-                    colors={['#3b5998', '#4c669f']}
+                    colors={[THEME_COLORS.black, '#4c669f']}
                     style={{ height: 130, width: screenWidth * 0.42, borderRadius: 10, position: 'absolute', right: 45 }}
                 >
                     <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>

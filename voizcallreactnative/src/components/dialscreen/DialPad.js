@@ -4,8 +4,6 @@ import { AppCommon_Font, THEME_COLORS } from '../../HelperClass/Constant';
 import phoneLogo from '../../../Assets/ic_call.png';
 import ic_remove_number from '../../../Assets/ic_remove_number.png';
 import voicemailicon from '../../../Assets/voicemailicon.png';
-
-// import { FlatList } from 'react-native-gesture-handler';
 const { width } = Dimensions.get('window')
 
 const pinLength = 5
@@ -16,11 +14,11 @@ const pinSize = pinMaxSize - pinSpacing * 1.1
 
 const dialPad = [1, 2, 3, 4, 5, 6, 7, 8, 9, '*', 0, '#']//, 'voizcall', 'call', 'del']
 const dinlPadAlphabat = ['', 'A B C', "D E F", "G H I", "J K L", "M N O", "P Q R S", "T U V", "W X Y Z", "", "+", "", "", "", ""]
-const dialPadSize = width * .16
+const dialPadSize = width * .145
 const dialPadTextSize = dialPadSize * .38
 const _spacing = 20;
 
-function Number({ onPress,onLongPress }: { onPress: (item: typeof dialPad[number]) => void }) {
+function Number({ onPress, onLongPress }: { onPress: (item: typeof dialPad[number]) => void }) {
     return (
         <FlatList
             numColumns={3}
@@ -36,11 +34,11 @@ function Number({ onPress,onLongPress }: { onPress: (item: typeof dialPad[number
                         disabled={item === ''}
                         onPress={() => {
                             onPress(item)
-                        }} 
+                        }}
                         onLongPress={() => onLongPress(item)}
                         delayLongPress={500} // Adjust this value as needed
 
-                        >
+                    >
                         <View style={[styles.DialPadNumber, { backgroundColor: item === '' ? '#fff' : item === 'call' ? '#fff' : item === 'del' ? '#fff' : '#E8EFFF', borderWidth: item === '' ? 0 : item === 'call' ? 0 : item === 'del' ? 0 : 1 }]} >
                             {
                                 item === 'del' ?
@@ -53,15 +51,18 @@ function Number({ onPress,onLongPress }: { onPress: (item: typeof dialPad[number
                                             width: dialPadSize - 5,
                                             height: dialPadSize - 5
                                         }} source={phoneLogo} />
-                                        : (item === "voizcall")? <Image style={{
+                                        : (item === "voizcall") ? <Image style={{
                                             width: dialPadSize - 5,
                                             height: dialPadSize - 5
-                                        }} source={voicemailicon} />  :  <Text style={{ fontSize: dialPadTextSize, fontFamily: AppCommon_Font.Font, color: THEME_COLORS.black }}>{item}</Text>
+                                        }} source={voicemailicon} /> : <Text style={{ fontSize: dialPadTextSize, fontFamily: AppCommon_Font.Font, color: THEME_COLORS.black }}>{item}</Text>
                                     )
                             }
-                            {
-                                item === '' ? null : <Text style={{ fontSize: dialPadTextSize / 2, color: THEME_COLORS.black, fontStyle: "normal" }}>{dinlPadAlphabat[item - 1]}</Text>
-                            }
+                            {item === 0 && (
+                                <Text style={{ fontSize: dialPadTextSize / 2, color: THEME_COLORS.black, bottom: 5 }}>+</Text>
+                            )}
+                            {item !== '' && item !== 0 && (
+                                <Text style={{ fontSize: dialPadTextSize / 2, color: THEME_COLORS.black, fontStyle: "normal" }}>{dinlPadAlphabat[item - 1]}</Text>
+                            )}
                         </View>
                     </TouchableOpacity>
                 )
@@ -71,7 +72,7 @@ function Number({ onPress,onLongPress }: { onPress: (item: typeof dialPad[number
     )
 }
 
-const DialPad = ({dialnumber,addNumber}) => {
+const DialPad = ({ dialnumber, addNumber }) => {
     const handleLongPress = (item) => {
         if (item === 0) {
             const pressTime = new Date().toISOString();
@@ -96,8 +97,8 @@ const DialPad = ({dialnumber,addNumber}) => {
                     const newNumbers = dialnumber.length === 0 ? [item.toString()] : [...dialnumber, item.toString()];
                     addNumber(newNumbers)
                 }
-            }} 
-            onLongPress={handleLongPress}
+            }}
+                onLongPress={handleLongPress}
 
             />
         </View>

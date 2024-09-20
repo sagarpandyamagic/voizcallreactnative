@@ -18,7 +18,9 @@ export const APIURL = {
     PushSubscribeDelete: '/push/subscribe',
     GETENTERPRISEDIC: '/directory/get-enterprise_directory-detail',
     VERIFY_OTP: '/auth/verify-otp',
-    RESETD_OTP: '/auth/resend-otp'
+    RESETD_OTP: '/auth/resend-otp',
+    REGISTER : '/pcs/register',
+    PROFILE_UPDATE:'profile/update',
 
 }
 

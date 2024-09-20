@@ -15,11 +15,15 @@ const { width } = Dimensions.get('window')
 
 const CallButton = ({ navigation, setCode, code, voizmailAcation }) => {
     const dispatch = useDispatch()
-    const { ISConfrenceTransfer, phoneNumber, allSession, UserDND } = useSelector((state) => state.sip)
+    const { ISConfrenceTransfer, phoneNumber, allSession, UserDND,soketConnect } = useSelector((state) => state.sip)
     const [videoCall, setVideoCall] = useState(false);
     const [btnEnable, setbtnEnable] = useState(false);
 
     const handleMakeCall = async (code) => {
+        if(soketConnect == false){
+            showAlert('Sokcet is not connected!', "Call is not Going")    
+            return
+        }
         const number = code.join('')
         if (number == "") {
             showAlert('Empty Number!', "please enter phonenumber")
@@ -78,8 +82,7 @@ const CallButton = ({ navigation, setCode, code, voizmailAcation }) => {
 
     return (
         <View style={{ flexDirection: 'row', backgroundColor: '#fff', height: 80, justifyContent: 'center' }} >
-            <TouchableOpacity onPress={() => voizmailAcation()} style={[styles.callBtn, { width: 60, borderRadius: 20, backgroundColor: '#E8EFFF', justifyContent: 'center', alignSelf: 'center', position: 'absolute', left: width * 0.12 }]}
-
+            <TouchableOpacity onPress={() => voizmailAcation()} style={[styles.callBtn, { width: 60, borderRadius: 20, backgroundColor: '#E8EFFF', justifyContent: 'center', alignSelf: 'center', position: 'absolute', left: width * 0.15 }]}
             >
                 <Image
                     source={voicemailicon}

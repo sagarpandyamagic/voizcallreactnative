@@ -15,11 +15,9 @@ import ic_call_swipe from '../../../Assets/ic_call_swipe.png'
 import ic_merge_call from '../../../Assets/ic_merge_call.png'
 
 import SipUA, { holdUsedSwipTime } from '../../services/call/SipUA';
-import InCallManager from 'react-native-incall-manager';
 import { useDispatch, useSelector } from 'react-redux';
 import store from '../../store/store';
-import { storeContactNumber, updateSipState } from '../../store/sipSlice';
-import { TooltipMenu } from 'react-native-tooltip-menu';
+import { updateSipState } from '../../store/sipSlice';
 
 
 const { width } = Dimensions.get('window')
@@ -27,7 +25,7 @@ const imageSize = width * 0.17; // Example: 10% of screen width
 const itemSpacing = 40;      // Space between each Image+Text pair
 
 const ButtonRowSecondThree = ({ transparentCall }) => {
-    const { phoneNumber, sessionID, allSession, ISConfrenceTransfer, SessionCount,CallInitial } = useSelector((state) => state.sip)
+    const { phoneNumber, sessionID, allSession, ISConfrenceTransfer, SessionCount, CallInitial, ISAttendedTransfer } = useSelector((state) => state.sip)
     const [hold, sethold] = useState(false)
     const [swip, setswip] = useState(false)
 
@@ -53,7 +51,7 @@ const ButtonRowSecondThree = ({ transparentCall }) => {
         setswip(!swip)
         console.log("phoneNumber", phoneNumber)
         if (swip == true) {
-            store.dispatch(updateSipState({ key: "DialNumber", value: phoneNumber[0]}))
+            store.dispatch(updateSipState({ key: "DialNumber", value: phoneNumber[0] }))
             holdUsedSwipTime(phoneNumber[1])
         } else {
             store.dispatch(updateSipState({ key: "DialNumber", value: phoneNumber[1] }))
@@ -66,27 +64,30 @@ const ButtonRowSecondThree = ({ transparentCall }) => {
         <View style={style.container}>
             {
                 !ISConfrenceTransfer && <>
-                    <View style={style.item}>
-                        <TouchableOpacity style={[style.imageVw, { backgroundColor: 'gray',opacity: !CallInitial ? 0.5 : 1}]}  disabled={!CallInitial} onPress={() =>
-                            transparentCall()
-                        } >
-                            <Image source={ic_transfercall} style={[style.image, { tintColor: 'white' }]}>
-                            </Image>
-                        </TouchableOpacity>
-                        <Text style={style.text}>
-                            Transfer
-                        </Text>
-                    </View>
+                    {
+                            <View style={style.item}>
+                                <TouchableOpacity style={[style.imageVw, { backgroundColor: 'gray', opacity: !CallInitial ? 0.5 : 1 }]} disabled={!CallInitial} onPress={() =>
+                                    transparentCall()
+                                } >
+                                    <Image source={ic_transfercall} style={[style.image, { tintColor: 'white' }]}>
+                                    </Image>
+                                </TouchableOpacity>
+                                <Text style={style.text}>
+                                    Transfer
+                                </Text>
+                            </View>
+                    }
+
                 </>
             }
             {
                 ISConfrenceTransfer ?
                     <>
                         {
-                            allSession && Object.keys(allSession).length == 2 && 
+                            allSession && Object.keys(allSession).length == 2 &&
                             <>
                                 <View style={[style.item]}>
-                                    <TouchableOpacity style={[style.imageVw, { backgroundColor: 'gray',opacity: !CallInitial ? 0.5 : 1 }]} disabled={!CallInitial} onPress={handelToggelSwip}>
+                                    <TouchableOpacity style={[style.imageVw, { backgroundColor: 'gray', opacity: !CallInitial ? 0.5 : 1 }]} disabled={!CallInitial} onPress={handelToggelSwip}>
                                         <Image source={ic_call_swipe} style={[style.image, { tintColor: 'white' }]}>
                                         </Image>
                                     </TouchableOpacity>
@@ -99,9 +100,9 @@ const ButtonRowSecondThree = ({ transparentCall }) => {
 
                     </> : <>
                         <View style={[style.item]}>
-                            <TouchableOpacity style={[style.imageVw, { backgroundColor: 'gray',opacity: !CallInitial ? 0.5 : 1 }]} disabled={!CallInitial} onPress={handelToggelHold}>
+                            <TouchableOpacity style={[style.imageVw, { backgroundColor: 'gray', opacity: !CallInitial ? 0.5 : 1 }]} disabled={!CallInitial} onPress={handelToggelHold}>
                                 {
-                                     hold ? <Image source={ic_hold} style={[style.image, { tintColor: 'red' }]}>
+                                    hold ? <Image source={ic_hold} style={[style.image, { tintColor: 'red' }]}>
                                     </Image> : <Image source={ic_hold} style={[style.image, { tintColor: 'white' }]}>
                                     </Image>
                                 }
@@ -115,11 +116,10 @@ const ButtonRowSecondThree = ({ transparentCall }) => {
                     </>
             }
 
-
             {
                 ISConfrenceTransfer ? <>
                     <View style={style.item}>
-                        <TouchableOpacity style={[style.imageVw, { backgroundColor: 'gray',opacity: !CallInitial ? 0.5 : 1 }]} disabled={!CallInitial} onPress={() => {
+                        <TouchableOpacity style={[style.imageVw, { backgroundColor: 'gray', opacity: !CallInitial ? 0.5 : 1 }]} disabled={!CallInitial} onPress={() => {
                             SipUA.toggelHoldCall(false)
                             dispatch(updateSipState({ key: "ISConfrenceTransfer", value: false }))
                             store.dispatch(updateSipState({ key: "DialNumber", value: "Confrence" }))
@@ -132,9 +132,9 @@ const ButtonRowSecondThree = ({ transparentCall }) => {
                         </Text>
                     </View>
 
-                </> : <>
+                </> :  ISAttendedTransfer&&allSession&&Object.keys(allSession).length > 1 ? <></> : <>
                     <View style={style.item}>
-                        <TouchableOpacity style={[style.imageVw, { backgroundColor: 'gray',opacity: !CallInitial ? 0.5 : 1 }]} disabled={!CallInitial} onPress={() => {
+                        <TouchableOpacity style={[style.imageVw, { backgroundColor: 'gray', opacity: !CallInitial ? 0.5 : 1 }]} disabled={!CallInitial} onPress={() => {
                             store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
                         }}>
                             <Image source={confeence} style={style.image}>

@@ -8,6 +8,7 @@ import ic_Search from '../../../Assets/ic_Search.png'
 import gradiant_border from '../../../Assets/gradiant_border.png'
 import AddContactButton from './AddContactButton';
 import LodingJson from '../../HelperClass/LodingJson';
+import { THEME_COLORS } from '../../HelperClass/Constant';
 
 const db = SQLite.openDatabase(
   {
@@ -252,6 +253,7 @@ const ContactsList = ({ navigation }) => {
             <TextInput
               onChangeText={search}
               placeholder="Search Contact"
+              placeholderTextColor={THEME_COLORS.black}
               style={styles.input}
             />
           </View>
@@ -323,7 +325,8 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     marginRight: 10,
     height: 20,
-    width: 20
+    width: 20,
+    tintColor: THEME_COLORS.black,
   },
   input: {
     height: 40,

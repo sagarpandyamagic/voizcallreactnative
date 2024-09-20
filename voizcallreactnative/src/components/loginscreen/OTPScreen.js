@@ -36,7 +36,7 @@ const OTPScreen = ({ navigation, configData }) => {
                 }}>
                     <Text style={styles.Text} >+{configData.default_country.country_phonecode}</Text>
                 </TouchableOpacity>
-                <TextInput style={styles.InpuText} keyboardType='number-pad' placeholder='Enter mobile number' placeholderTextColor={"#4F6EB4"} onChangeText={(text) => setotpnumber(text)}>
+                <TextInput style={styles.InpuText} keyboardType='number-pad' placeholder='Enter mobile number'  placeholderTextColor={THEME_COLORS.black} onChangeText={(text) => setotpnumber(text)}>
                     {otpnumber}
                 </TextInput>
             </View>

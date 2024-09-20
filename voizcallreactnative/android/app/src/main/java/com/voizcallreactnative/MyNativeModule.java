@@ -127,12 +127,13 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void openNativeLayout(String name, String number) {
+    public void openNativeLayout(String name, String number, String themeColor) {
         Log.d("openNativeLayout", "Create event name: " + name
                 + " and Number: " + number);
         Intent intent = new Intent(reactContext, NativeActivity.class);
         intent.putExtra("name", name);
         intent.putExtra("number", number);
+        intent.putExtra("themecolor", themeColor);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         reactContext.startActivity(intent);
     }

@@ -15,8 +15,8 @@ import BackgroundTimer from 'react-native-background-timer';
 import CallKeepDelegate from "./src/services/Callkeep/CallkeepSeup";
 import { setInitTimeValue } from "./src/services/setInitVlaue";
 import { updateSipState } from "./src/store/sipSlice";
-import { AppStoreData } from "./src/components/utils/UserData";
-import { StorageKey } from "./src/HelperClass/Constant";
+import { AppStoreData, getStorageData } from "./src/components/utils/UserData";
+import { StorageKey, THEME_COLORS } from "./src/HelperClass/Constant";
 import { getNameByPhoneNumber } from "./src/HelperClass/ContactNameGetCallTime";
 
 setInitTimeValue()
@@ -115,7 +115,7 @@ const NavigateToNativeLayout = (name, phoneNumber) => {
     console.log("currentTime", CurrntTime)
     if (CurrntTime - lastOpenTime > 2000) { // 5000 milliseconds = 5 seconds
       console.log("NavigateToNativeLayout", "ActiveApp")
-      MyNativeModule.openNativeLayout(name, phoneNumber);
+      MyNativeModule.openNativeLayout(name, phoneNumber, THEME_COLORS.black);
     } else {
       console.log("NavigateToNativeLayout", "Terminated")
       MyNativeModule.showSplashScreen();
@@ -140,25 +140,29 @@ const firebaseListener = async (remoteMessage) => {
   // BackgroundTimer.start();
   console.log('Message handled in the foreground!11', remoteMessage);
 
-  await AppStoreData(StorageKey.CallKeepORNot, true);
+  const valueDND = await getStorageData(StorageKey.UserDND);
 
-  if (AppState.currentState == 'active' || AppState.currentState == 'background') {
+  if (valueDND == false) {
+    await AppStoreData(StorageKey.CallKeepORNot, true);
+
+    if (AppState.currentState == 'active' || AppState.currentState == 'background') {
+      try {
+        applyFlags()
+      } catch (error) {
+        console.error('Error calling applyFlags:', error);
+      }
+    }
     try {
-      applyFlags()
+      store.dispatch(updateSipState({ key: "IncomingCallNumber", value: remoteMessage.from }));
+    } catch (error) {
+      console.error('Error fetching name:', error);
+    }
+
+    try {
+      NavigateToNativeLayout("Voizcall User", remoteMessage.from)
     } catch (error) {
       console.error('Error calling applyFlags:', error);
     }
-  }
-  try {
-    store.dispatch(updateSipState({ key: "IncomingCallNumber", value: remoteMessage.from }));
-  } catch (error) {
-    console.error('Error fetching name:', error);
-  }
-
-  try {
-    NavigateToNativeLayout("Voizcall User", remoteMessage.from)
-  } catch (error) {
-    console.error('Error calling applyFlags:', error);
   }
 
 };
@@ -166,7 +170,7 @@ const firebaseListener = async (remoteMessage) => {
 messaging().onMessage(async (remoteMessage) => {
   console.log('Message handled in the foreground!ee', remoteMessage);
   await AppStoreData(StorageKey.CallKeepORNot, true);
-  
+
   try {
     store.dispatch(updateSipState({ key: "AppISBackGround", value: true }));
   } catch (error) {

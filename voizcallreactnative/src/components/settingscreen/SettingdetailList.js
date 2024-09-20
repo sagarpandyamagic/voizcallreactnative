@@ -2,16 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { View, Image, TouchableOpacity, StyleSheet, Text, Platform } from 'react-native';
 import { AppCommon_Font, StorageKey, THEME_COLORS, userprofilealias } from '../../HelperClass/Constant';
 import LogoutModal from './LogoutModal';
-import { getStorageData, RemoveStorageData } from '../utils/UserData';
+import { AppStoreData, getStorageData, RemoveStorageData } from '../utils/UserData';
 import SipUA from '../../services/call/SipUA';
 import LottieView from 'lottie-react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { DLETEAPICAll } from '../../services/auth';
+import { DLETEAPICAll, getProfile, POSTAPICALL } from '../../services/auth';
 import { APIURL } from '../../HelperClass/APIURL';
 import LodingJson from '../../HelperClass/LodingJson';
 import DeviceInfo from 'react-native-device-info';
 import { updateSipState } from '../../store/sipSlice';
 import { getConfigParamValue } from '../../data/profileDatajson';
+import store from '../../store/store';
+import { PushSubScribeNotificaion } from '../../services/PushSubScribeNotificaion';
+import { UpdateConfiguration } from './UpdateConfiguration';
 
 const SettingdetailList = ({ title, image, navigation }) => {
     const [isLogoutModalVisible, setLogoutModalVisible] = useState(false);
@@ -20,31 +23,31 @@ const SettingdetailList = ({ title, image, navigation }) => {
     const { allSession } = useSelector((state) => state.sip)
     const dispatch = useDispatch()
 
-    const handlenavigation = () => {
+    const handlenavigation = async () => {
+        console.log(title)
+
         if (title == "Pull Configration") {
             setLoading(true)
-            SipUA.disconnectSocket()
-            SipUA.connect()
-            console.log(title)
+            await UpdateConfiguration()
+            setLoading(false)
         }
         else if (title == "App languages") {
             navigation.navigate('App language')
-            console.log(title)
         }
         else if (title == "About") {
-            console.log(title)
         }
         else if (title == "Privacy Policy") {
             navigation.navigate('Privacy & Policy')
-            console.log(title)
         }
         else if (title == "On Touch Voicemail") {
             AudioCall()
-            console.log(title)
         }
         else if (title == "Logout") {
             setLogoutModalVisible(true)
-            console.log(title)
+        }
+        else if (title == "WebSocket Test") {
+            SipUA.disconnectSocket()
+            navigation.navigate('WebSocket Test')
         }
     };
 
@@ -71,7 +74,6 @@ const SettingdetailList = ({ title, image, navigation }) => {
 
     const handleLogout = async () => {
         try {
-
             setLoading(true)
             setLogoutModalVisible(false);
             SipUA.disconnectSocket()

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rl_incoming_call"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#3E5DA3">
@@ -21,6 +22,7 @@
             android:textSize="16sp" />
 
         <ImageView
+            android:id="@+id/img_user"
             android:layout_width="150dp"
             android:layout_height="150dp"
             android:layout_gravity="center"

@@ -48,6 +48,7 @@ import { useNavigation } from '@react-navigation/native';
 import SipUA from './src/services/call/SipUA';
 import { getConfigParamValue } from './src/data/profileDatajson';
 import VideoCallScreen from './src/components/dialscreen/VideoCallScreen';
+import WebSocketTest from './src/components/settingscreen/WebSocketTest';
 function App() {
   const Stack = createStackNavigator();
   const { MyNativeModule } = NativeModules;
@@ -59,7 +60,7 @@ function App() {
 
   const NavigateToNativeLayout = (name, phoneNumber) => {
     if (MyNativeModule) {
-      MyNativeModule.openNativeLayout(name, phoneNumber);
+      MyNativeModule.openNativeLayout(name, phoneNumber,THEME_COLORS.black);
       //  showCallNotification("John Doe");
     } else {
       console.error('MyNativeModule is not available');
@@ -73,6 +74,7 @@ function App() {
       console.error('MyNativeModule is not available');
     }
   };
+
 
   useEffect(() => {
     if (AppOpenTimeRootChange === 'TabBar') {
@@ -139,6 +141,7 @@ function App() {
       Platform.OS == "ios" && voipConfig();
     } else {
       checkPermission();
+      
       setTimeout(() => {
         Splash.hide()
       }, 2000);
@@ -185,6 +188,14 @@ function App() {
               headerTintColor: '#fff', // Change the header text color if needed
             }} />
             <Stack.Screen name="Privacy & Policy" component={privacyPoilcyScreen} options={{
+              headerStyle: {
+                backgroundColor: THEME_COLORS.black, // Change the background color
+                shadowColor: THEME_COLORS.transparent, // Remove the shadow
+                elevation: 0
+              },
+              headerTintColor: '#fff', // Change the header text color if needed
+            }} />
+            <Stack.Screen name="WebSocket Test" component={WebSocketTest} options={{
               headerStyle: {
                 backgroundColor: THEME_COLORS.black, // Change the background color
                 shadowColor: THEME_COLORS.transparent, // Remove the shadow
@@ -250,9 +261,9 @@ function App() {
           <View>
             <AudioCallingScreen />
           </View>
-          {/* <View>
+          <View>
             <VideoCallScreen />
-          </View> */}
+          </View>
       </NavigationContainer>
       </CallTimerDuraionProvider>
     </SafeAreaProvider>

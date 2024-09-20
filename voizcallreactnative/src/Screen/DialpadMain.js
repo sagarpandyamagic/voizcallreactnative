@@ -6,7 +6,9 @@ import {
     Text,
     FlatList,
     AppState,
-    Button
+    Button,
+    ImageBackground,
+    Image
 } from 'react-native';
 
 import { React, useEffect, useRef, useState } from 'react';
@@ -35,6 +37,8 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import { APIURL } from '../HelperClass/APIURL';
 import { getConfigParamValue } from '../data/profileDatajson';
 import SipUA from '../services/call/SipUA';
+import voizLogo from '../../Assets/voizcall_logo.png'
+import voizLogoicon from '../../Assets/voizcall_icon.png'
 
 const DialpadMain = ({ navigation }) => {
     const incomeingCall = false
@@ -44,7 +48,7 @@ const DialpadMain = ({ navigation }) => {
     const [callerID, setCallerID] = useState('');
 
 
-    const { ISAttendedTransfer, sesstionState, CallType, ISCallTransfer, allSession, AppISBackGround } = useSelector((state) => state.sip)
+    const { ISAttendedTransfer, sesstionState, CallType, ISCallTransfer, allSession, AppISBackGround, soketConnect } = useSelector((state) => state.sip)
     const { TimerAction, callTimer, seconds } = useCallTimerContext()
     const [callIDShow, setcallIDShow] = useState(false);
     const [appState, setAppState] = useState(AppState.currentState);
@@ -62,9 +66,9 @@ const DialpadMain = ({ navigation }) => {
             const keys = Object.keys(allSession)[0]
             console.log("allSessionkeys->", keys)
             const session = allSession[keys]
-            if (session &&  typeof session === "object") {
+            if (session && typeof session === "object") {
                 if (!callStart) {
-                  TimerAction('stop')
+                    TimerAction('stop')
                 }
                 console.log("session.Media", session.state)
                 if (session.state === 'Established') {
@@ -124,8 +128,8 @@ const DialpadMain = ({ navigation }) => {
     }, []);
 
     const firstCallerIdSet = async () => {
-        const value =  await getConfigParamValue(userprofilealias.sip_callerid)
-        console.log("getsipCallerid",value)
+        const value = await getConfigParamValue(userprofilealias.sip_callerid)
+        console.log("getsipCallerid", value)
         setCallerID(value)
     }
 
@@ -173,19 +177,27 @@ const DialpadMain = ({ navigation }) => {
         } catch (error) {
             console.log("error", error)
         }
-        
+
     }
 
-    const handleAddCallerID = (id) =>  {
+    const handleAddCallerID = (id) => {
         console.log('Selected id:', id);
         setCallerID(id)
         setcallIDShow(false)
     }
-   
+
     return (
         <SafeAreaProvider>
             <SafeAreaView style={{ flex: 1, backgroundColor: THEME_COLORS.black }}>
+
                 <View style={{ flex: 1, backgroundColor: THEME_COLORS.black }}>
+                    <Image source={voizLogo} style={{position:'absolute',opacity:0.2,top:"15%",width:'80%',height:'80%',alignSelf:'center'}}       resizeMode="contain"
+                    ></Image>
+                    <View >
+                        {soketConnect ? <Text style={{ color: "white", fontWeight: 'bold', fontSize: 12, alignSelf: 'center' }}>Phone is Ready</Text> :
+                            <Text style={{ color: "white", fontWeight: 'bold', fontSize: 12, alignSelf: 'center' }}>Phone is Not Ready</Text>}
+                        <Text style={{ color: "white", fontSize: 12, alignSelf: 'center' }}>{callerID}</Text>
+                    </View>
                     {
                         callStart == false
                             ? <DialpadContactSearch search={code} setNumber={setCode} numberMatch={setnumberMatch} />
@@ -195,31 +207,31 @@ const DialpadMain = ({ navigation }) => {
                 <View style={style.container}>
                     <CallIdShow callIDShow={callIDShow} setCallerIDShow={setcallIDShow} callID={callerID} />
                     {
-                    callIDShow && <CallIDList addCallerID={(id) => handleAddCallerID(id)} />}
+                        callIDShow && <CallIDList addCallerID={(id) => handleAddCallerID(id)} />}
                     <NumberShowVw number={code} onRemove={handleRemove} setNumber={setCode} />
                     {
                         !numberMatch && code.length > 0 ?
-                        <TouchableOpacity onPress={
-                            () => addContact(code.join(''))}>
-                            <Text style={{ color: THEME_COLORS.black, fontWeight: 'bold', fontSize: 12 }}>
-                                Add to Contact
-                            </Text>
-                        </TouchableOpacity>
-                        :
-                        <View>
-                             <Text style={{ color: THEME_COLORS.transparent, fontWeight: 'bold', fontSize: 12 }}>
-                                Add to Contact
-                            </Text>
-                        </View>
+                            <TouchableOpacity onPress={
+                                () => addContact(code.join(''))}>
+                                <Text style={{ color: THEME_COLORS.black, fontWeight: 'bold', fontSize: 12 }}>
+                                    Add to Contact
+                                </Text>
+                            </TouchableOpacity>
+                            :
+                            <View>
+                                <Text style={{ color: THEME_COLORS.transparent, fontWeight: 'bold', fontSize: 12 }}>
+                                    Add to Contact
+                                </Text>
+                            </View>
                     }
                     <SeparatorLine style={{ marginVertical: 5 }} />
                     <DialPad dialnumber={code} addNumber={setCode} />
                 </View>
                 {
                     ISCallTransfer
-                        ? <CallTransferButton  navigation={navigation} setCode={code} code={code} />
-                        : ISAttendedTransfer ? <AttendedTransferButton  navigation={navigation} setCode={code} code={code} />
-                            : <CallButton  navigation={navigation} setCode={code} code={code} voizmailAcation={hendelVoizmail} />
+                        ? <CallTransferButton navigation={navigation} setCode={code} code={code} />
+                        : ISAttendedTransfer ? <CallButton navigation={navigation} setCode={code} code={code} voizmailAcation={hendelVoizmail} />
+                            : <CallButton navigation={navigation} setCode={code} code={code} voizmailAcation={hendelVoizmail} />
                 }
             </SafeAreaView>
         </SafeAreaProvider>

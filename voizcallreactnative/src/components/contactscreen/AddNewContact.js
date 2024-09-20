@@ -136,23 +136,23 @@ const AddNewContact = () => {
                     />
                     <View style={styles.viewList}>
                         <View style={styles.InputTextView}>
-                            <TextInput style={styles.InpuText} placeholder='Enter First Name' placeholderTextColor={"#4F6EB4"} onChangeText={(text) => setFName(text)}>
+                            <TextInput style={styles.InpuText} placeholder='Enter First Name' placeholderTextColor={THEME_COLORS.black} onChangeText={(text) => setFName(text)}>
                             </TextInput>
                         </View>
                         <View style={styles.InputTextView}>
-                            <TextInput style={styles.InpuText} placeholder='Enter Last Name' placeholderTextColor={"#4F6EB4"} onChangeText={(text) => setLName(text)}>
+                            <TextInput style={styles.InpuText} placeholder='Enter Last Name' placeholderTextColor={THEME_COLORS.black} onChangeText={(text) => setLName(text)}>
                             </TextInput>
                         </View>
                         <View style={styles.InputTextView}>
-                            <TextInput style={styles.InpuText} placeholder='Enter Phone Number' placeholderTextColor={"#4F6EB4"} keyboardType='phone-pad' onChangeText={(text) => setPhoneNumber(text)}>
+                            <TextInput style={styles.InpuText} placeholder='Enter Phone Number' placeholderTextColor={THEME_COLORS.black} keyboardType='phone-pad' onChangeText={(text) => setPhoneNumber(text)}>
                             </TextInput>
                         </View>
                         <View style={styles.InputTextView}>
-                            <TextInput style={styles.InpuText} placeholder='Enter Email' placeholderTextColor={"#4F6EB4"} keyboardType='email-address' onChangeText={(text) => setEmail(text)}>
+                            <TextInput style={styles.InpuText} placeholder='Enter Email' placeholderTextColor={THEME_COLORS.black} keyboardType='email-address' onChangeText={(text) => setEmail(text)}>
                             </TextInput>
                         </View>
                         <View style={styles.InputTextView}>
-                            <TextInput style={styles.InpuText} placeholder='Enter Postal Addres' placeholderTextColor={"#4F6EB4"} onChangeText={(text) => setPostAdd(text)}>
+                            <TextInput style={styles.InpuText} placeholder='Enter Postal Addres' placeholderTextColor={THEME_COLORS.black} onChangeText={(text) => setPostAdd(text)}>
                             </TextInput>
                         </View>
                         <View style={[styles.ButtonVw]}>

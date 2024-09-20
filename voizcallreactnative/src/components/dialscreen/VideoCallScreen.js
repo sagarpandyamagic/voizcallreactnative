@@ -3,6 +3,7 @@ import { Button, PermissionsAndroid, Text, View } from 'react-native';
 import { RTCPeerConnection, mediaDevices, RTCView } from 'react-native-webrtc';
 import { useSelector } from 'react-redux';
 import SipUA from '../../services/call/SipUA';
+import { SessionState } from 'sip.js';
 
 const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
@@ -11,6 +12,16 @@ const SetupRemoteVideoMedia = ({ session }) => {
   const [remoteStream, setRemoteStream] = useState(null);
   const [peerConnection, setPeerConnection] = useState(null);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    if (remoteStream) {
+      setIsLoading(false);
+    }
+  }, [remoteStream]);
+
+
 
   useEffect(() => {
     const setupWebRTC = async () => {
@@ -79,9 +90,10 @@ const SetupRemoteVideoMedia = ({ session }) => {
         PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
       ]);
       if (granted['android.permission.CAMERA'] === PermissionsAndroid.RESULTS.GRANTED &&
-          granted['android.permission.RECORD_AUDIO'] === PermissionsAndroid.RESULTS.GRANTED) {
+        granted['android.permission.RECORD_AUDIO'] === PermissionsAndroid.RESULTS.GRANTED) {
         console.log('Camera and microphone permissions granted');
         const stream = await mediaDevices.getUserMedia({ video: true, audio: true });
+        // stream.getTracks().forEach(track => session.sessionDescriptionHandler?.peerConnection?.addTrack(track, stream));
         setLocalStream(stream);
       } else {
         console.warn('Permissions denied');
@@ -90,13 +102,13 @@ const SetupRemoteVideoMedia = ({ session }) => {
       console.error('Error requesting permissions:', error);
     }
   };
-
   useEffect(() => {
     requestMediaPermissions();
   }, []);
 
   useEffect(() => {
     if (session && localStream) {
+      console.log('Adding local stream tracks to session:', localStream.getTracks());
       localStream.getTracks().forEach(track => session.sessionDescriptionHandler?.peerConnection?.addTrack(track, localStream));
     }
   }, [localStream, session]);
@@ -112,18 +124,27 @@ const SetupRemoteVideoMedia = ({ session }) => {
         setRemoteStream(newRemoteStream);
       }
     }
-  }, [session]);
+  }, [session,refreshKey]);
+
+  const handleRefresh = () => {
+    setRefreshKey(prevKey => prevKey + 1);
+  };
 
   return (
     <View>
       <Text>Remote Video</Text>
       {remoteStream ? (
-        <RTCView
-          streamURL={remoteStream.toURL()}
-          style={{ width: 200, height: 200 }}
-          objectFit='cover'
-          visible={!!remoteStream}
-        />
+        isLoading ? (
+          <Text>Loading remote stream...</Text>
+        ) : (
+          <RTCView
+            key={refreshKey}
+            streamURL={remoteStream.toURL()}
+            style={{ width: 200, height: 200 }}
+            objectFit='cover'
+            visible={!!remoteStream}
+          />
+        )
       ) : (
         <Text>No remote stream available</Text>
       )}
@@ -139,20 +160,32 @@ const SetupRemoteVideoMedia = ({ session }) => {
       )}
       <Button title="Hang Up" onPress={hangupCall} />
       <Button title={isVideoEnabled ? "Disable Video" : "Enable Video"} onPress={toggleVideo} />
+      <Button title="Refresh Video" onPress={handleRefresh} />
+
     </View>
   );
 };
 
 const VideoCallScreen = () => {
-  const { session } = useSelector((state) => state.sip);
+  const { session, CallInitial } = useSelector((state) => state.sip);
+  const [mediaStermStart, setmediaStermStart] = useState(false);
 
   const makeCall = async () => {
     await SipUA.makeCall("777777", true);
   };
 
+  useEffect(() => {
+    if(session?.state == SessionState.Established) {
+      console.log('Session established:', session);
+      setTimeout(() => {
+        setmediaStermStart(true)
+      }, 2000);
+    }
+  }, [session,session?.state]);
+
   return (
     <View>
-      {session ? <SetupRemoteVideoMedia session={session} /> : <Text>No Video Found</Text>}
+      { mediaStermStart ? <SetupRemoteVideoMedia session={session} /> : <Text>No Video Found</Text>}
       <Button title={"Call"} onPress={makeCall} />
     </View>
   );

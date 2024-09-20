@@ -7,7 +7,7 @@ import { AppCommon_Font, StorageKey, THEME_COLORS, userprofilealias } from '../.
 import { getProfile, POSTAPICALL, POSTAPICALLAllData } from '../../services/auth';
 import { APIURL } from '../../HelperClass/APIURL';
 import DeviceInfo from 'react-native-device-info';
-import { AppStoreData, getStorageData } from '../utils/UserData';
+import { AppStoreData, getStorageData, RemoveStorageData } from '../utils/UserData';
 import { generateUniqueId } from '../../HelperClass/InstanceID';
 import { getConfigParamValue } from '../../data/profileDatajson';
 import LottieView from 'lottie-react-native';
@@ -22,10 +22,9 @@ const PhoneOrEmailLogin = ({ navi }) => {
     const [deviceId, setdeviceId] = useState('');
     const [deviceModel, setdeviceModel] = useState('');
     const [systemName, setsystemName] = useState('');
-    const [username, setusername] = useState('');
-    const [userpassword, setuserpassword] = useState('');
+    const [username, setusername] = useState('voizCallS1@123');
+    const [userpassword, setuserpassword] = useState('voizCallS1@123');
     const [loading, setLoading] = useState(false);
-    const [currentLanguage,setLanguage] =useState('en');
 
     useEffect(() => {
         getDeviceId()
@@ -87,9 +86,10 @@ const PhoneOrEmailLogin = ({ navi }) => {
                 }
                 setLoading(false);
             } else {
-
+                setLoading(false);
             }
         } catch (error) {
+            setLoading(false);
             console.log(error)
         }
     }
@@ -101,18 +101,18 @@ const PhoneOrEmailLogin = ({ navi }) => {
             }
             <View style={styles.InputTextView}>
                 <View style={styles.InputTextSideImgView}>
-                    <Image style={{ height: "45%", width: "40%" }}
+                    <Image style={{ height: "45%", width: "40%" ,tintColor:THEME_COLORS.black}}
                         source={icUser} />
                 </View>
-                <TextInput style={styles.InpuText} placeholder='Enter user name' defaultValue={username} placeholderTextColor={"#4F6EB4"} onChangeText={(text) => setusername(text)} te>
+                <TextInput style={styles.InpuText} placeholder='Enter user name' placeholderTextColor={THEME_COLORS.black} defaultValue={username}  onChangeText={(text) => setusername(text)} te>
                 </TextInput>
             </View>
             <View style={styles.InputTextView}>
                 <View style={styles.InputTextSideImgView}>
-                    <Image style={{ height: "45%", width: "40%" }}
+                    <Image style={{ height: "45%", width: "40%" ,tintColor:THEME_COLORS.black}}
                         source={ic_padlock} />
                 </View>
-                <TextInput style={styles.InpuText} placeholder='Password' defaultValue={userpassword} placeholderTextColor={"#4F6EB4"} onChangeText={(text) => setuserpassword(text)}>
+                <TextInput style={styles.InpuText} placeholder='Password' placeholderTextColor={THEME_COLORS.black} defaultValue={userpassword}  onChangeText={(text) => setuserpassword(text)}>
                 </TextInput>
             </View>
             <View style={[styles.InputTextView, { borderWidth: 0 }]} >

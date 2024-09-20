@@ -13,7 +13,7 @@ import { AppState, NativeModules, Platform } from 'react-native';
 import incomingusebyClass from "../Callkeep/incomingusebyClass";
 import uuid from 'react-native-uuid';
 import BackgroundTimer from 'react-native-background-timer';
-import { StorageKey } from "../../HelperClass/Constant";
+import { StorageKey, THEME_COLORS } from "../../HelperClass/Constant";
 import { getStorageData } from "../../components/utils/UserData";
 import inCallManager from "react-native-incall-manager";
 
@@ -334,7 +334,7 @@ class SipClinet {
           if (AppISBackGround == true && Platform.OS == "android") {
             try {
               if (MyNativeModule) {
-                MyNativeModule.openNativeLayout("Voizcall User", number);
+                MyNativeModule.openNativeLayout("Voizcall User", number,THEME_COLORS.black);
               } else {
                 console.error('MyNativeModule is not available');
               }
@@ -355,9 +355,9 @@ class SipClinet {
               const allSession = store.getState().sip.allSession
 
               if (allSession.length == null) {
-              store.dispatch(updateSipState({ key: "CallAns", value: false }))
-              store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
-              store.dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
+                store.dispatch(updateSipState({ key: "CallAns", value: false }))
+                store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
+                store.dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
               }
 
               // RNCallKeep.clearInitialEvents();
@@ -391,11 +391,11 @@ class SipClinet {
                 break
               case 'Terminated':
                 console.log('Terminated Call')
-                const allSession = store.getState().sip.allSession
                 store.dispatch(removeSession(invitation.id))
-                
-                console.debug('Session Has Been Terminated',Platform.OS)
-                console.debug('Session Has Been Terminated',Object.keys(allSession).length)
+                const allSession = store.getState().sip.allSession
+                console.debug('Session Has Been Terminated', Platform.OS)
+                console.debug('allSession', allSession)
+                console.debug('Session Has Been Terminated', Object.keys(allSession).length)
                 if (Object.keys(allSession).length == 0) {
                   store.dispatch(updateSipState({ key: "CallAns", value: false }))
                   store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
@@ -422,7 +422,7 @@ class SipClinet {
                     incomingusebyClass.endIncomingcallAnswer();
                   }
                 }
-                
+
                 break
               default:
               // console.log('Unknow Incomming Session state')
@@ -578,10 +578,8 @@ class SipClinet {
           case SessionState.Terminated:
             store.dispatch(removeSession(session.id))
             const allSession = store.getState().sip.allSession
-            console.debug('Session Has Been Terminated',Platform.OS)
-
-            console.debug('Session Has Been Terminated',Object.keys(allSession).length)
-
+            console.debug('Session Has Been Terminated', Platform.OS)
+            console.debug('Session Has Been Terminated', Object.keys(allSession).length)
             if (Object.keys(allSession).length == 0) {
               store.dispatch(updateSipState({ key: "IncomingScrrenOpen", value: false }))
               store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
@@ -592,7 +590,7 @@ class SipClinet {
               store.dispatch(updateSipState({ key: "CallInitial", value: false }));
 
               console.log("session.id", session.id)
-             
+
 
               inCallManager.stopProximitySensor();
 

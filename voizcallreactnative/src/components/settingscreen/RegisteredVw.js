@@ -15,7 +15,7 @@ const RegisteredVw = () => {
                     <View style={{width:20}}>
                     </View>
                     <View style={styles.usericon}>
-                        <Image style={{width:35,height:35,resizeMode: 'contain'}} source={accounticon}></Image>
+                        <Image style={{width:35,height:35,resizeMode: 'contain',tintColor:THEME_COLORS.black}} source={accounticon}></Image>
                         {
                             soketConnect == true 
                             ?   <View style={{width: 10, height: 10, backgroundColor:'#4caf50',position:'absolute',left:22,top:25,borderRadius:10}}/>

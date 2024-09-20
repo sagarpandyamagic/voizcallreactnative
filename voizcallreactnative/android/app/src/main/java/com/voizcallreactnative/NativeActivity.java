@@ -53,7 +53,10 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
-
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 
 public class NativeActivity extends AppCompatActivity {
 
@@ -61,6 +64,8 @@ public class NativeActivity extends AppCompatActivity {
     private Observer<String> dataObserver = null;
     private Ringtone ringtone;
     private Vibrator vibrator;
+    private RelativeLayout rlIncomingCall;
+    private ImageView imgUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,12 +97,19 @@ public class NativeActivity extends AppCompatActivity {
 
         String name = String.valueOf(getIntent().getStringExtra("name"));
         String number = String.valueOf(getIntent().getStringExtra("number"));
+        String themecolor = String.valueOf(getIntent().getStringExtra("themecolor"));
 
+        
         TextView txtIncomingCallName = findViewById(R.id.txt_incoming_call_name);
         TextView txtIncomingCallNumber = findViewById(R.id.txt_incoming_call_number);
+        rlIncomingCall = findViewById(R.id.rl_incoming_call);
+        imgUser = findViewById(R.id.img_user);
 
         txtIncomingCallName.setText(name);
         txtIncomingCallNumber.setText(number);
+
+        rlIncomingCall.setBackgroundColor(Color.parseColor(themecolor));
+        imgUser.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FFFFFF")));
 
         LinearLayout llIncomingAccept = findViewById(R.id.ll_incoming_accept);
         llIncomingAccept.setOnClickListener(new View.OnClickListener() {
@@ -227,8 +239,6 @@ public class NativeActivity extends AppCompatActivity {
             ringtone.stop(); // Stop the ringtone
         }
     }
-
-
 
     private void callReactNativeMethodForCall(boolean isAcceptCall) {
         try {

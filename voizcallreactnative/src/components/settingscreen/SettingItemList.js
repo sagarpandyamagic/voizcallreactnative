@@ -7,9 +7,11 @@ import ic_information from '../../../Assets/ic_information.png';
 import privacyicon from '../../../Assets/privacyicon.png';
 import voicemailicon from '../../../Assets/voicemailicon.png';
 import logout from '../../../Assets/logout.png';
-
 import SettingdetailList from './SettingdetailList';
 import SeparatorLine from '../../HelperClass/SeparatorLine';
+import ic_websocketicon from '../../../Assets/ic_websocketicon.png';
+
+
 
 const SettingItemList = ({naviagion}) => {
     return (
@@ -24,6 +26,8 @@ const SettingItemList = ({naviagion}) => {
             <SettingdetailList title='Privacy Policy' image={privacyicon} navigation={naviagion}  />
             {/* <SeparatorLine marginVertical={0}/>
             <SettingdetailList title='On Touch Voicemail' image={voicemailicon} navigation={naviagion} /> */}
+            <SeparatorLine marginVertical={0}/>
+            <SettingdetailList title='WebSocket Test' image={ic_websocketicon} navigation={naviagion} />
             <SeparatorLine marginVertical={0}/>
             <SettingdetailList title='Logout' image={logout} navigation={naviagion} />
         </>

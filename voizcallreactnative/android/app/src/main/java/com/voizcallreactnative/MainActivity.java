@@ -32,36 +32,6 @@ public class MainActivity extends ReactActivity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     SplashScreen.show(this); // here
-    // getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
-    // WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
-    // WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-    // WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-    // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-    // setShowWhenLocked(true);
-    // setTurnScreenOn(true);
-
-    // KeyguardManager keyguardManager = (KeyguardManager)
-    // getSystemService(Context.KEYGUARD_SERVICE);
-    // if (keyguardManager != null) {
-    // keyguardManager.requestDismissKeyguard(this, null);
-    // }
-    // } else {
-    // getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-    // | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-    // | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-    // }
-
-    // // Add these flags for all Android versions
-    // getWindow().addFlags(WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON);
-
-    // // Disable the default lock screen
-    // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-    // ((KeyguardManager)
-    // getSystemService(Context.KEYGUARD_SERVICE)).requestDismissKeyguard(this,
-    // null);
-    // }
-    // ;
-
     super.onCreate(savedInstanceState);
   }
 

@@ -7,6 +7,7 @@ import { React } from 'react';
 
 import ic_Search from '../../Assets/ic_Search.png'
 import { TextInput } from 'react-native-gesture-handler';
+import { THEME_COLORS } from './Constant';
 
 const SearchBarCustom = ({ onSearch}) => {
 
@@ -20,6 +21,7 @@ const SearchBarCustom = ({ onSearch}) => {
       <TextInput
         onChangeText={search}
         placeholder="Search Contact"
+        placeholderTextColor={THEME_COLORS.black}
         style={styles.input}
       />
     </View>
