@@ -206,8 +206,8 @@ class SipClinet {
           iceGatheringTimeout: 5000,
         },
         displayName: "sagar",
-        authorizationPassword: store.getState().sip.Password,//"1010@0101Aa30",
-        authorizationUsername: store.getState().sip.UserName,//"101030",
+        authorizationPassword: store.getState().sip.Password,
+        authorizationUsername: store.getState().sip.UserName,
         dtmfType: 'info',
         contactTransport: 'wss',
         noAnswerTimeout: 60,
@@ -282,23 +282,16 @@ class SipClinet {
       USERAGENT.delegate = {
         async onInvite(invitation) {
           store.dispatch(updateSipState({ key: "CallType", value: "InComingCall" }))
-          // console.log("store", callinfo)
           const number = invitation?.remoteIdentity?.uri?.user || ''
-          // console.log('invitations', invitation)
-          // console.log('invitation?.request?.callId', invitation?.request?.callId)
-          // console.log('invitation?.request?.callId', invitation?.request?.callId)
 
           store.dispatch(updateSipState({ key: "session", value: invitation }))
-          // incoming = true
 
-          // getContactTableData(number)
           store.dispatch(updateSipState({ key: "Caller_Name", value: "Unknown" }))
           // store.dispatch(updateSipState({ key: "IncomingScrrenOpen", value: true }))
 
           const valueDND = await getStorageData(StorageKey.UserDND);
           const CallkeeporNto = await getStorageData(StorageKey.CallKeepORNot);
           console.log('UserAgent2 ==> Unregistered')
-
 
           // if (AppState.currentState === "active" && Platform.OS == "android" && valueDND == false && CallkeeporNto == false) {
           //   store.dispatch(updateSipState({ key: "IncomingScrrenOpen", value: true }))
@@ -316,8 +309,6 @@ class SipClinet {
             return
           }
 
-
-
           const SessionID = invitation?._id
           store.dispatch(addSession({ sessionID: SessionID, session: invitation }))
 
@@ -331,18 +322,19 @@ class SipClinet {
 
           const { AppISBackGround } = store.getState().sip
           console.log('AppISBackGround ==>', AppISBackGround)
-          if (AppISBackGround == true && Platform.OS == "android") {
-            try {
-              if (MyNativeModule) {
-                MyNativeModule.openNativeLayout("Voizcall User", number,THEME_COLORS.black);
-              } else {
-                console.error('MyNativeModule is not available');
-              }
-            } catch (error) {
-              console.error('Error calling applyFlags:', error);
-            }
-          }
 
+          invitation.accept()
+          // if (AppISBackGround == true && Platform.OS == "android") {
+          //   try {
+          //     if (MyNativeModule) {
+          //       MyNativeModule.openNativeLayout("Voizcall User", number,THEME_COLORS.black);
+          //     } else {
+          //       console.error('MyNativeModule is not available');
+          //     }
+          //   } catch (error) {
+          //     console.error('Error calling applyFlags:', error);
+          //   }
+          // }
 
           invitation.delegate = {
             //  Handle incoming onCancel request
@@ -353,13 +345,11 @@ class SipClinet {
             onCancel(message) {
               // console.log('ON CANCEL - message ==> ', message)
               const allSession = store.getState().sip.allSession
-
               if (allSession.length == null) {
                 store.dispatch(updateSipState({ key: "CallAns", value: false }))
                 store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
                 store.dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
               }
-
               // RNCallKeep.clearInitialEvents();
               if (invitation) {
                 invitation.dispose()
@@ -480,25 +470,7 @@ class SipClinet {
       // console.log("sip.userAgent", store.getState().sip.userAgent)
       const session = new Inviter(store.getState().sip.userAgent, uri, inviteOptions)
 
-      // Add this to your SipUA class or relevant method
-      // session.on('trackAdded', () => {
-      //   const remoteStream = new MediaStream(session.getRemoteStreams()[0].getTracks());
-      //   store.dispatch(updateSipState({ key: "remoteStreamVideo", value: remoteStream }))
-      //   // Dispatch this to your Redux store or use a callback to update the component
-      // });
-
-      // session.on('trackAdded', () => {
-      //   const pc = session.sessionDescriptionHandler.peerConnection;
-      //   const remoteStream = new MediaStream();
-
-      //   pc.getReceivers().forEach(receiver => {
-      //     if (receiver.track) {
-      //       remoteStream.addTrack(receiver.track);
-      //     }
-      //   });
-
-      //   store.dispatch(updateSipState({ key: "remoteStreamVideo", value: remoteStream }));
-      // });
+      
 
       store.dispatch(storeContactNumber({ key: "phoneNumber", value: destination }))
       store.dispatch(updateSipState({ key: "DialNumber", value: destination }))
@@ -519,24 +491,9 @@ class SipClinet {
 
       const SessionID = session?._id
       // console.log("SessionID",SessionID)
-      store.dispatch(addSession({ sessionID: SessionID, session: session }))
+      store.dispatch(addSession({ sessionID: SessionID, session: session }));
 
       store.dispatch(updateSipState({ key: "CallInitial", value: true }));
-
-
-
-      // var myCandidateTimeout = null;
-
-      // session.on('icecandidate', function (candidate, ready) {
-      //   console.log('getting a candidate' + candidate.candidate.candidate);
-      //   if (myCandidateTimeout != null)
-      //     clearTimeout(myCandidateTimeout);
-
-      //   myCandidateTimeout = setTimeout(candidate.ready, 2000);
-      // })
-
-
-
 
       session.stateChange.addListener(async newState => {
         store.dispatch(updateSipState({ key: "sesstionState", value: newState }))
@@ -590,7 +547,6 @@ class SipClinet {
               store.dispatch(updateSipState({ key: "CallInitial", value: false }));
 
               console.log("session.id", session.id)
-
 
               inCallManager.stopProximitySensor();
 

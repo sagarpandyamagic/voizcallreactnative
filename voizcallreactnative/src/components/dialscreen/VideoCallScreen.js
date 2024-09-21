@@ -42,17 +42,11 @@ const SetupRemoteVideoMedia = ({ session }) => {
             console.warn('No remote stream available');
           }
         };
-        pc.onicecandidate = event => {
-          if (event.candidate) {
-            // Send ICE candidates to the remote peer
-          }
-        };
-
-        // Cleanup function
-        return () => {
-          pc.close();
-          stream.getTracks().forEach(track => track.stop());
-        };
+        // // Cleanup function
+        // return () => {
+        //   pc.close();
+        //   stream.getTracks().forEach(track => track.stop());
+        // };
       } catch (error) {
         console.error('Error setting up WebRTC:', error);
       }
@@ -93,7 +87,7 @@ const SetupRemoteVideoMedia = ({ session }) => {
         granted['android.permission.RECORD_AUDIO'] === PermissionsAndroid.RESULTS.GRANTED) {
         console.log('Camera and microphone permissions granted');
         const stream = await mediaDevices.getUserMedia({ video: true, audio: true });
-        // stream.getTracks().forEach(track => session.sessionDescriptionHandler?.peerConnection?.addTrack(track, stream));
+        stream.getTracks().forEach(track => session.sessionDescriptionHandler?.peerConnection?.addTrack(track, stream));
         setLocalStream(stream);
       } else {
         console.warn('Permissions denied');
@@ -114,17 +108,27 @@ const SetupRemoteVideoMedia = ({ session }) => {
   }, [localStream, session]);
 
   useEffect(() => {
-    if (session) {
+    if (session?.state === SessionState.Established) {
       const pc = session.sessionDescriptionHandler?.peerConnection;
       if (pc) {
         const newRemoteStream = new MediaStream();
         pc.getReceivers().forEach(receiver => {
-          if (receiver.track) newRemoteStream.addTrack(receiver.track);
+          if (receiver.track) {
+            newRemoteStream.addTrack(receiver.track);
+          }
         });
         setRemoteStream(newRemoteStream);
+        
+        // Add a listener for track additions
+        pc.ontrack = (event) => {
+          if (event.track) {
+            newRemoteStream.addTrack(event.track);
+            setRemoteStream(new MediaStream(newRemoteStream.getTracks()));
+          }
+        };
       }
     }
-  }, [session,refreshKey]);
+  }, [session,session?.state,refreshKey]);
 
   const handleRefresh = () => {
     setRefreshKey(prevKey => prevKey + 1);
@@ -143,6 +147,7 @@ const SetupRemoteVideoMedia = ({ session }) => {
             style={{ width: 200, height: 200 }}
             objectFit='cover'
             visible={!!remoteStream}
+            onError={(e) => console.error('RTCView error:', e)}
           />
         )
       ) : (
@@ -171,21 +176,19 @@ const VideoCallScreen = () => {
   const [mediaStermStart, setmediaStermStart] = useState(false);
 
   const makeCall = async () => {
-    await SipUA.makeCall("777777", true);
+    await SipUA.makeCall("222222", true);
   };
 
   useEffect(() => {
     if(session?.state == SessionState.Established) {
       console.log('Session established:', session);
-      setTimeout(() => {
         setmediaStermStart(true)
-      }, 2000);
     }
   }, [session,session?.state]);
 
   return (
     <View>
-      { mediaStermStart ? <SetupRemoteVideoMedia session={session} /> : <Text>No Video Found</Text>}
+      { session ? <SetupRemoteVideoMedia session={session} /> : <Text>No Video Found</Text>}
       <Button title={"Call"} onPress={makeCall} />
     </View>
   );
