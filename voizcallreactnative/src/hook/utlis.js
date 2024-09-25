@@ -14,6 +14,9 @@ export const setupRemoteMedia = async (session, has_video = false) => {
       remoteStream.addTrack(receiver.track)
     }      
   })
+
+
+  
 }
 
 

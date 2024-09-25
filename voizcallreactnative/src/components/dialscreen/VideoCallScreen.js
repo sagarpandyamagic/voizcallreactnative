@@ -1,197 +1,167 @@
-import React, { useEffect, useState } from 'react';
-import { Button, PermissionsAndroid, Text, View } from 'react-native';
-import { RTCPeerConnection, mediaDevices, RTCView } from 'react-native-webrtc';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Alert, Modal, PermissionsAndroid, Platform, StyleSheet, Text, View } from 'react-native';
 import { useSelector } from 'react-redux';
-import SipUA from '../../services/call/SipUA';
 import { SessionState } from 'sip.js';
+import { AppCommon_Font, THEME_COLORS } from '../../HelperClass/Constant';
+import VideoCallFirstBtn from '../videocallscreen/VideoCallFirstBtn';
+import VideoCallCutBtn from '../videocallscreen/VideoCallCutBtn';
+import { mediaDevices, MediaStream, RTCView } from 'react-native-webrtc';
 
-const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
-
-const SetupRemoteVideoMedia = ({ session }) => {
+const VideoCallScreen = () => {
+  const { session, CallInitial, VideoCallScreenOpen, callTimer, DialNumber, CallType, soketConnect, sesstionState } = useSelector((state) => state.sip);
   const [localStream, setLocalStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
-  const [peerConnection, setPeerConnection] = useState(null);
-  const [isVideoEnabled, setIsVideoEnabled] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0);
+
+  const logError = useCallback((message, error) => {
+    console.error(message, error);
+    Alert.alert('Error', `${message}: ${error.message}`);
+  }, []);
 
   useEffect(() => {
-    if (remoteStream) {
-      setIsLoading(false);
+    if (session != {} && VideoCallScreenOpen && CallType == "InComingCall" && soketConnect && CallInitial) {
+      console.log("CallAcceept --------------")
+      session.accept();
     }
-  }, [remoteStream]);
-
-
+  }, [CallInitial, VideoCallScreenOpen]);
 
   useEffect(() => {
-    const setupWebRTC = async () => {
-      try {
-        const stream = await mediaDevices.getUserMedia({ video: true, audio: true });
-        setLocalStream(stream);
-
-        const pc = new RTCPeerConnection(configuration);
-        setPeerConnection(pc);
-
-        stream.getTracks().forEach(track => pc.addTrack(track, stream));
-
-        pc.ontrack = (event) => {
-          console.log('Remote track received:', event.streams);
-          if (event.streams && event.streams[0]) {
-            setRemoteStream(event.streams[0]);
-          } else {
-            console.warn('No remote stream available');
-          }
-        };
-        // // Cleanup function
-        // return () => {
-        //   pc.close();
-        //   stream.getTracks().forEach(track => track.stop());
-        // };
-      } catch (error) {
-        console.error('Error setting up WebRTC:', error);
-      }
-    };
-
-    setupWebRTC();
-  }, [session]);
-
-  const toggleVideo = async () => {
-    if (localStream) {
-      const videoTrack = localStream.getVideoTracks()[0];
-      if (videoTrack) {
-        videoTrack.enabled = !isVideoEnabled;
-        setIsVideoEnabled(!isVideoEnabled);
-
-        if (peerConnection) {
-          const sender = peerConnection.getSenders().find(s => s.track.kind === 'video');
-          if (sender) {
-            sender.replaceTrack(isVideoEnabled ? null : videoTrack);
-          }
+    if (session) {
+      if(sesstionState == SessionState.Established){
+        if (session.sessionDescriptionHandler && session.sessionDescriptionHandler.peerConnection) {
+          const pc = session.sessionDescriptionHandler.peerConnection;
+          const remoteStream = new MediaStream();
+          pc.getReceivers().forEach((receiver) => {
+            remoteStream.addTrack(receiver.track);
+          });
+          setRemoteStream(remoteStream);
+          console.log("remoteStream ff", remoteStream?.toURL())
         }
       }
+      console.log("session?.sessionDescriptionHandler?.peerConnection?.getReceivers()", session?.sessionDescriptionHandler?.peerConnection?.getReceivers())
     }
-  };
+  }, [session, sesstionState]);
 
-  const hangupCall = () => {
-    if (peerConnection) peerConnection.close();
-    if (localStream) localStream.getTracks().forEach(track => track.stop());
-  };
+  useEffect(()=>{
+    if(session){
+      startLocalStream();
+    }
+  },[session])
 
-  const requestMediaPermissions = async () => {
+  const requestPermissions = async () => {
     try {
       const granted = await PermissionsAndroid.requestMultiple([
         PermissionsAndroid.PERMISSIONS.CAMERA,
         PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
       ]);
-      if (granted['android.permission.CAMERA'] === PermissionsAndroid.RESULTS.GRANTED &&
-        granted['android.permission.RECORD_AUDIO'] === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('Camera and microphone permissions granted');
-        const stream = await mediaDevices.getUserMedia({ video: true, audio: true });
-        stream.getTracks().forEach(track => session.sessionDescriptionHandler?.peerConnection?.addTrack(track, stream));
-        setLocalStream(stream);
-      } else {
-        console.warn('Permissions denied');
-      }
-    } catch (error) {
-      console.error('Error requesting permissions:', error);
+      return (
+        granted['android.permission.CAMERA'] === PermissionsAndroid.RESULTS.GRANTED &&
+        granted['android.permission.RECORD_AUDIO'] === PermissionsAndroid.RESULTS.GRANTED
+      );
+    } catch (err) {
+      console.warn(err);
+      return false;
     }
   };
+
   useEffect(() => {
-    requestMediaPermissions();
+    requestPermissions();
   }, []);
 
-  useEffect(() => {
-    if (session && localStream) {
-      console.log('Adding local stream tracks to session:', localStream.getTracks());
-      localStream.getTracks().forEach(track => session.sessionDescriptionHandler?.peerConnection?.addTrack(track, localStream));
-    }
-  }, [localStream, session]);
 
-  useEffect(() => {
-    if (session?.state === SessionState.Established) {
-      const pc = session.sessionDescriptionHandler?.peerConnection;
-      if (pc) {
-        const newRemoteStream = new MediaStream();
-        pc.getReceivers().forEach(receiver => {
-          if (receiver.track) {
-            newRemoteStream.addTrack(receiver.track);
-          }
-        });
-        setRemoteStream(newRemoteStream);
-        
-        // Add a listener for track additions
-        pc.ontrack = (event) => {
-          if (event.track) {
-            newRemoteStream.addTrack(event.track);
-            setRemoteStream(new MediaStream(newRemoteStream.getTracks()));
-          }
-        };
+  const startLocalStream = async () => {
+    try {
+      if (Platform.OS === 'android') {
+        const hasPermission = await requestPermissions();
+        if (!hasPermission) {
+          Alert.alert('Permission denied', 'Camera and microphone permissions are required for video calls.');
+          return;
+        }
       }
+      const stream = await mediaDevices.getUserMedia({ video: true, audio: true });
+      stream.getTracks().forEach(track => session.sessionDescriptionHandler?.peerConnection?.addTrack(track, stream));
+      setLocalStream(stream);
+    } catch (error) {
+      logError('Error getting user media', error);
     }
-  }, [session,session?.state,refreshKey]);
-
-  const handleRefresh = () => {
-    setRefreshKey(prevKey => prevKey + 1);
   };
 
-  return (
-    <View>
-      <Text>Remote Video</Text>
-      {remoteStream ? (
-        isLoading ? (
-          <Text>Loading remote stream...</Text>
-        ) : (
-          <RTCView
-            key={refreshKey}
-            streamURL={remoteStream.toURL()}
-            style={{ width: 200, height: 200 }}
-            objectFit='cover'
-            visible={!!remoteStream}
-            onError={(e) => console.error('RTCView error:', e)}
-          />
-        )
-      ) : (
-        <Text>No remote stream available</Text>
-      )}
-      <Text>Local Video</Text>
-      {localStream ? (
-        <RTCView
-          streamURL={localStream.toURL()}
-          style={{ width: 200, height: 200 }}
-          objectFit='cover'
-        />
-      ) : (
-        <Text>No local stream available</Text>
-      )}
-      <Button title="Hang Up" onPress={hangupCall} />
-      <Button title={isVideoEnabled ? "Disable Video" : "Enable Video"} onPress={toggleVideo} />
-      <Button title="Refresh Video" onPress={handleRefresh} />
 
+  return (
+    <View style={{ flex: 1 }}>
+      <Modal
+        visible={VideoCallScreenOpen}
+        transparent={false}
+        animationType="none"
+      >
+        <View style={styles.container}>
+          
+          {
+            remoteStream &&
+            <RTCView
+              streamURL={remoteStream.toURL()}
+              style={{ width: 500, height: 500,backgroundColor:"green" }}
+              objectFit='cover'
+              onError={(e) => console.error('RTCView error:', e)}
+            />
+          }
+          <View style={{ position: 'absolute', top: 15, right: 15, height: 180, width: 120 }}>
+            {
+              localStream &&
+              <RTCView
+                streamURL={localStream.toURL()}
+                style={{ width: 120, height: 180 }}
+                mirror={true}
+              />
+            }
+          </View>
+          <View style={styles.buttonVw}>
+            <View style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'absolute', top: 20, alignSelf: 'center' }}>
+              <Text style={[styles.Text, { fontSize: 15, marginTop: 15 }]}>
+                {DialNumber} {remoteStream &&<Text>Loading...</Text>}
+              </Text>
+              <Text style={[styles.Text, { fontSize: 15 }]}>
+                {callTimer == "00:00:00" ? (CallInitial == false ? "Connecting....." : "Calling....") : callTimer}
+              </Text>
+            </View>
+            <VideoCallFirstBtn />
+            <VideoCallCutBtn />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
 
-const VideoCallScreen = () => {
-  const { session, CallInitial } = useSelector((state) => state.sip);
-  const [mediaStermStart, setmediaStermStart] = useState(false);
 
-  const makeCall = async () => {
-    await SipUA.makeCall("222222", true);
-  };
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: THEME_COLORS.black,
+  },
+  Text: {
+    color: '#000000',
+    fontSize: 18,
+    fontFamily: AppCommon_Font.Font
+  },
+  buttonVw: {
+    width: '100%',
+    height: "50%",
+    backgroundColor: 'white',
+    opacity: 0.7,
+    position: 'absolute',
+    bottom: 0,
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+    paddingBottom: 20, // Add some padding at the bottom
+  },
+  remoteStream: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'black',
+  },
 
-  useEffect(() => {
-    if(session?.state == SessionState.Established) {
-      console.log('Session established:', session);
-        setmediaStermStart(true)
-    }
-  }, [session,session?.state]);
-
-  return (
-    <View>
-      { session ? <SetupRemoteVideoMedia session={session} /> : <Text>No Video Found</Text>}
-      <Button title={"Call"} onPress={makeCall} />
-    </View>
-  );
-};
+});
 
 export default VideoCallScreen;

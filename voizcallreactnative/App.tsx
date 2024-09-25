@@ -89,8 +89,14 @@ function App() {
         'onCallAccepted',
         (event) => {
           try {
-            console.log('Call accepted');
-            store.dispatch(updateSipState({ key: "CallScreenOpen", value: true }));
+            const { hasVideo } = store.getState().sip
+            console.log('Call accepted hasVideo',hasVideo);
+
+            if(hasVideo) {
+              store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: true }));
+            }else{
+              store.dispatch(updateSipState({ key: "CallScreenOpen", value: true }));
+            }
             store.dispatch(updateSipState({ key: "CallAns", value: false }));
           } catch (error) {
             console.error('Error handling onCallAccepted event:', error);

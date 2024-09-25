@@ -12,7 +12,7 @@ const initialState = {
   allSession: {},
   sessionID: "",
   newCallAdd: 0,
-  VideoCallScreenOpen: true,
+  VideoCallScreenOpen: false,
   phoneNumber: [],
   remoteStream: "",
   CallLogStore: [],
@@ -37,6 +37,8 @@ const initialState = {
   terminationTime:0,
   CallInitial:false,
   remoteStreamVideo : {},
+  hasVideo:false,
+  SetlocationVideo :{}
 }
 
 const counterSlice = createSlice({

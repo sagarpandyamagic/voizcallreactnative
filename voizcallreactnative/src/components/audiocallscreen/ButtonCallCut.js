@@ -10,8 +10,6 @@ import {
 } from 'react-native';
 import { React, useState } from 'react';
 import ic_decline_call from '../../../Assets/ic_decline_call.png'
-import ic_hold from '../../../Assets/ic_hold.png'
-import ic_transfercall from '../../../Assets/ic_transfer-call.png'
 import SipUA from '../../services/call/SipUA';
 import InCallManager from 'react-native-incall-manager';
 import { useSelector } from 'react-redux';

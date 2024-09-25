@@ -47,6 +47,9 @@ const CallButton = ({ navigation, setCode, code, voizmailAcation }) => {
     };
 
     const handleMakeVideoCall = async (code) => {
+        SipUA.makeCall("777777", true)
+
+        return
         const number = code.join('')
         if (number == "") {
             showAlert('Empty Number!', "please enter phonenumber")
@@ -65,7 +68,6 @@ const CallButton = ({ navigation, setCode, code, voizmailAcation }) => {
             }
             console.log("ISConfrenceTransfer", ISConfrenceTransfer)
             SipUA.makeCall(number, true)
-            // navigation.navigate('AudioCallingScreen')
         }
     };
 
@@ -100,7 +102,7 @@ const CallButton = ({ navigation, setCode, code, voizmailAcation }) => {
                         style={[styles.callBtnImage, { opacity: btnEnable ? 0.5 : 1 }]}></Image>
                 </TouchableOpacity>
                 {
-                videoCall &&
+                // videoCall &&
                     <TouchableOpacity style={[styles.callBtn, { borderTopRightRadius: 10, borderBottomRightRadius: 10 }]} disabled={btnEnable} onPress={() => {
                         handleMakeVideoCall(code)
                     }}>

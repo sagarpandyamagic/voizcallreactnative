@@ -246,6 +246,8 @@ class SipClinet {
 
                 if (allSession.length == null) {
                   store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
+                  store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: false }));
+
                 }
                 console.log('UserAgent ==> Terminated')
                 USERAGENT.stop()
@@ -258,7 +260,7 @@ class SipClinet {
           registerer
             .register()
             .then(() => {
-              setupRemoteMedia(USERAGENT, false)
+              setupRemoteMedia(USERAGENT, true)
               // console.log('Successfully sent REGISTER, object is here')
             })
             .catch(error => {
@@ -323,18 +325,36 @@ class SipClinet {
           const { AppISBackGround } = store.getState().sip
           console.log('AppISBackGround ==>', AppISBackGround)
 
-          invitation.accept()
-          // if (AppISBackGround == true && Platform.OS == "android") {
-          //   try {
-          //     if (MyNativeModule) {
-          //       MyNativeModule.openNativeLayout("Voizcall User", number,THEME_COLORS.black);
-          //     } else {
-          //       console.error('MyNativeModule is not available');
-          //     }
-          //   } catch (error) {
-          //     console.error('Error calling applyFlags:', error);
+          const hasVideos = invitation.request.body.includes('m=video');
+          store.dispatch(updateSipState({ key: "hasVideo", value: hasVideos }));
+
+          const { hasVideo } = store.getState().sip
+          console.log('Call accepted hasVideo',hasVideo);
+
+          // try {
+          //   const hasVideo = invitation.request.body.includes('m=video');
+          //   if (hasVideo) {
+          //     console.log('Incoming Video Call');
+          //     store.dispatch(updateSipState({ key: "hasVideo", value: true }));
+          //   } else {
+          //     console.log('Incoming Audio Call');
+          //     store.dispatch(updateSipState({ key: "hasVideo", value: false }));
           //   }
+          // } catch (e) {
+          //   console.error('Error: IncomingCall', e);
           // }
+
+          if (AppISBackGround == true && Platform.OS == "android") {
+            try {
+              if (MyNativeModule) {
+                MyNativeModule.openNativeLayout("Voizcall User", number, THEME_COLORS.black);
+              } else {
+                console.error('MyNativeModule is not available');
+              }
+            } catch (error) {
+              console.error('Error calling applyFlags:', error);
+            }
+          }
 
           invitation.delegate = {
             //  Handle incoming onCancel request
@@ -349,6 +369,8 @@ class SipClinet {
                 store.dispatch(updateSipState({ key: "CallAns", value: false }))
                 store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
                 store.dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
+                store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: false }));
+
               }
               // RNCallKeep.clearInitialEvents();
               if (invitation) {
@@ -374,7 +396,7 @@ class SipClinet {
               case 'Established':
                 timeStore = data
                 console.log('Incoming Session state Established')
-                setupRemoteMedia(invitation, false)
+                // setupRemoteMedia(invitation, hasVideo)
                 break
               case 'Terminating':
                 // console.log('Terminating')
@@ -397,6 +419,8 @@ class SipClinet {
                   store.dispatch(updateSipState({ key: "Caller_Name", value: "" }))
                   // store.dispatch(removeSession(invitation.id))
                   store.dispatch(updateSipState({ key: "CallInitial", value: false }))
+                  store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: false }));
+                  store.dispatch(updateSipState({ key: "hasVideo", value: false }));
 
                   inCallManager.stopProximitySensor(); // Disable
 
@@ -418,6 +442,7 @@ class SipClinet {
               // console.log('Unknow Incomming Session state')
             }
           })
+          // invitation.accept()
         },
         onConnect() {
           console.log("IS Connected..")
@@ -456,7 +481,12 @@ class SipClinet {
           constraints: {
             audio: true,
             video: video// Convert video to boolean
-          }
+          },
+          sessionDescriptionHandlerModifiers: [
+            (sessionDescriptionHandler) => {
+              sessionDescriptionHandler.peerConnection.addStream(MediaStream); // Check if MediaStream is defined
+            }
+          ]
         },
         extraHeaders: _headers,
         earlyMedia: earlyMedia,
@@ -470,7 +500,7 @@ class SipClinet {
       // console.log("sip.userAgent", store.getState().sip.userAgent)
       const session = new Inviter(store.getState().sip.userAgent, uri, inviteOptions)
 
-      
+
 
       store.dispatch(storeContactNumber({ key: "phoneNumber", value: destination }))
       store.dispatch(updateSipState({ key: "DialNumber", value: destination }))
@@ -501,7 +531,7 @@ class SipClinet {
         switch (newState) {
           case SessionState.Establishing:
             if (video == true) {
-              // store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: true }))
+              store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: true }))
             } else {
               store.dispatch(updateSipState({ key: "CallScreenOpen", value: true }))
             }
@@ -545,6 +575,7 @@ class SipClinet {
               store.dispatch(updateSipState({ key: "ISConfrenceTransfer", value: false }))
               store.dispatch(updateSipState({ key: "Caller_Name", value: "" }))
               store.dispatch(updateSipState({ key: "CallInitial", value: false }));
+              store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: false }));
 
               console.log("session.id", session.id)
 
@@ -609,7 +640,7 @@ class SipClinet {
         .invite(inviteOptionsOB)
         .then(() => {
           if (video == true) {
-
+            store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: true }));
           } else {
             store.dispatch(updateSipState({ key: "CallScreenOpen", value: true }))
           }
@@ -662,6 +693,9 @@ class SipClinet {
     store.dispatch(updateSipState({ key: "ISAttendedTransfer", value: false }))
     store.dispatch(updateSipState({ key: "ISConfrenceTransfer", value: false }))
     store.dispatch(updateSipState({ key: "Caller_Name", value: "" }))
+    store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: false }));
+    store.dispatch(updateSipState({ key: "hasVideo", value: false }));
+
     // if (Platform.OS == "android") {
     //   setTimeout(() => {
     //     MyNativeModule.removeFlags()
@@ -673,7 +707,8 @@ class SipClinet {
 
   accepctCall = () => {
     console.log("this.sessionCall", sessionCall)
-    store.dispatch(updateSipState({ key: "CallScreenOpen", value: true }))
+    // store.dispatch(updateSipState({ key: "CallScreenOpen", value: true }))
+    store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: true }))
     store.dispatch(updateSipState({ key: "CallAns", value: false }))
   }
 
