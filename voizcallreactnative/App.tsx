@@ -49,6 +49,7 @@ import SipUA from './src/services/call/SipUA';
 import { getConfigParamValue } from './src/data/profileDatajson';
 import VideoCallScreen from './src/components/dialscreen/VideoCallScreen';
 import WebSocketTest from './src/components/settingscreen/WebSocketTest';
+import inCallManager from 'react-native-incall-manager';
 function App() {
   const Stack = createStackNavigator();
   const { MyNativeModule } = NativeModules;
@@ -138,21 +139,25 @@ function App() {
 
 
   useEffect(() => {
-    requestUserPermission()
+    inCallManager.stopProximitySensor(); // Disable
+    permissionSetup()
+  }, [])
+
+  const permissionSetup = async () => {
+     await requestUserPermission()
     if (Platform.OS != "android") {
-      FCMDelegateMethod()
-      requestPermissions()
+      await FCMDelegateMethod()
+      await requestPermissions()
       console.log("Platform.OS", Platform.OS)
       Platform.OS == "ios" && VoipPushNotification.registerVoipToken();
       Platform.OS == "ios" && voipConfig();
     } else {
-      checkPermission();
-      
+      await checkPermission();
       setTimeout(() => {
         Splash.hide()
       }, 2000);
     }
-  }, [])
+  }
 
 
 

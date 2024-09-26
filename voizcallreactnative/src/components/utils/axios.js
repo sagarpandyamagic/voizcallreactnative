@@ -76,7 +76,7 @@ axiosInstance.interceptors.response.use(
           }
 
       }else{
-        showAlert("error", error.response.data.message);
+        showAlert("error API", error.response.data.message);
       }
       return Promise.reject(error.response);
   }

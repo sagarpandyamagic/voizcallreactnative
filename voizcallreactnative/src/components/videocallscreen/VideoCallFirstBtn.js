@@ -18,7 +18,7 @@ import { useSelector } from 'react-redux';
 import SipUA from '../../services/call/SipUA';
 import InCallManager from 'react-native-incall-manager';
 import ic_hold from '../../../Assets/ic_hold.png'
-
+import DTMFScreen from '../audiocallscreen/DTMFScreen';
 
 const { width } = Dimensions.get('window')
 const imageSize = width * 0.17; // Example: 10% of screen width
@@ -27,30 +27,24 @@ const itemSpacing = 40;      // Space between each Image+Text pair
 const VideoCallFirstBtn = () => {
     const { CallInitial } = useSelector((state) => state.sip)
     const [togglemute, settogglemute] = useState(false)
-    const [isSpeker, setSpeker] = useState(false)
+    const [isSpeker, setSpeker] = useState(true)
     const [hold, sethold] = useState(false)
 
     const handelToggelMute = () => {
+        console.log("togglemute", togglemute)
         settogglemute(!togglemute)
         SipUA.MuteCall(togglemute)
     }
 
     const handelToggelSpeker = () => {
         setSpeker(!isSpeker)
-        InCallManager.setSpeakerphoneOn(!isSpeker); // Turn on speaker
+        InCallManager.setSpeakerphoneOn(isSpeker); // Turn on speaker
     }
 
     const handelToggelHold = () => {
         sethold(!hold)
-        if (SessionCount >= 2) {
-            SipUA.toggelHoldCall(!hold, "")
-        } else {
-            SipUA.toggelHoldCall(!hold, sessionID)
-        }
+        SipUA.toggelHoldCall(!hold, "")
     }
-
-
- 
 
     return (
         <View style={style.container}>
@@ -107,6 +101,9 @@ const VideoCallFirstBtn = () => {
                     }
                 </Text>
             </View>
+            <View>
+                <DTMFScreen />
+            </View>
         </View>
 
     )
@@ -116,7 +113,7 @@ const style = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignContent: 'center',
-        height:'30%'
+        height: '30%'
     },
     image: {
         height: '50%',

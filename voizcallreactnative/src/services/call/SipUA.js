@@ -247,8 +247,8 @@ class SipClinet {
                 if (allSession.length == null) {
                   store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
                   store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: false }));
-
                 }
+                
                 console.log('UserAgent ==> Terminated')
                 USERAGENT.stop()
                 break
@@ -330,19 +330,7 @@ class SipClinet {
 
           const { hasVideo } = store.getState().sip
           console.log('Call accepted hasVideo',hasVideo);
-
-          // try {
-          //   const hasVideo = invitation.request.body.includes('m=video');
-          //   if (hasVideo) {
-          //     console.log('Incoming Video Call');
-          //     store.dispatch(updateSipState({ key: "hasVideo", value: true }));
-          //   } else {
-          //     console.log('Incoming Audio Call');
-          //     store.dispatch(updateSipState({ key: "hasVideo", value: false }));
-          //   }
-          // } catch (e) {
-          //   console.error('Error: IncomingCall', e);
-          // }
+        
 
           if (AppISBackGround == true && Platform.OS == "android") {
             try {
@@ -353,6 +341,11 @@ class SipClinet {
               }
             } catch (error) {
               console.error('Error calling applyFlags:', error);
+            }
+          }else{
+            if(hasVideo){
+              store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: true }));
+              store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
             }
           }
 
@@ -370,7 +363,6 @@ class SipClinet {
                 store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
                 store.dispatch(updateSipState({ key: "newCallAdd", value: 0 }))
                 store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: false }));
-
               }
               // RNCallKeep.clearInitialEvents();
               if (invitation) {
@@ -426,9 +418,7 @@ class SipClinet {
 
                   if (Platform.OS == "android") {
                     console.log('RemoveIncomingScreen')
-
                     MyNativeModule.RemoveIncomingScreen()
-
                     setTimeout(() => {
                       MyNativeModule.removeFlags()
                     }, 2000);
@@ -436,7 +426,6 @@ class SipClinet {
                     incomingusebyClass.endIncomingcallAnswer();
                   }
                 }
-
                 break
               default:
               // console.log('Unknow Incomming Session state')
@@ -473,7 +462,7 @@ class SipClinet {
       let timeStore = ""
       const data = new Date()
       const sip_aor = `sip:${destination}@${store.getState().sip.Server}`
-      const uri = UserAgent.makeURI(sip_aor)//`sip:${destination}@${"s1.netcitrus.com:7443"}`)
+      const uri = UserAgent.makeURI(sip_aor)
       const _headers = []//['X-effective_caller_id_number:' + "1234455555"]
       const earlyMedia = true
       const inviteOptions = {
@@ -499,8 +488,6 @@ class SipClinet {
 
       // console.log("sip.userAgent", store.getState().sip.userAgent)
       const session = new Inviter(store.getState().sip.userAgent, uri, inviteOptions)
-
-
 
       store.dispatch(storeContactNumber({ key: "phoneNumber", value: destination }))
       store.dispatch(updateSipState({ key: "DialNumber", value: destination }))
@@ -548,7 +535,7 @@ class SipClinet {
             store.dispatch(updateSipState({ key: "CallAns", value: true }))
             break
           case SessionState.Established:
-            setupRemoteMedia(session, video)
+            // setupRemoteMedia(session, video)
             console.debug('Session has been ==> Established')
             console.debug('Session has been ==> Established')
             if (Platform.OS === 'ios') {
@@ -707,8 +694,7 @@ class SipClinet {
 
   accepctCall = () => {
     console.log("this.sessionCall", sessionCall)
-    // store.dispatch(updateSipState({ key: "CallScreenOpen", value: true }))
-    store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: true }))
+    store.dispatch(updateSipState({ key: "CallScreenOpen", value: true }))
     store.dispatch(updateSipState({ key: "CallAns", value: false }))
   }
 
@@ -825,8 +811,11 @@ class SipClinet {
       if (sessionID) {
         const session = allSession[sessionID]
         const pc = session.sessionDescriptionHandler.peerConnection
-        pc.getSenders().forEach(function (stream) {
-          stream.track.enabled = state;
+        pc.getSenders().forEach((sender) => {
+          console.log(`Sender track kind: ${sender.track.kind}`); // Log the track kind
+          if (sender.track.kind === 'audio') { // Check if the track is an audio track
+            sender.track.enabled = state; // Set enabled to true or false based on state
+          }
         })
       }
     } catch (error) {

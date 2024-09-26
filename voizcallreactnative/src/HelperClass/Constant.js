@@ -11,7 +11,7 @@ export const THEME_COLORS = {
 
 }
 
-export const API_BASE_URL = "https://panel-api.voizcall.com/v1.50.26/api"
+export const API_BASE_URL = "https://panel-api.voizcall.com/v1.50.32/api"
 
 export const IOSVersion = '1.0.2'
 export const AndroidVersion = "1.0.2"

@@ -9,44 +9,37 @@ import {
 import { React, useState } from 'react';
 import ic_video_disable from '../../../Assets/ic_video_disable.png'
 import ic_video_enable from '../../../Assets/ic_video_enable.png'
-import speaker_activate from '../../../Assets/speaker_activate.png'
-import ic_Tab_DialPad from '../../../Assets/ic_Tab_DialPad.png'
 import camera_switch from '../../../Assets/camera-switch.png'
-import store from '../../store/store';
-import { updateSipState } from '../../store/sipSlice';
 import { useSelector } from 'react-redux';
-import SipUA from '../../services/call/SipUA';
-import InCallManager from 'react-native-incall-manager';
 import ic_decline_call from '../../../Assets/ic_decline_call.png'
 
 const { width } = Dimensions.get('window')
 const imageSize = width * 0.17; // Example: 10% of screen width
 const itemSpacing = 40;      // Space between each Image+Text pair
 
-const VideoCallCutBtn = () => {
+const VideoCallCutBtn = ({ camaraDireationChange, toggleVideo,hangupCall}) => {
     const { CallInitial } = useSelector((state) => state.sip)
-    const [isVideoStop, setVideoStop] = useState(false)
+    const [isVideoStop, setVideoStop] = useState(true)
     const [isCamaraFlip, setCamaraFlip] = useState(false)
 
     const handelToggelVideo = () => {
         setVideoStop(!isVideoStop)
+        toggleVideo()
     }
 
     const handelToggelCamaraFlip = () => {
         setCamaraFlip(!isCamaraFlip)
+        camaraDireationChange()
     }
-
-    
 
     return (
         <View style={style.container}>
             <View style={[style.item]}>
                 <TouchableOpacity style={[style.imageVw, { opacity: !CallInitial ? 0.5 : 1 }]} disabled={!CallInitial} onPress={handelToggelVideo}>
                     {
-                        isVideoStop ?
+                        isVideoStop ? <Image source={ic_video_disable} style={style.image}>
+                            </Image> :
                             <Image source={ic_video_enable} style={style.image}>
-                            </Image>
-                            : <Image source={ic_video_disable} style={style.image}>
                             </Image>
                     }
                 </TouchableOpacity>
@@ -56,6 +49,7 @@ const VideoCallCutBtn = () => {
             </View>
             <View style={style.item}>
                 <TouchableOpacity style={[style.imageVw, { backgroundColor: 'red', opacity: !CallInitial ? 0.5 : 1 }]} disabled={!CallInitial} onPress={() => {
+                    hangupCall()
                 }}>
                     <Image source={ic_decline_call} style={{ height: "100%", width: '100%' }}>
                     </Image>

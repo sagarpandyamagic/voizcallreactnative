@@ -90,7 +90,7 @@ const PhoneOrEmailLogin = ({ navi }) => {
             }
         } catch (error) {
             setLoading(false);
-            console.log(error)
+            console.error(error)
         }
     }
 
