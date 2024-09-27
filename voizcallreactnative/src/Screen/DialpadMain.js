@@ -104,11 +104,16 @@ const DialpadMain = ({ navigation }) => {
 
     useEffect(() => {
         if (Platform.OS == "ios") {
-            setupCallKeep();
+            requestPermissions()
         }
         inCallManager.stopProximitySensor(); // Disable
         firstCallerIdSet()
     }, []);
+
+    const requestPermissions = async () => {
+        await requestUserPermission();
+        setupCallKeep();
+    };
 
     useEffect(() => {
         const subscription = AppState.addEventListener("change", nextAppState => {

@@ -76,7 +76,7 @@ const SettingdetailList = ({ title, image, navigation }) => {
         try {
             setLoading(true)
             setLogoutModalVisible(false);
-            SipUA.disconnectSocket()
+           
             console.log(data)
             const pram = {
                 "instance_id": await getStorageData(StorageKey.instance_id),
@@ -88,15 +88,16 @@ const SettingdetailList = ({ title, image, navigation }) => {
             console.log("PushSubscribeDelete", data)
             if (data.success) {
                 await RemoveStorageData(StorageKey.isLogin)
-                setLoading(false)
+                SipUA.disconnectSocket()
                 navigation.navigate('SplashScreen')
+                setLoading(false)
             } else {
                 setLoading(false)
             }
-
         } catch (error) {
-            console.log("handleLogouterror", error)
+            console.log(error)
         }
+
     };
 
     useEffect(() => {

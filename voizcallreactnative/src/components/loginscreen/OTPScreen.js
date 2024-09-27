@@ -22,6 +22,8 @@ const OTPScreen = ({ navigation, configData }) => {
         if (OptApiData.success) {
             setLoading(false)
             navigation.navigate('OTPFillScreen', { OTPInfo: configData.otp, OptApiData: OptApiData })
+        }else{
+            setLoading(false)
         }
     }
 

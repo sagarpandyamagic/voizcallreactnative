@@ -30,7 +30,6 @@ function AudioCallingScreen() {
         setshowtranspercall(!showtranspercall)
     }
 
-
     useEffect(() => {
         if (allSession && Object.keys(allSession).length == 1) {
             dispatch(updateSipState({ key: "ISConfrenceTransfer", value: false }))

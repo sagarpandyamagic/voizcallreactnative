@@ -535,7 +535,11 @@ class SipClinet {
             store.dispatch(updateSipState({ key: "CallAns", value: true }))
             break
           case SessionState.Established:
-            // setupRemoteMedia(session, video)
+            setupRemoteMedia(session, video)
+            setTimeout(() => {
+              inCallManager.setSpeakerphoneOn(true)
+              inCallManager.setSpeakerphoneOn(false)
+            }, 1000)
             console.debug('Session has been ==> Established')
             console.debug('Session has been ==> Established')
             if (Platform.OS === 'ios') {
@@ -698,17 +702,11 @@ class SipClinet {
     store.dispatch(updateSipState({ key: "CallAns", value: false }))
   }
 
-  disconnectSocket = () => {
-    // store.getState().sip.registerer.unregister()
-    // store.getState().sip.userAgent.stop().then(() => {
-    //   console.log("UserAgent stopped. Reconnecting...");
-    // });
+  disconnectSocket = async () => {
     try {
-      // Unregister from the SIP server
-      store.getState().sip.registerer.unregister();
+      store.getState().sip?.registerer?.unregister();
       console.log("Unregistration request sent");
-      // Stop the UserAgent (this closes the WebSocket connection)
-      store.getState().sip.userAgent.stop();
+      store.getState().sip?.userAgent?.stop();
       console.log("UserAgent stopped, socket closed");
     } catch (error) {
       console.error("Error during unregistration or stopping the UserAgent:", error);

@@ -2,6 +2,7 @@ import { React } from 'react';
 import { PermissionsAndroid } from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 
+
 export const IncomingcallPermission = () => {
     InCallManager.setSpeakerphoneOn(false);
     InCallManager.stop();

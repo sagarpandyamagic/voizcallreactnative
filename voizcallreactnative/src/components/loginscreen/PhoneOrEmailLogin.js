@@ -22,8 +22,8 @@ const PhoneOrEmailLogin = ({ navi }) => {
     const [deviceId, setdeviceId] = useState('');
     const [deviceModel, setdeviceModel] = useState('');
     const [systemName, setsystemName] = useState('');
-    const [username, setusername] = useState('voizCallS1@123');
-    const [userpassword, setuserpassword] = useState('voizCallS1@123');
+    const [username, setusername] = useState('');
+    const [userpassword, setuserpassword] = useState('');
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {

@@ -1,19 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { FlatList, View, Text, StyleSheet, SectionList, SafeAreaView, ScrollView } from 'react-native';
 import Contacts from 'react-native-contacts';
 import { PermissionsAndroid } from 'react-native';
 import ListItem from './ListItem';
+import debounce from 'lodash.debounce';
 
 const DialpadContactSearch = ({ search,setNumber,numberMatch }) => {
 
+   
     let [contacts, setContacts] = useState([]);
     let [tempcontacts, settempContacts] = useState([]);
 
     useEffect(() => {
-        GetcontactPermissions()
+        GetcontactPermissions();
     }, []);
 
-    const GetcontactPermissions = async () =>{
+    const GetcontactPermissions = async () => {
         if (Platform.OS === 'android') {
             const granted = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_CONTACTS);
             if (!granted) {
@@ -25,103 +27,70 @@ const DialpadContactSearch = ({ search,setNumber,numberMatch }) => {
         }
     }
 
+    const loadContacts = async () => {
+        try {
+            const allContacts = await Contacts.getAll();
+            if (allContacts.length > 0) {
+                const validContacts = allContacts.filter(contact => contact.givenName);
+                validContacts.sort((a, b) => a.givenName.localeCompare(b.givenName));
+                setContacts(validContacts);
+                settempContacts(validContacts);
+            }
+        } catch (error) {
+            Alert.alert('Error', 'Failed to load contacts');
+            console.warn('Error loading contacts:', error.message);
+        }
+    };
+
     const getData = () => {
-        let contactsarray = []
-        if (search.toString() != "") {
+        let contactsarray = [];
+        if (search.toString() !== "") {
             let aCode = "A".charCodeAt(0);
             for (let i = 0; i < 26; i++) {
-                let currChat = String.fromCharCode(aCode + i)
+                let currChat = String.fromCharCode(aCode + i);
                 let obj = {
                     title: currChat,
-                }
-                let currContacs = contacts.filter(item => {
-                    return JSON.stringify(item.givenName[0]) == JSON.stringify(currChat);
-                })
-                if (currContacs.length > 0) {
-                    currContacs.sort((a, b) => JSON.stringify(a.givenName).localeCompare(JSON.stringify(b.givenName)));
-                    obj.data = currContacs
-                    contactsarray.push(obj)
+                };
+                let currContacts = contacts.filter(item => item.givenName[0].toUpperCase() === currChat);
+                if (currContacts.length > 0) {
+                    currContacts.sort((a, b) => a.givenName.localeCompare(b.givenName));
+                    obj.data = currContacts;
+                    contactsarray.push(obj);
                 }
             }
         }
-        return contactsarray
-    }
-
-    const loadContacts = () => {
-          Contacts.getAll()
-            .then(contacts => {
-              if (contacts.length === 0) {
-                console.log('No contacts found');
-              } else {
-                contacts = contacts.filter(contact => contact.givenName);
-                // Sort contacts by givenName
-                contacts.sort((a, b) => {
-                  const nameA = a.givenName.toLowerCase();
-                  const nameB = b.givenName.toLowerCase();
-                  return nameA.localeCompare(nameB);
-                });
-        
-                
-
-                setContacts(contacts);
-                settempContacts(contacts)
-              }
-              setLoading(false);
-            })
-            .catch(e => {
-              setLoading(false)
-              // alert('Permission to access contacts was denied',e);
-              Alert.alert('Error', 'Failed to load contacts');
-              console.warn('Error loading contacts:', error.message);
-            });
-
-
+        return contactsarray;
     };
 
     useEffect(() => {
-        setContacts([]);
-        setContacts(tempcontacts)
-        searchContact(search.join(''))
-        console.log("Search->",search.join(''))
+        searchContact(search.join(''));
     }, [search]);
 
-
     const searchContact = (text) => {
-        console.log("text->",text)
-        const phoneNumberRegex = /\b[\+]?[(]?[0-9]{2,6}[)]?[-\s\.]?[-\s\/\.0-9]{3,15}\b/m;
         if (text === '' || text === null) {
             setContacts([]);
         } else {
-            // If search text is not a phone number, search by name
-            if (contacts && contacts.length > 0) {
-                let filteredContacts = tempcontacts.filter((contact) => {
-                    const lowerText = text.toLowerCase();
-                    const fullName = `${contact.givenName} ${contact.familyName}`.toLowerCase();
-                    const matchesName = fullName.includes(lowerText);
-                    const matchesPhone = contact.phoneNumbers.some(phone => phone.number.includes(text));
-                    return matchesName || matchesPhone;
-                });
-                if(filteredContacts.length == 1 ){
-                    console.log("filteredContacts",search)
-                    const contact = filteredContacts[0];
-                    console.log("filteredContacts",contact)
-                    const matchingPhoneNumber = contact.phoneNumbers.find(phone => 
-                        phone.number.replace(/[^0-9+]/g, '') === text.replace(/[^0-9+]/g, '')
-                    );
-                    if (matchingPhoneNumber) {
-                        numberMatch(true);
-                    } else {
-                        numberMatch(false);
-                    }
-                }else{
-                    numberMatch(false)
-                }
-                setContacts(filteredContacts);
-                // console.log("Filtered contacts:", filteredContacts);
+            let filteredContacts = tempcontacts.filter(contact => {
+                const lowerText = text.toLowerCase();
+                const fullName = `${contact.givenName} ${contact.familyName}`.toLowerCase();
+                const matchesName = fullName.includes(lowerText);
+                const matchesPhone = contact.phoneNumbers.some(phone => phone.number.includes(text));
+                return matchesName || matchesPhone;
+            });
+
+            if (filteredContacts.length === 1) {
+                const contact = filteredContacts[0];
+                const matchingPhoneNumber = contact.phoneNumbers.find(phone => 
+                    phone.number.replace(/[^0-9+]/g, '') === text.replace(/[^0-9+]/g, '')
+                );
+                numberMatch(!!matchingPhoneNumber);
+            } else {
+                numberMatch(false);
             }
+
+            setContacts(filteredContacts);
         }
     };
-
 
     return (
         <SafeAreaView style={styles.container}>

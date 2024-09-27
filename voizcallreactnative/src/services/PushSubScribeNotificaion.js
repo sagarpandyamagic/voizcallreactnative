@@ -37,7 +37,7 @@ export const PushSubScribeNotificaion = async (configData) => {
             "sip_password": await getConfigParamValue(userprofilealias.sip_password),
             "sip_ha1": await getConfigParamValue(userprofilealias.sip_password), // value pass temp
             "sip_port": await getConfigParamValue(userprofilealias.sip_sipPort),
-            "sip_protocol": "tls",//await getConfigParamValue(userprofilealias.sip_sipProtocol),
+            "sip_protocol": await getConfigParamValue(userprofilealias.sip_sipProtocol),
             "outbound_proxy": await getConfigParamValue(userprofilealias.sip_outboundProxyServer),
             "ob_proxy_port": await getConfigParamValue(userprofilealias.sip_outboundProxyPort)
         }

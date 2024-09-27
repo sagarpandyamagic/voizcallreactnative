@@ -49,7 +49,7 @@ import SipUA from './src/services/call/SipUA';
 import { getConfigParamValue } from './src/data/profileDatajson';
 import VideoCallScreen from './src/components/dialscreen/VideoCallScreen';
 import WebSocketTest from './src/components/settingscreen/WebSocketTest';
-import inCallManager from 'react-native-incall-manager';
+import InCallManager from 'react-native-incall-manager';
 function App() {
   const Stack = createStackNavigator();
   const { MyNativeModule } = NativeModules;
@@ -139,18 +139,16 @@ function App() {
 
 
   useEffect(() => {
-    inCallManager.stopProximitySensor(); // Disable
+    InCallManager.stopProximitySensor(); // Disable
     permissionSetup()
   }, [])
 
   const permissionSetup = async () => {
      await requestUserPermission()
     if (Platform.OS != "android") {
-      await FCMDelegateMethod()
-      await requestPermissions()
+      voipConfig();
+      VoipPushNotification.registerVoipToken();
       console.log("Platform.OS", Platform.OS)
-      Platform.OS == "ios" && VoipPushNotification.registerVoipToken();
-      Platform.OS == "ios" && voipConfig();
     } else {
       await checkPermission();
       setTimeout(() => {
@@ -272,9 +270,9 @@ function App() {
           <View>
             <AudioCallingScreen />
           </View>
-          <View>
+          {/* <View>
             <VideoCallScreen />
-          </View>
+          </View> */}
       </NavigationContainer>
       </CallTimerDuraionProvider>
     </SafeAreaProvider>

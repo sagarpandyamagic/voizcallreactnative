@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, Dimensions, Modal, PermissionsAndroid, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Dimensions, Modal, PermissionsAndroid, Platform, StyleSheet, Text, TouchableOpacity, View, SafeAreaView, Button } from 'react-native';
 import { useSelector } from 'react-redux';
 import { SessionState } from 'sip.js';
 import { AppCommon_Font, THEME_COLORS } from '../../HelperClass/Constant';
 import VideoCallFirstBtn from '../videocallscreen/VideoCallFirstBtn';
 import VideoCallCutBtn from '../videocallscreen/VideoCallCutBtn';
-import { mediaDevices, MediaStream, RTCView } from 'react-native-webrtc';
+import { mediaDevices, MediaStream, RTCPeerConnection, RTCView } from 'react-native-webrtc';
 import { useCallTimerContext } from '../../hook/useCallTimer';
 import InCallManager from 'react-native-incall-manager';
 
@@ -19,7 +19,6 @@ const VideoCallScreen = () => {
   const [isFrontCamera, setIsFrontCamera] = useState(true); // State to track camera direction
   const [isVideoEnabled, setIsVideoEnabled] = useState(false);
   const [isButtonVwVisible, setIsButtonVwVisible] = useState(true);
-
 
 
   const logError = useCallback((message, error) => {
@@ -41,9 +40,7 @@ const VideoCallScreen = () => {
           const pc = session.sessionDescriptionHandler?.peerConnection;
           const remoteStream = new MediaStream();
           let hasVideoTrack = false;
-          // pc.getReceivers().forEach((receiver) => {
-          //     remoteStream.addTrack(receiver.track);
-          // });
+
           pc.getReceivers().forEach((receiver) => {
             if (receiver.track) {
               remoteStream.addTrack(receiver.track);
@@ -78,11 +75,11 @@ const VideoCallScreen = () => {
     }
   }, [remoteStream]);
 
-  useEffect(() => {
-    InCallManager.start({ media: 'video' });  // Change 'audio' to 'video'
-    InCallManager.setForceSpeakerphoneOn(true);
-    return () => InCallManager.stop();
-  }, []);
+  // useEffect(() => {
+  //   InCallManager.start({ media: 'video' });  // Change 'audio' to 'video'
+  //   InCallManager.setForceSpeakerphoneOn(true);
+  //   return () => InCallManager.stop();
+  // }, []);
 
   useEffect(() => {
     if (session) {
@@ -126,11 +123,9 @@ const VideoCallScreen = () => {
     }
   }, [remoteStream]);
 
-
   const toggleButtonVwVisibility = () => {
     setIsButtonVwVisible(prevState => !prevState);
   };
-
 
   const startLocalStream = async (facingMode = 'user') => {
     try {
@@ -148,25 +143,46 @@ const VideoCallScreen = () => {
         },
       };
       const stream = await mediaDevices.getUserMedia(constraints);
-      setLocalStream(stream);
       if (session && session.sessionDescriptionHandler && session.sessionDescriptionHandler.peerConnection) {
         stream.getTracks().forEach(track => {
           session.sessionDescriptionHandler.peerConnection.addTrack(track, stream);
         });
       }
-      // stream.getTracks().forEach(track => session.sessionDescriptionHandler?.peerConnection?.addTrack(track, stream));
-      // setLocalStream(stream);
+      setLocalStream(stream);
     } catch (error) {
       logError('Error getting user media', error);
     }
   };
 
+  const updateTracks = (newStream) => {
+    if (session && session.sessionDescriptionHandler && session.sessionDescriptionHandler.peerConnection) {
+      const pc = session.sessionDescriptionHandler.peerConnection;
+
+      newStream.getTracks().forEach(track => {
+        const sender = pc.getSenders().find(s => s.track && s.track.kind === track.kind);
+        if (sender) {
+          sender.replaceTrack(track);
+        } else {
+          pc.addTrack(track, newStream);
+        }
+      });
+    }
+  };
+
+
   // Function to toggle the camera direction
-  const toggleCamera = () => {
+  const toggleCamera = async () => {
     setIsFrontCamera((prev) => !prev); // Toggle the state
     const newFacingMode = isFrontCamera ? 'environment' : 'user';
-    startLocalStream(newFacingMode); // Restart the stream with the new camera
+    const newStream = await mediaDevices.getUserMedia({
+      audio: true,
+      video: { facingMode: newFacingMode },
+    });
+    setLocalStream(newStream);
+    updateTracks(newStream);// Restart the stream with the new camera
   };
+
+
 
   const toggleVideo = async () => {
     if (localStream) {
@@ -193,26 +209,26 @@ const VideoCallScreen = () => {
       >
         <View style={styles.container}>
           <TouchableOpacity
-            style={[styles.overlay,{ bottom: isButtonVwVisible ? '50%' : 0}]}
+            style={[styles.overlay, { bottom: isButtonVwVisible ? '50%' : 0 }]}
             activeOpacity={1}
             onPress={toggleButtonVwVisibility}
           />
           {
             remoteStream &&
             <RTCView
-            streamURL={remoteStream.toURL()}
-            style={{
-              width: "100%",
-              height: '100%',
-              backgroundColor: 'blue',
-              
-            }}
-            objectFit="cover"
-            zOrder={0}
-            mirror={false}
-            onError={(e) => console.error('RTCView error:', e)}
-            onLoadStart={() => console.log("RTCView load started")}
-            onLoad={() => console.log("RTCView loaded")}
+              streamURL={remoteStream.toURL()}
+              style={{
+                width: "100%",
+                height: '100%',
+                backgroundColor: 'blue',
+
+              }}
+              objectFit="cover"
+              zOrder={0}
+              mirror={false}
+              onError={(e) => console.error('RTCView error:', e)}
+              onLoadStart={() => console.log("RTCView load started")}
+              onLoad={() => console.log("RTCView loaded")}
             />
           }
           <View style={{ position: 'absolute', top: "5%", right: "3%", height: "22%", width: "40%" }}>
@@ -227,26 +243,24 @@ const VideoCallScreen = () => {
             }
           </View>
           {isButtonVwVisible && (
-          <View style={[styles.buttonVw, { display: isButtonVwVisible ? 'flex' : 'none' }]}>
-            <View style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'absolute', top: 20, alignSelf: 'center' }}>
-              <Text style={[styles.Text, { fontSize: 15, marginTop: 15 }]}>
-                {DialNumber}
-              </Text>
-              <Text style={[styles.Text, { fontSize: 15 }]}>
-                {callTimer == "00:00:00" ? (CallInitial == false ? "Connecting....." : "Calling....") : callTimer}
-              </Text>
+            <View style={[styles.buttonVw, { display: isButtonVwVisible ? 'flex' : 'none' }]}>
+              <View style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'absolute', top: 20, alignSelf: 'center' }}>
+                <Text style={[styles.Text, { fontSize: 15, marginTop: 15 }]}>
+                  {DialNumber}
+                </Text>
+                <Text style={[styles.Text, { fontSize: 15 }]}>
+                  {callTimer == "00:00:00" ? (CallInitial == false ? "Connecting....." : "Calling....") : callTimer}
+                </Text>
+              </View>
+              <VideoCallFirstBtn />
+              <VideoCallCutBtn camaraDireationChange={toggleCamera} toggleVideo={toggleVideo} hangupCall={hangupCall} />
             </View>
-            <VideoCallFirstBtn />
-            <VideoCallCutBtn camaraDireationChange={toggleCamera} toggleVideo={toggleVideo} hangupCall={hangupCall} />
-          </View>
-            )}
+          )}
         </View>
       </Modal>
     </View>
   );
 };
-
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -284,7 +298,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-   
+
     zIndex: 1,
   },
 });
