@@ -113,8 +113,9 @@ const EnterPriseList = ({ navigation }) => {
                     isfavourite: "0" // Or determine based on some logic
                 };
             });
-
             setContacts(transformedContacts)
+            setLoading(false)
+        }else{
             setLoading(false)
         }
 

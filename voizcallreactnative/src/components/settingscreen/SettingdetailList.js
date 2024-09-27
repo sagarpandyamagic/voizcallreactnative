@@ -87,8 +87,8 @@ const SettingdetailList = ({ title, image, navigation }) => {
             const data = await DLETEAPICAll(APIURL.PushSubscribeDelete, pram)
             console.log("PushSubscribeDelete", data)
             if (data.success) {
-                await RemoveStorageData(StorageKey.isLogin)
                 SipUA.disconnectSocket()
+                await RemoveStorageData(StorageKey.isLogin)
                 navigation.navigate('SplashScreen')
                 setLoading(false)
             } else {

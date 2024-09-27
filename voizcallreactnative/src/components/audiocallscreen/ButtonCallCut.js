@@ -39,13 +39,12 @@ const ButtonCallCut = () => {
             InCallManager.setSpeakerphoneOn(false);
             InCallManager.stop();
         }
-
     }
 
     return (
         <View style={style.container}>
             <View style={style.item}>
-                <TouchableOpacity style={[style.imageVw, { backgroundColor: 'red' ,opacity: !CallInitial ? 0.5 : 1}]} disabled={!CallInitial} onPress={handelToggleHungup}>
+                <TouchableOpacity style={[style.imageVw, { backgroundColor: 'red'}]} disabled={!CallInitial} onPress={handelToggleHungup}>
                     <Image source={ic_decline_call} style={style.image}>
                     </Image>
                 </TouchableOpacity>

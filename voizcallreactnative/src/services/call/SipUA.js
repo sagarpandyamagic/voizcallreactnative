@@ -328,7 +328,7 @@ class SipClinet {
           const hasVideos = invitation.request.body.includes('m=video');
           store.dispatch(updateSipState({ key: "hasVideo", value: hasVideos }));
 
-          const { hasVideo } = store.getState().sip
+          const { hasVideo,IncomingCallNumber } = store.getState().sip
           console.log('Call accepted hasVideo',hasVideo);
         
 
@@ -413,7 +413,9 @@ class SipClinet {
                   store.dispatch(updateSipState({ key: "CallInitial", value: false }))
                   store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: false }));
                   store.dispatch(updateSipState({ key: "hasVideo", value: false }));
+                  store.dispatch(updateSipState({ key: "IncomingCallNumber", value: "" }));
 
+                  
                   inCallManager.stopProximitySensor(); // Disable
 
                   if (Platform.OS == "android") {
@@ -567,7 +569,7 @@ class SipClinet {
               store.dispatch(updateSipState({ key: "Caller_Name", value: "" }))
               store.dispatch(updateSipState({ key: "CallInitial", value: false }));
               store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: false }));
-
+              store.dispatch(updateSipState({ key: "IncomingCallNumber", value: "" }));
               console.log("session.id", session.id)
 
               inCallManager.stopProximitySensor();

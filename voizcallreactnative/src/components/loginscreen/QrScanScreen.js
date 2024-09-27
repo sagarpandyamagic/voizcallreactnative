@@ -32,11 +32,19 @@ const QrScanScreen = ({ navigation }) => {
   const [systemName, setsystemName] = useState('');
   const [loading, setLoading] = useState(false);
   const [isCameraOn, setIsCameraOn] = useState(true);
+  const [scanned, setScanned] = useState(false); // Track scan status
 
 
   useEffect(() => {
     getDeviceId()
-  }, [])
+    const unsubscribe = navigation.addListener('focus', () => {
+      setIsCameraOn(true);  // Reset camera
+      setScanned(false);    // Allow re-scanning
+    });
+
+    return unsubscribe;
+
+  }, [navigation])
 
   const toggleFlashlight = () => {
     setFlashMode((prevFlashMode) =>
@@ -46,7 +54,6 @@ const QrScanScreen = ({ navigation }) => {
     );
   };
 
- 
 
   async function getDeviceId() {
     try {

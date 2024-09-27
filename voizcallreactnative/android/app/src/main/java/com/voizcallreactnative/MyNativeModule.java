@@ -300,12 +300,6 @@ public class MyNativeModule extends ReactContextBaseJavaModule {
         reactContext.startActivity(intent);
     }
 
-    // @ReactMethod
-    // public void RemoveIncomingScreen() {
-    // Log.d("RemoveIncomingScreen", "RemoveIncomingScreen");
-    // NativeActivity.activity.onBackPressed();
-    // // NativeActivity.activity.finish();
-    // }
 
     @ReactMethod
     public void RemoveIncomingScreen() {

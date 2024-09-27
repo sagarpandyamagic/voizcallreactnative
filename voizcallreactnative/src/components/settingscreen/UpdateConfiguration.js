@@ -21,7 +21,9 @@ export const UpdateConfiguration = async () => {
         "aor": sip_username_with_instance,
         "action": "disable",
     }
+    console.log(pram)
     const dataRegister = await POSTAPICALL(APIURL.REGISTER, pram)
+    console.log("dataRegister", dataRegister)
     if (dataRegister.success) {
         const prampushsubscribe = {
             "instance_id": instanceId,

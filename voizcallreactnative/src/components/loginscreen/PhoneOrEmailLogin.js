@@ -17,6 +17,9 @@ import { inticalluserData } from '../../store/sipSlice';
 import { PushSubScribeNotificaion } from '../../services/PushSubScribeNotificaion';
 import LodingJson from '../../HelperClass/LodingJson';
 import { showAlert } from '../../HelperClass/CommonAlert';
+import ic_eye_open from '../../../Assets/ic_eye_opne.png';
+import ic_eye_closed from '../../../Assets/ic_eye_close.png';
+
 
 const PhoneOrEmailLogin = ({ navi }) => {
     const [deviceId, setdeviceId] = useState('');
@@ -25,6 +28,7 @@ const PhoneOrEmailLogin = ({ navi }) => {
     const [username, setusername] = useState('');
     const [userpassword, setuserpassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false); // New state for password visibility
 
     useEffect(() => {
         getDeviceId()
@@ -65,8 +69,8 @@ const PhoneOrEmailLogin = ({ navi }) => {
             console.log("configInfo", configInfo)
 
             if (configInfo.success) {
-                console.log("configInfo.access_token",configInfo.data.access_token)
-                console.log("configInfo.data.data",configInfo.data.data)
+                console.log("configInfo.access_token", configInfo.data.access_token)
+                console.log("configInfo.data.data", configInfo.data.data)
                 await AppStoreData(StorageKey.userData, configInfo.data.data)
                 await AppStoreData(StorageKey.access_token, configInfo.data.access_token)
                 await AppStoreData(StorageKey.auth_type, configInfo.data.data.auth_type)
@@ -101,19 +105,30 @@ const PhoneOrEmailLogin = ({ navi }) => {
             }
             <View style={styles.InputTextView}>
                 <View style={styles.InputTextSideImgView}>
-                    <Image style={{ height: "45%", width: "40%" ,tintColor:THEME_COLORS.black}}
+                    <Image style={{ height: "45%", width: "40%", tintColor: THEME_COLORS.black }}
                         source={icUser} />
                 </View>
-                <TextInput style={styles.InpuText} placeholder='Enter user name' placeholderTextColor={THEME_COLORS.black} defaultValue={username}  onChangeText={(text) => setusername(text)} te>
+                <TextInput style={styles.InpuText} placeholder='Enter user name' placeholderTextColor={THEME_COLORS.black} defaultValue={username} onChangeText={(text) => setusername(text)} te>
                 </TextInput>
             </View>
             <View style={styles.InputTextView}>
                 <View style={styles.InputTextSideImgView}>
-                    <Image style={{ height: "45%", width: "40%" ,tintColor:THEME_COLORS.black}}
-                        source={ic_padlock} />
+                    <Image style={{ height: "45%", width: "40%", tintColor: THEME_COLORS.black }} source={ic_padlock} />
                 </View>
-                <TextInput style={styles.InpuText} placeholder='Password' placeholderTextColor={THEME_COLORS.black} defaultValue={userpassword}  onChangeText={(text) => setuserpassword(text)}>
-                </TextInput>
+                <TextInput
+                    style={styles.InpuText}
+                    placeholder='Password'
+                    placeholderTextColor={THEME_COLORS.black}
+                    secureTextEntry={!showPassword} // Toggle password visibility
+                    defaultValue={userpassword}
+                    onChangeText={(text) => setuserpassword(text)}
+                />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+                    <Image
+                        source={showPassword ? ic_eye_open : ic_eye_closed} // Use appropriate eye icon
+                        style={{ width: 24, height: 24, tintColor: THEME_COLORS.black }}
+                    />
+                </TouchableOpacity>
             </View>
             <View style={[styles.InputTextView, { borderWidth: 0 }]} >
                 <TouchableOpacity style={styles.linearGradient} onPress={LoginAPICall}>
@@ -182,6 +197,16 @@ const styles = StyleSheet.create({
         right: 25,
         justifyContent: 'center',
         alignItems: 'center',
-    }
+    },
+    eyeIcon: {
+        position: 'absolute',
+        right: 10, // Adjust this value based on your design
+        top: '50%',
+        transform: [{ translateY: -12 }], // To center the icon vertically
+        width: 24, // Size of the icon (adjust as necessary)
+        height: 24,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 });
 export default PhoneOrEmailLogin;

@@ -158,6 +158,8 @@ const EPriceAllContact = ({ navigation }) => {
             setLoading(false)
 
             //    loadContacts();
+        }else{
+            setLoading(false)
         }
     };
 

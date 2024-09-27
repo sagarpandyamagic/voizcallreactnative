@@ -1,13 +1,9 @@
 import {
     View,
     StyleSheet,
-    PermissionsAndroid,
     Platform,
     Text,
-    FlatList,
     AppState,
-    Button,
-    ImageBackground,
     Image
 } from 'react-native';
 
@@ -24,21 +20,17 @@ import { useCallTimerContext } from '../hook/useCallTimer';
 import DialpadContactSearch from '../components/contactscreen/DialpadContactSearch';
 import CallingShowInfo from '../components/dialscreen/CallingShowInfo';
 import CallTransferButton from '../components/dialscreen/CallTransferButton';
-import AttendedTransferButton from '../components/dialscreen/AttendedTransferButton';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import CallIDList from '../components/dialscreen/CallIDList';
-import { FCMDelegateMethod, requestUserPermission } from '../services/FirebaseConfig';
+import { requestUserPermission } from '../services/FirebaseConfig';
 import { setupCallKeep } from '../services/Callkeep/CallkeepSeup';
-import { voipConfig } from '../services/voipConfig';
 import { updateSipState } from '../store/sipSlice';
 import inCallManager from 'react-native-incall-manager';
 import Contacts from 'react-native-contacts';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import { APIURL } from '../HelperClass/APIURL';
 import { getConfigParamValue } from '../data/profileDatajson';
 import SipUA from '../services/call/SipUA';
 import voizLogo from '../../Assets/voizcall_logo.png'
-import voizLogoicon from '../../Assets/voizcall_icon.png'
 
 const DialpadMain = ({ navigation }) => {
     const incomeingCall = false
@@ -116,20 +108,20 @@ const DialpadMain = ({ navigation }) => {
     };
 
     useEffect(() => {
-        const subscription = AppState.addEventListener("change", nextAppState => {
-            setAppState(nextAppState);
-            if (nextAppState === "active") {
-                dispatch(updateSipState({ key: "AppISBackGround", value: true }))
-                console.log("App is in the foreground");
-            } else {
-                dispatch(updateSipState({ key: "AppISBackGround", value: false }))
-                console.log("App is in the background");
-            }
-        });
-        console.log("store.getState().sip.AppISBackGround", AppISBackGround)
-        return () => {
-            subscription.remove();
-        };
+        // const subscription = AppState.addEventListener("change", nextAppState => {
+        //     setAppState(nextAppState);
+        //     if (nextAppState === "active") {
+        //         dispatch(updateSipState({ key: "AppISBackGround", value: true }))
+        //         console.log("App is in the foreground");
+        //     } else {
+        //         dispatch(updateSipState({ key: "AppISBackGround", value: false }))
+        //         console.log("App is in the background");
+        //     }
+        // });
+        // console.log("store.getState().sip.AppISBackGround", AppISBackGround)
+        // return () => {
+        //     subscription.remove();
+        // };
     }, []);
 
     const firstCallerIdSet = async () => {
