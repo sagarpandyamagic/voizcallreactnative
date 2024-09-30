@@ -1,14 +1,18 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { FlatList, View, Text, StyleSheet, SectionList, SafeAreaView, ScrollView } from 'react-native';
+import { FlatList, View, Text, StyleSheet, SectionList, SafeAreaView, ScrollView, VirtualizedList } from 'react-native';
 import Contacts from 'react-native-contacts';
 import { PermissionsAndroid } from 'react-native';
 import ListItem from './ListItem';
 import debounce from 'lodash.debounce';
 
-const DialpadContactSearch = ({ search,setNumber,numberMatch }) => {
+const DialpadContactSearch = ({ search, setNumber, numberMatch }) => {
 
     let [contacts, setContacts] = useState([]);
     let [tempcontacts, settempContacts] = useState([]);
+    const getItemCount = (data) => data.length;
+    const getItem = (data, index) => data[index];
+    const [page, setPage] = useState(1);
+    const CONTACTS_PER_PAGE = 50;
 
     useEffect(() => {
         GetcontactPermissions();
@@ -30,15 +34,15 @@ const DialpadContactSearch = ({ search,setNumber,numberMatch }) => {
         try {
             const allContacts = await Contacts.getAll();
             if (allContacts.length > 0) {
-                const validContacts = allContacts.filter(contact => contact.givenName);
-                validContacts.sort((a, b) => a.givenName.localeCompare(b.givenName));
-                setContacts(validContacts);
-                settempContacts(validContacts);
+              const validContacts = allContacts
+                .filter(contact => contact.givenName)
+                .sort((a, b) => a.givenName.localeCompare(b.givenName));
+              settempContacts(validContacts);
+              setContacts(validContacts.slice(0, CONTACTS_PER_PAGE));
             }
-        } catch (error) {
-            Alert.alert('Error', 'Failed to load contacts');
+          } catch (error) {
             console.warn('Error loading contacts:', error.message);
-        }
+          }
     };
 
     const getData = () => {
@@ -65,31 +69,38 @@ const DialpadContactSearch = ({ search,setNumber,numberMatch }) => {
         searchContact(search.join(''));
     }, [search]);
 
-    const searchContact = (text) => {
+    const searchContact = useCallback((text) => {
         if (text === '' || text === null) {
-            setContacts([]);
+          setContacts(tempcontacts.slice(0, CONTACTS_PER_PAGE));
+          setPage(1);
         } else {
-            let filteredContacts = tempcontacts.filter(contact => {
-                const lowerText = text.toLowerCase();
-                const fullName = `${contact.givenName} ${contact.familyName}`.toLowerCase();
-                const matchesName = fullName.includes(lowerText);
-                const matchesPhone = contact.phoneNumbers.some(phone => phone.number.includes(text));
-                return matchesName || matchesPhone;
-            });
-
-            if (filteredContacts.length === 1) {
-                const contact = filteredContacts[0];
-                const matchingPhoneNumber = contact.phoneNumbers.find(phone => 
-                    phone.number.replace(/[^0-9+]/g, '') === text.replace(/[^0-9+]/g, '')
-                );
-                numberMatch(!!matchingPhoneNumber);
-            } else {
-                numberMatch(false);
-            }
-
-            setContacts(filteredContacts);
+          const filteredContacts = tempcontacts.filter(contact => {
+            const lowerText = text.toLowerCase();
+            const fullName = `${contact.givenName} ${contact.familyName}`.toLowerCase();
+            return fullName.includes(lowerText) || 
+                   contact.phoneNumbers.some(phone => phone.number.includes(text));
+          }).slice(0, CONTACTS_PER_PAGE);
+      
+          setContacts(filteredContacts);
+          numberMatch(filteredContacts.length === 1 && filteredContacts[0].phoneNumbers.some(phone => 
+            phone.number.replace(/[^0-9+]/g, '') === text.replace(/[^0-9+]/g, '')
+          ));
         }
-    };
+      }, [tempcontacts, numberMatch]);
+
+    const renderItem = useCallback(({ item }) => (
+        <ListItem
+            key={item.recordID}
+            item={item}
+            textColor={'W'}
+            onPress={() => {
+                if (item.phoneNumbers && item.phoneNumbers.length > 0) {
+                    const number = item.phoneNumbers[0].number.replace(/[^0-9+]/g, '');
+                    setNumber([number]);
+                }
+            }}
+        />
+    ), [setNumber]);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -97,7 +108,7 @@ const DialpadContactSearch = ({ search,setNumber,numberMatch }) => {
                 contentContainerStyle={styles.scrollView}
             >
                 <View >
-                    <SectionList
+                    {/* <SectionList
                         sections={getData()}
                         renderItem={(contact) => {
                             return (
@@ -119,7 +130,21 @@ const DialpadContactSearch = ({ search,setNumber,numberMatch }) => {
                             );
                         }}
                         keyExtractor={item => item.recordID}
-                    />
+                    /> */}
+
+                   {
+                    search.length > 0 &&  <VirtualizedList
+                    data={contacts}
+                    renderItem={renderItem}
+                    keyExtractor={item => item.recordID}
+                    getItemCount={getItemCount}
+                    getItem={getItem}
+                    initialNumToRender={10}
+                    maxToRenderPerBatch={10}
+                    updateCellsBatchingPeriod={50}
+                    windowSize={5}
+                />
+                   } 
                 </View>
             </ScrollView>
         </SafeAreaView>

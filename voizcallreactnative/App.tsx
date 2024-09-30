@@ -270,9 +270,9 @@ function App() {
           <View>
             <AudioCallingScreen />
           </View>
-          {/* <View>
+          <View>
             <VideoCallScreen />
-          </View> */}
+          </View>
       </NavigationContainer>
       </CallTimerDuraionProvider>
     </SafeAreaProvider>

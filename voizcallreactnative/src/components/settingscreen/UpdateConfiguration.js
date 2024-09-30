@@ -8,6 +8,7 @@ import store from "../../store/store";
 import { PushSubScribeNotificaion } from "../../services/PushSubScribeNotificaion";
 import SipUA from "../../services/call/SipUA";
 import { inticalluserData } from "../../store/sipSlice";
+import { showAlert } from "../../HelperClass/CommonAlert";
 
 
 export const UpdateConfiguration = async () => {
@@ -79,15 +80,13 @@ export const UpdateConfiguration = async () => {
                     console.log("error", e)
                 }
             } else {
-                console.log("profileInfo", profileInfo)
+                showAlert(profileInfo.message)
+                console.log("profileInfo", profileInfo.message)
             }
         }
         else {
             console.log("pushsubscribe", pushsubscribe)
         }
-
-
-
     }
     else {
         console.log("dataRegister", dataRegister)

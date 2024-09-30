@@ -53,6 +53,12 @@ const VideoCallScreen = () => {
           if (remoteStream.getTracks().length > 0) {
             console.log("Remote stream created with tracks:", remoteStream.getTracks().length);
             setRemoteStream(remoteStream);
+
+            setTimeout(() => {
+              setIsFrontCamera(false)
+              toggleCamera()
+            }, 1000);
+
           } else {
             console.warn("No tracks found in remote stream");
           }
@@ -75,6 +81,11 @@ const VideoCallScreen = () => {
     }
   }, [remoteStream]);
 
+  // useEffect(() => {
+  //   InCallManager.start({ media: 'video' });  // Change 'audio' to 'video'
+  //   InCallManager.setForceSpeakerphoneOn(true);
+  //   return () => InCallManager.stop();
+  // }, []);
 
   useEffect(() => {
     if (session) {
@@ -122,7 +133,7 @@ const VideoCallScreen = () => {
     setIsButtonVwVisible(prevState => !prevState);
   };
 
-  const startLocalStream = async (facingMode = 'user') => {
+  const startLocalStream = async (facingMode = 'environment') => {
     try {
       if (Platform.OS === 'android') {
         const hasPermission = await requestPermissions();
@@ -134,7 +145,7 @@ const VideoCallScreen = () => {
       const constraints = {
         audio: true,
         video: {
-          facingMode: isFrontCamera ? 'user' : 'environment', // Use the state to determine initial camera
+          facingMode: facingMode, // 'user' for front camera, 'environment' for back camera
         },
       };
       const stream = await mediaDevices.getUserMedia(constraints);
@@ -144,6 +155,11 @@ const VideoCallScreen = () => {
         });
       }
       setLocalStream(stream);
+
+      // setTimeout(() => {
+      //   setIsFrontCamera(false)
+      //   toggleCamera()
+      // }, 2000);
     } catch (error) {
       logError('Error getting user media', error);
     }
@@ -152,7 +168,6 @@ const VideoCallScreen = () => {
   const updateTracks = (newStream) => {
     if (session && session.sessionDescriptionHandler && session.sessionDescriptionHandler.peerConnection) {
       const pc = session.sessionDescriptionHandler.peerConnection;
-
       newStream.getTracks().forEach(track => {
         const sender = pc.getSenders().find(s => s.track && s.track.kind === track.kind);
         if (sender) {
@@ -168,7 +183,7 @@ const VideoCallScreen = () => {
   // Function to toggle the camera direction
   const toggleCamera = async () => {
     setIsFrontCamera((prev) => !prev); // Toggle the state
-    const newFacingMode = isFrontCamera ? 'environment' : 'user';
+    const newFacingMode = isFrontCamera ? 'user' : 'environment';
     const newStream = await mediaDevices.getUserMedia({
       audio: true,
       video: { facingMode: newFacingMode },

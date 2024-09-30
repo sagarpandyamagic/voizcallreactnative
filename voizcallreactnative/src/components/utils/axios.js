@@ -16,7 +16,6 @@ axiosInstance.interceptors.request.use(
         // console.log("axios",access_token)
         config.headers.Authorization = `Bearer ${access_token}`;
     }
-    // console.log("config",config)
     return config;
   },
   (error) => {
@@ -32,7 +31,7 @@ axiosInstance.interceptors.response.use(
   async function (error) {
       const originalRequest = error.config;
       // console.log('orrr', error.response?.data)
-    //   console.debug('error.data', error)
+      console.debug('error.data', error)
 
       if (error.response.status === 401 && !originalRequest._retry) {
          originalRequest._retry = true; // Mark the request as retried
@@ -40,10 +39,7 @@ axiosInstance.interceptors.response.use(
           let refresh_token = await getStorageData(StorageKey.access_token)
           if (refresh_token) {
               return axios
-                  .post(API_BASE_URL + APIURL.refreshToken, {
-                      refresh_token: refresh_token,
-
-                  }, {
+                  .post(API_BASE_URL + APIURL.refreshToken, {}, {
                       headers: {
                           "Authorization": `Bearer ${refresh_token}`
                       }

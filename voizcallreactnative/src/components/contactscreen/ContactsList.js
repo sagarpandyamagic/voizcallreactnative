@@ -271,7 +271,7 @@ const ContactsList = ({ navigation }) => {
             keyExtractor={item => item.recordID}
             renderSectionHeader={({ section: { title } }) => (
               <View style={{ justifyContent: 'center', }}>
-                <Image style={{ resizeMode: 'contain' }} source={gradiant_border}></Image>
+                <Image style={styles.gradientBorder}  source={gradiant_border}></Image>
                 <Text style={styles.header} >{title}</Text>
               </View>
             )}
@@ -336,6 +336,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  gradientBorder: {
+    resizeMode: 'stretch',
+    width: '100%',
   },
 });
 

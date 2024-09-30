@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, StyleSheet, TouchableOpacity, Alert, Dimensions } from 'react-native';
+import { View, Image, StyleSheet, TouchableOpacity, Alert, Dimensions, Platform } from 'react-native';
 
 import phoneLogo from '../../../Assets/ic_call.png';
 import ic_videoCall from '../../../Assets/ic_videoCall.png';
@@ -10,18 +10,21 @@ import { storeContactNumber, updateSipState } from '../../store/sipSlice';
 import SipUA from '../../services/call/SipUA';
 import { showAlert } from '../../HelperClass/CommonAlert';
 import voicemailicon from '../../../Assets/voicemailicon.png';
+import { debounce } from 'lodash';
 
 const { width } = Dimensions.get('window')
 
 const CallButton = ({ navigation, setCode, code, voizmailAcation }) => {
     const dispatch = useDispatch()
-    const { ISConfrenceTransfer, phoneNumber, allSession, UserDND,soketConnect } = useSelector((state) => state.sip)
+    const { ISConfrenceTransfer, phoneNumber, allSession, UserDND, soketConnect } = useSelector((state) => state.sip)
     const [videoCall, setVideoCall] = useState(false);
     const [btnEnable, setbtnEnable] = useState(false);
+    const isIPad = Platform.OS === 'ios' && Platform.isPad;
 
-    const handleMakeCall = async (code) => {
-        if(soketConnect == false){
-            showAlert('Sokcet is not connected!', "Call is not Going")    
+
+    const handleMakeCall = debounce(async (code) => {
+        if (soketConnect == false) {
+            showAlert('Sokcet is not connected!', "Call is not Going")
             return
         }
         const number = code.join('')
@@ -44,12 +47,9 @@ const CallButton = ({ navigation, setCode, code, voizmailAcation }) => {
             SipUA.makeCall(number, false)
             navigation.navigate('AudioCallingScreen')
         }
-    };
+    }, 300, { leading: true, trailing: false });
 
     const handleMakeVideoCall = async (code) => {
-        SipUA.makeCall("222222", true)
-
-        return
         const number = code.join('')
         if (number == "") {
             showAlert('Empty Number!', "please enter phonenumber")
@@ -81,16 +81,15 @@ const CallButton = ({ navigation, setCode, code, voizmailAcation }) => {
         setbtnEnable(UserDND)
     }
 
-
     return (
         <View style={{ flexDirection: 'row', backgroundColor: '#fff', height: 80, justifyContent: 'center' }} >
-            <TouchableOpacity onPress={() => voizmailAcation()} style={[styles.voicemailButton, { width: 60, borderRadius: 20, backgroundColor: '#E8EFFF', justifyContent: 'center', alignSelf: 'center', position: 'absolute', left: width * 0.15 }]}
+            <TouchableOpacity onPress={() => voizmailAcation()} style={[styles.voicemailButton, { width: "15%", borderRadius: 20, backgroundColor: '#E8EFFF', justifyContent: 'center', alignSelf: 'center', position: 'absolute', left: isIPad ? width * 0.20 : width * 0.15 }]}
             >
                 <Image
                     source={voicemailicon}
                     resizeMode="contain"
-                    style={[styles.callBtnImage, { tintColor: THEME_COLORS.black, height: 60, width: 25, resizeMode: 'contain',  left: '5%', }]}>
-                    </Image>
+                    style={[styles.callBtnImage, { tintColor: THEME_COLORS.black, height: 60, width: 25, resizeMode: 'contain', left: '5%', }]}>
+                </Image>
             </TouchableOpacity>
 
             <View style={{ alignContent: 'center', justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
@@ -103,7 +102,7 @@ const CallButton = ({ navigation, setCode, code, voizmailAcation }) => {
                         style={[styles.callBtnImage, { opacity: btnEnable ? 0.5 : 1 }]}></Image>
                 </TouchableOpacity>
                 {
-                // videoCall &&
+                    // videoCall &&
                     <TouchableOpacity style={[styles.callBtn, { borderTopRightRadius: 10, borderBottomRightRadius: 10 }]} disabled={btnEnable} onPress={() => {
                         handleMakeVideoCall(code)
                     }}>
@@ -145,18 +144,18 @@ const styles = StyleSheet.create({
         tintColor: '#fff', height: 20, width: 20,
     }, voicemailButton: {
         width: 60,
-        height: 60,
+        height: 40,
         borderRadius: 30,
         backgroundColor: '#E8EFFF',
         justifyContent: 'center',
         alignItems: 'center',
         position: 'relative',
         left: '5%',
-      },
-      voicemailIcon: {
+    },
+    voicemailIcon: {
         tintColor: THEME_COLORS.black,
         height: 25,
         width: 25,
-      },
+    },
 });
 export default CallButton;
