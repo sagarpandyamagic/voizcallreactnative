@@ -75,11 +75,6 @@ const VideoCallScreen = () => {
     }
   }, [remoteStream]);
 
-  // useEffect(() => {
-  //   InCallManager.start({ media: 'video' });  // Change 'audio' to 'video'
-  //   InCallManager.setForceSpeakerphoneOn(true);
-  //   return () => InCallManager.stop();
-  // }, []);
 
   useEffect(() => {
     if (session) {
@@ -139,7 +134,7 @@ const VideoCallScreen = () => {
       const constraints = {
         audio: true,
         video: {
-          facingMode: facingMode, // 'user' for front camera, 'environment' for back camera
+          facingMode: isFrontCamera ? 'user' : 'environment', // Use the state to determine initial camera
         },
       };
       const stream = await mediaDevices.getUserMedia(constraints);

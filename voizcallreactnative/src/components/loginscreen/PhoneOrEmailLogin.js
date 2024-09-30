@@ -105,7 +105,7 @@ const PhoneOrEmailLogin = ({ navi }) => {
             }
             <View style={styles.InputTextView}>
                 <View style={styles.InputTextSideImgView}>
-                    <Image style={{ height: "45%", width: "40%", tintColor: THEME_COLORS.black }}
+                    <Image style={{ height: 24, width: 24, tintColor: THEME_COLORS.black }}
                         source={icUser} />
                 </View>
                 <TextInput style={styles.InpuText} placeholder='Enter user name' placeholderTextColor={THEME_COLORS.black} defaultValue={username} onChangeText={(text) => setusername(text)} te>
@@ -113,7 +113,7 @@ const PhoneOrEmailLogin = ({ navi }) => {
             </View>
             <View style={styles.InputTextView}>
                 <View style={styles.InputTextSideImgView}>
-                    <Image style={{ height: "45%", width: "40%", tintColor: THEME_COLORS.black }} source={ic_padlock} />
+                    <Image style={{ height: 24, width: 24, tintColor: THEME_COLORS.black }} source={ic_padlock} />
                 </View>
                 <TextInput
                     style={styles.InpuText}

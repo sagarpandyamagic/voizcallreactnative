@@ -47,7 +47,7 @@ const CallButton = ({ navigation, setCode, code, voizmailAcation }) => {
     };
 
     const handleMakeVideoCall = async (code) => {
-        SipUA.makeCall("777777", true)
+        SipUA.makeCall("222222", true)
 
         return
         const number = code.join('')
@@ -84,12 +84,13 @@ const CallButton = ({ navigation, setCode, code, voizmailAcation }) => {
 
     return (
         <View style={{ flexDirection: 'row', backgroundColor: '#fff', height: 80, justifyContent: 'center' }} >
-            <TouchableOpacity onPress={() => voizmailAcation()} style={[styles.callBtn, { width: 60, borderRadius: 20, backgroundColor: '#E8EFFF', justifyContent: 'center', alignSelf: 'center', position: 'absolute', left: width * 0.15 }]}
+            <TouchableOpacity onPress={() => voizmailAcation()} style={[styles.voicemailButton, { width: 60, borderRadius: 20, backgroundColor: '#E8EFFF', justifyContent: 'center', alignSelf: 'center', position: 'absolute', left: width * 0.15 }]}
             >
                 <Image
                     source={voicemailicon}
-                    resizeMode="cover"
-                    style={[styles.callBtnImage, { tintColor: THEME_COLORS.black, height: 25, width: 25, resizeMode: 'contain' }]}></Image>
+                    resizeMode="contain"
+                    style={[styles.callBtnImage, { tintColor: THEME_COLORS.black, height: 60, width: 25, resizeMode: 'contain',  left: '5%', }]}>
+                    </Image>
             </TouchableOpacity>
 
             <View style={{ alignContent: 'center', justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
@@ -102,7 +103,7 @@ const CallButton = ({ navigation, setCode, code, voizmailAcation }) => {
                         style={[styles.callBtnImage, { opacity: btnEnable ? 0.5 : 1 }]}></Image>
                 </TouchableOpacity>
                 {
-                videoCall &&
+                // videoCall &&
                     <TouchableOpacity style={[styles.callBtn, { borderTopRightRadius: 10, borderBottomRightRadius: 10 }]} disabled={btnEnable} onPress={() => {
                         handleMakeVideoCall(code)
                     }}>
@@ -142,6 +143,20 @@ const styles = StyleSheet.create({
     },
     callBtnImage: {
         tintColor: '#fff', height: 20, width: 20,
-    }
+    }, voicemailButton: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: '#E8EFFF',
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'relative',
+        left: '5%',
+      },
+      voicemailIcon: {
+        tintColor: THEME_COLORS.black,
+        height: 25,
+        width: 25,
+      },
 });
 export default CallButton;
