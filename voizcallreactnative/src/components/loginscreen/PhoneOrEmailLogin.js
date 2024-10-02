@@ -149,7 +149,7 @@ const PhoneOrEmailLogin = ({ navi }) => {
             <TouchableOpacity style={[styles.InputTextView, { borderWidth: 0, justifyContent: 'flex-end', marginTop: 5 }]} onPress={() => {
                 navi.navigate('ForgotPasswordScreen')
             }}>
-                <Text style={{ paddingRight: 5, fontSize: 15 }}>Forgot Password?</Text>
+                <Text style={{ paddingRight: 5, fontSize: 15, fontWeight: 'bold' ,fontFamily: AppCommon_Font.Font }}>Forgot Password?</Text>
             </TouchableOpacity>
         </>
     );

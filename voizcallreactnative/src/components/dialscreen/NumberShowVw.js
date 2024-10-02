@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { View, Image, StyleSheet, TouchableOpacity, Text,TextInput } from 'react-native';
 import ic_more from '../../../Assets/ic_more.png';
 import ic_remove_number from '../../../Assets/ic_remove_number.png';
 import { THEME_COLORS } from '../../HelperClass/Constant';
-import { TextInput } from 'react-native-gesture-handler';
 
 
 const NumberShowVw = ({ number, onRemove, setNumber }) => {

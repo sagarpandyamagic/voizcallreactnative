@@ -5,14 +5,13 @@
  * @format
  */
 
-import React, { Component, useEffect, useState } from 'react';
+import React, { Component, useCallback, useEffect, useState } from 'react';
 import {
   NativeEventEmitter,
   NativeModules,
   Platform,
   View,
 } from 'react-native';
-import 'react-native-gesture-handler';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -49,7 +48,11 @@ import SipUA from './src/services/call/SipUA';
 import { getConfigParamValue } from './src/data/profileDatajson';
 import VideoCallScreen from './src/components/dialscreen/VideoCallScreen';
 import WebSocketTest from './src/components/settingscreen/WebSocketTest';
-import InCallManager from 'react-native-incall-manager';
+import XmppChat from './src/Screen/XmppChat';
+import inCallManager from 'react-native-incall-manager';
+import { findContactByNumber } from './src/HelperClass/FatchNameUseingNumber';
+
+
 function App() {
   const Stack = createStackNavigator();
   const { MyNativeModule } = NativeModules;
@@ -57,6 +60,7 @@ function App() {
   const [isNotifcionCome, setisNotifcionCome] = useState("TabBar");
   const { AppOpenTimeRootChange, IncomingCallNumber, soketConnect } = useSelector((state) => state.sip);
   const myNativeModuleEmitter = MyNativeModule ? new NativeEventEmitter(MyNativeModule) : null;
+  const [userName, setUsername] = useState('Unknown');
 
 
   const NavigateToNativeLayout = (name, phoneNumber) => {
@@ -77,9 +81,11 @@ function App() {
   };
 
 
+ 
+
   useEffect(() => {
     if (AppOpenTimeRootChange === 'TabBar') {
-      NavigateToNativeLayout("Voizcall User", IncomingCallNumber);
+      NavigateToNativeLayout(findContactByNumber(IncomingCallNumber), IncomingCallNumber);
       applyFlags();
     }
   }, [AppOpenTimeRootChange]);
@@ -90,14 +96,8 @@ function App() {
         'onCallAccepted',
         (event) => {
           try {
-            const { hasVideo } = store.getState().sip
-            console.log('Call accepted hasVideo',hasVideo);
-
-            if(hasVideo) {
-              store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: true }));
-            }else{
-              store.dispatch(updateSipState({ key: "CallScreenOpen", value: true }));
-            }
+            inCallManager.startProximitySensor();
+            store.dispatch(updateSipState({ key: "CallScreenOpen", value: true }));
             store.dispatch(updateSipState({ key: "CallAns", value: false }));
           } catch (error) {
             console.error('Error handling onCallAccepted event:', error);
@@ -139,7 +139,6 @@ function App() {
 
 
   useEffect(() => {
-    InCallManager.stopProximitySensor(); // Disable
     permissionSetup()
   }, [])
 
@@ -270,9 +269,12 @@ function App() {
           <View>
             <AudioCallingScreen />
           </View>
-          <View>
+          {/* <View>
             <VideoCallScreen />
-          </View>
+          </View> */}
+          {/* <View>
+            <XmppChat navigation={undefined}/>
+          </View> */}
       </NavigationContainer>
       </CallTimerDuraionProvider>
     </SafeAreaProvider>

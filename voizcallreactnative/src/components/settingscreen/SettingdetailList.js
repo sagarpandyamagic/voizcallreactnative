@@ -28,8 +28,14 @@ const SettingdetailList = ({ title, image, navigation }) => {
 
         if (title == "Pull Configration") {
             setLoading(true)
-            await UpdateConfiguration()
-            setLoading(false)
+            try {
+                await UpdateConfiguration()
+                
+                store.dispatch(updateSipState({ key: "CallerIDUpdate", value: true }))
+                setLoading(false)
+            } catch {
+                setLoading(false)
+            }
         }
         else if (title == "App languages") {
             navigation.navigate('App language')
@@ -76,7 +82,7 @@ const SettingdetailList = ({ title, image, navigation }) => {
         try {
             setLoading(true)
             setLogoutModalVisible(false);
-           
+
             console.log(data)
             const pram = {
                 "instance_id": await getStorageData(StorageKey.instance_id),
@@ -117,7 +123,7 @@ const SettingdetailList = ({ title, image, navigation }) => {
                     style={{ height: 20, width: 20, tintColor: THEME_COLORS.black, resizeMode: 'contain' }}
                     source={image}
                 ></Image>
-                <Text style={{ paddingLeft: 10, fontSize: 15, color: 'black' }}>
+                <Text style={{ paddingLeft: 10, fontSize: 15, color: 'black',fontFamily: AppCommon_Font.Font,fontWeight:'bold'}}>
                     {title}
                 </Text>
             </TouchableOpacity>

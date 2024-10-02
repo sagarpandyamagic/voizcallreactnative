@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { View, Image, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { AppCommon_Font, THEME_COLORS } from '../../HelperClass/Constant';
-import { Dropdown } from 'react-native-element-dropdown';
-
 import down_arrow from '../../../Assets/ic_dwon_arrow.png';
 
 
@@ -17,7 +15,7 @@ const CallIdShow = ({setCallerIDShow,callID}) => {
     return (
         <>
         <View style={styles.CallIdContainer}>
-            <TouchableOpacity style={{flex:1, flexDirection: 'row', alignItems: 'center',justifyContent:'center'}} onPress={hundelCallerID}>
+            <TouchableOpacity style={{flex:1, flexDirection: 'row', alignItems: 'center',justifyContent:'center',fontFamily: AppCommon_Font.Font}} onPress={hundelCallerID}>
                 <Text style={styles.callIdText}>{callID}</Text>
                 <View style={{position:'absolute',right:15}}>
                 <Image
@@ -46,9 +44,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     callIdText: {
-        fontSize: 18,
+        fontSize: 15,
         fontFamily: AppCommon_Font.Font,
         marginRight: 10, // Add some space between text and arrow
+        fontWeight:'bold'
     },
     dropdown: {
         height: 40,

@@ -5,7 +5,8 @@ import {
     Text,
     ScrollView,
     Dimensions,
-    Platform
+    Platform,
+    TouchableOpacity
 } from 'react-native';
 import { React, useEffect, useState } from 'react';
 
@@ -13,7 +14,6 @@ import LoginTopSideVw from './LoginTopSideVw';
 import { AppCommon_Font, StorageKey, THEME_COLORS, userprofilealias } from '../../HelperClass/Constant';
 import Footer from './Footer';
 import OTPTextInput from 'react-native-otp-textinput';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import OTPTimer from './OTPTimer';
 import ic_verify from '../../../Assets/ic_verify.png'
 import DeviceInfo from 'react-native-device-info';

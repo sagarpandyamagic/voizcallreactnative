@@ -125,6 +125,7 @@ const styles = StyleSheet.create({
         borderColor: THEME_COLORS.transparent,
         alignItems: 'center',
         justifyContent: 'center',
+        fontFamily: AppCommon_Font.Font,fontWeight:'bold'
     },
 });
 export default DialPad;

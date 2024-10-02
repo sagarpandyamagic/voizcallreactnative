@@ -18,6 +18,7 @@ import SipUA, { holdUsedSwipTime } from '../../services/call/SipUA';
 import { useDispatch, useSelector } from 'react-redux';
 import store from '../../store/store';
 import { updateSipState } from '../../store/sipSlice';
+import { AppCommon_Font } from '../../HelperClass/Constant';
 
 
 const { width } = Dimensions.get('window')
@@ -182,6 +183,7 @@ const style = StyleSheet.create({
     text: {
         fontSize: 12,
         marginTop: 5, // Set the font size of the text
+        fontFamily: AppCommon_Font.Font,
     },
     item: {
         alignItems: 'center',

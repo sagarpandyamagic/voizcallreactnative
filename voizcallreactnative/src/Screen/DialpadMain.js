@@ -4,11 +4,11 @@ import {
     Platform,
     Text,
     AppState,
-    Image
+    Image,TouchableOpacity
 } from 'react-native';
 
 import { React, useEffect, useRef, useState } from 'react';
-import { THEME_COLORS, userprofilealias } from '../HelperClass/Constant';
+import { AppCommon_Font, THEME_COLORS, userprofilealias } from '../HelperClass/Constant';
 import CallButton from '../components/dialscreen/CallButton';
 import SeparatorLine from '../HelperClass/SeparatorLine';
 import CallIdShow from '../components/dialscreen/CallIdShow';
@@ -27,7 +27,6 @@ import { setupCallKeep } from '../services/Callkeep/CallkeepSeup';
 import { updateSipState } from '../store/sipSlice';
 import inCallManager from 'react-native-incall-manager';
 import Contacts from 'react-native-contacts';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import { getConfigParamValue } from '../data/profileDatajson';
 import SipUA from '../services/call/SipUA';
 import voizLogo from '../../Assets/voizcall_logo.png'
@@ -40,7 +39,7 @@ const DialpadMain = ({ navigation }) => {
     const [callerID, setCallerID] = useState('');
 
 
-    const { ISAttendedTransfer, sesstionState, CallType, ISCallTransfer, allSession, AppISBackGround, soketConnect } = useSelector((state) => state.sip)
+    const { ISAttendedTransfer, sesstionState, CallType, ISCallTransfer, allSession, AppISBackGround, soketConnect ,CallerIDUpdate} = useSelector((state) => state.sip)
     const { TimerAction, callTimer, seconds } = useCallTimerContext()
     const [callIDShow, setcallIDShow] = useState(false);
     const [appState, setAppState] = useState(AppState.currentState);
@@ -99,8 +98,12 @@ const DialpadMain = ({ navigation }) => {
             requestPermissions()
         }
         inCallManager.stopProximitySensor(); // Disable
+        
+    },[]);
+
+    useEffect(() => {
         firstCallerIdSet()
-    }, []);
+    },[CallerIDUpdate])
 
     const requestPermissions = async () => {
         await requestUserPermission();
@@ -191,9 +194,9 @@ const DialpadMain = ({ navigation }) => {
                     <Image source={voizLogo} style={{position:'absolute',opacity:0.2,top:"15%",width:'80%',height:'80%',alignSelf:'center'}}       resizeMode="contain"
                     ></Image>
                     <View >
-                        {soketConnect ? <Text style={{ color: "white", fontWeight: 'bold', fontSize: 12, alignSelf: 'center' }}>Phone is Ready</Text> :
-                            <Text style={{ color: "white", fontWeight: 'bold', fontSize: 12, alignSelf: 'center' }}>Phone is Not Ready</Text>}
-                        <Text style={{ color: "white", fontSize: 12, alignSelf: 'center' }}>{callerID}</Text>
+                        {soketConnect ? <Text style={{ color: "white", fontWeight: 'bold', fontSize: 12, alignSelf: 'center',fontFamily:AppCommon_Font.Font }}>Phone is Ready</Text> :
+                            <Text style={{ color: "white", fontWeight: 'bold', fontSize: 12, alignSelf: 'center',fontFamily: AppCommon_Font.Font }}>Phone is Not Ready</Text>}
+                        <Text style={{ color: "white", fontSize: 12, alignSelf: 'center' ,fontFamily: AppCommon_Font.Font}}>{callerID}</Text>
                     </View>
                     {
                         callStart == false

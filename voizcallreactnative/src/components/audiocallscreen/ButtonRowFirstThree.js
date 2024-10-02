@@ -17,13 +17,14 @@ import { updateSipState } from '../../store/sipSlice';
 import { useSelector } from 'react-redux';
 import SipUA from '../../services/call/SipUA';
 import InCallManager from 'react-native-incall-manager';
+import { AppCommon_Font } from '../../HelperClass/Constant';
 
 
 const { width } = Dimensions.get('window')
 const imageSize = width * 0.17; // Example: 10% of screen width
 const itemSpacing = 40;      // Space between each Image+Text pair
 
-const ButtonRowFirstThree = () => {
+const ButtonRowFirstThree = ({toggleDTMFScreen}) => {
     const { CallInitial } = useSelector((state) => state.sip)
     const [togglemute, settogglemute] = useState(false)
     const [isSpeker, setSpeker] = useState(false)
@@ -59,6 +60,7 @@ const ButtonRowFirstThree = () => {
             <View style={style.item}>
                 <TouchableOpacity style={[style.imageVw,{opacity: !CallInitial ? 0.5 : 1}]} disabled={!CallInitial} onPress={() => {
                     store.dispatch(updateSipState({ key: "DTMFSCreen", value: true }))
+                    toggleDTMFScreen()
                 }}>
                     <Image source={ic_Tab_DialPad} style={style.image}>
                     </Image>
@@ -119,7 +121,8 @@ const style = StyleSheet.create({
     text: {
         fontSize: 12,
         marginBottom: 0,
-        marginTop: 5 // Set the font size of the text
+        marginTop: 5, // Set the font size of the text
+        fontFamily: AppCommon_Font.Font,
     },
     item: {
         alignItems: 'center',

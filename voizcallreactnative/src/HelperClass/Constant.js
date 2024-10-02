@@ -1,5 +1,5 @@
 export const AppCommon_Font = {
-    Font: 'RobotoMono-Regular'
+    Font: 'Arial'//'RobotoMono-Regular'
 }
 
 export const THEME_COLORS = {

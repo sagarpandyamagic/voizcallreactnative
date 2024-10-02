@@ -3,7 +3,7 @@
     android:id="@+id/rl_incoming_call"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#3E5DA3">
+    android:background="@drawable/gradient_incoming_screen">
 
     <LinearLayout
         android:layout_width="match_parent"

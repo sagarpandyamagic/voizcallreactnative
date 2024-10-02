@@ -248,7 +248,7 @@ class SipClinet {
                   store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
                   store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: false }));
                 }
-                
+
                 console.log('UserAgent ==> Terminated')
                 USERAGENT.stop()
                 break
@@ -328,25 +328,22 @@ class SipClinet {
           const hasVideos = invitation.request.body.includes('m=video');
           store.dispatch(updateSipState({ key: "hasVideo", value: hasVideos }));
 
-          const { hasVideo,IncomingCallNumber } = store.getState().sip
-          console.log('Call accepted hasVideo',hasVideo);
-        
+          const { hasVideo, IncomingCallNumber } = store.getState().sip
+          console.log('Call accepted hasVideo', hasVideo);
+
 
           if (AppISBackGround == true && Platform.OS == "android") {
             try {
               if (MyNativeModule) {
-                MyNativeModule.openNativeLayout("Voizcall User", number, THEME_COLORS.black);
+                MyNativeModule.openNativeLayout("Unknown", number, THEME_COLORS.black);
               } else {
                 console.error('MyNativeModule is not available');
               }
             } catch (error) {
               console.error('Error calling applyFlags:', error);
             }
-          }else{
-            if(hasVideo){
-              store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: true }));
-              store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
-            }
+          } else {
+
           }
 
           invitation.delegate = {
@@ -379,15 +376,24 @@ class SipClinet {
               case 'Initial':
                 console.log('incomming session state Initial')
                 inCallManager.startProximitySensor();
+
                 // store.dispatch(updateSipState({ key: "CallInitial", value: true }))
 
                 break
               case 'Establishing':
+
+                
+
                 // console.log('Incoming Session state Establishing')
                 break
               case 'Established':
                 timeStore = data
                 console.log('Incoming Session state Established')
+                if (hasVideo) {
+                  inCallManager.stopProximitySensor();
+                  store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: true }));
+                  store.dispatch(updateSipState({ key: "CallScreenOpen", value: false }))
+                }
                 // setupRemoteMedia(invitation, hasVideo)
                 break
               case 'Terminating':
@@ -414,17 +420,16 @@ class SipClinet {
                   store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: false }));
                   store.dispatch(updateSipState({ key: "hasVideo", value: false }));
                   store.dispatch(updateSipState({ key: "IncomingCallNumber", value: "" }));
-
-                  
-                  inCallManager.stopProximitySensor(); // Disable
-
+                  store.dispatch(updateSipState({key:"DTMFSCreen",value:false}))              
                   if (Platform.OS == "android") {
                     console.log('RemoveIncomingScreen')
                     MyNativeModule.RemoveIncomingScreen()
                     setTimeout(() => {
+                      inCallManager.stopProximitySensor();
                       MyNativeModule.removeFlags()
                     }, 2000);
                   } else {
+                    inCallManager.stopProximitySensor(); // Disable
                     incomingusebyClass.endIncomingcallAnswer();
                   }
                 }
@@ -570,6 +575,7 @@ class SipClinet {
               store.dispatch(updateSipState({ key: "CallInitial", value: false }));
               store.dispatch(updateSipState({ key: "VideoCallScreenOpen", value: false }));
               store.dispatch(updateSipState({ key: "IncomingCallNumber", value: "" }));
+              store.dispatch(updateSipState({key:"DTMFSCreen",value:false}))
               console.log("session.id", session.id)
 
               inCallManager.stopProximitySensor();
@@ -577,8 +583,11 @@ class SipClinet {
               if (Platform.OS == "android") {
                 setTimeout(() => {
                   MyNativeModule.removeFlags()
+                  inCallManager.stopProximitySensor();
                 }, 2000);
               } else {
+                inCallManager.stopProximitySensor();
+
                 incomingusebyClass.endIncomingcallAnswer();
               }
             }
@@ -717,19 +726,25 @@ class SipClinet {
   }
 
   sendDTMF = (digit) => {
-    console.debug(`DTMF Call Event Called with digit${digit}`)
-    const options = {
-      requestOptions: {
-        body: {
-          contentDisposition: 'render',
-          contentType: 'application/dtmf-relay',
-          content: `Signal=${digit}\r\nDuration=1000`
+    try {
+      console.debug(`DTMF Call Event Called with digit ${digit}`)
+      const options = {
+        requestOptions: {
+          body: {
+            contentDisposition: 'render',
+            contentType: 'application/dtmf-relay',
+            content: `Signal=${digit}\r\nDuration=1000`
+          }
         }
       }
-    }
-    const { sessionID, allSession } = store.getState().sip
-    if (sessionID) {
-      allSession[sessionID]?.info(options)
+      const { sessionID, allSession } = store.getState().sip
+      if (sessionID && allSession && allSession[sessionID] && typeof allSession[sessionID].info === 'function') {
+        allSession[sessionID].info(options)
+      } else {
+        console.warn('Invalid session or info method not available')
+      }
+    } catch (error) {
+      console.error('Error in sendDTMF:', error)
     }
   }
 

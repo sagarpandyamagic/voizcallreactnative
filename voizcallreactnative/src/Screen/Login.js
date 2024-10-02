@@ -4,7 +4,8 @@ import {
   Text,
   ScrollView,
   Dimensions,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import { React, useState } from 'react';
 
@@ -12,16 +13,82 @@ import { React, useState } from 'react';
 import PhoneOrEmailLogin from '../components/loginscreen/PhoneOrEmailLogin';
 import OTPScreen from '../components/loginscreen/OTPScreen';
 import QrCode from '../components/loginscreen/QrCode';
-import { AppCommon_Font, THEME_COLORS } from '../HelperClass/Constant';
+import { AppCommon_Font, StorageKey, THEME_COLORS } from '../HelperClass/Constant';
 import Footer from '../components/loginscreen/Footer';
 import LoginTabBar from '../components/loginscreen/LoginTabBar';
 import LoginTopSideVw from '../components/loginscreen/LoginTopSideVw';
+import { AppStoreData, getStorageData } from '../components/utils/UserData';
+import { getProfile } from '../services/auth';
+import { getConfigParamValue } from '../data/profileDatajson';
+import { inticalluserData } from '../store/sipSlice';
+import store from '../store/store';
+import { PushSubScribeNotificaion } from '../services/PushSubScribeNotificaion';
 
 const Login = ({ navigation, route }) => {
   const { configData } = route.params || {};
   console.log(configData)
   const [selectedIndex, setSelectedIndex] = useState(0);
   const { height: screenHeight } = Dimensions.get('window');
+
+  const LoginQrCode = async (e) => { 
+    try {
+
+      if (loading == true) {
+        return
+      }
+
+      setLoading(true);
+
+      await AppStoreData(StorageKey.instance_id, deviceId)
+      const Instanceid = await getStorageData(StorageKey.instance_id)
+      const FcmTokan = await getStorageData(StorageKey.FCM)
+
+      const pram = {
+        "qr_code": e.data,
+        "instance_id": Instanceid,
+        "device_type": Platform.OS,
+        "device_model": deviceModel,
+        "device_os": systemName,
+        "device_token": FcmTokan
+      }
+
+      console.log(pram)
+
+      setLoading(true);
+      const configInfo = await Qr_login(pram)
+      console.log(configInfo.data.access_token)
+      console.log(configInfo.data.data)
+
+      if (configInfo.success) {
+        await AppStoreData(StorageKey.userData, configInfo.data.data)
+        await AppStoreData(StorageKey.access_token, configInfo.data.access_token)
+        await AppStoreData(StorageKey.auth_type, configInfo.data.data.auth_type)
+        await AppStoreData(StorageKey.isLogin, true)
+
+        const value = await getStorageData(StorageKey.isLogin)
+        const profileInfo = await getProfile()
+        console.log("profileInfo", profileInfo)
+        if (profileInfo.success) {
+          await AppStoreData(StorageKey.userprofiledata, profileInfo.data.account_properties)
+          const sipusername = await getConfigParamValue(userprofilealias.sip_username)
+          const password = await getConfigParamValue(userprofilealias.sip_password)
+          const sipserver = await getConfigParamValue(userprofilealias.sip_sipServer)
+          const sipport = "7443"
+          store.dispatch(inticalluserData({ sipusername, password, sipserver, sipport }))
+
+          await PushSubScribeNotificaion(configInfo.data.data)
+
+          SipUA.connect()
+          navigation.navigate('TabBar')
+        }
+        setLoading(false);
+      } else {
+        setLoading(false);
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   return (
     <>
@@ -41,7 +108,7 @@ const Login = ({ navigation, route }) => {
                   <PhoneOrEmailLogin navi={navigation} />
                   : <>
                     {
-                      selectedIndex == 2 ? <QrCode  navigation={navigation} /> : < OTPScreen navigation={navigation} configData={configData} />
+                      selectedIndex == 2 ? <QrCode  navigation={navigation}  LoginQrCode={LoginQrCode} /> : < OTPScreen navigation={navigation} configData={configData} />
                     }
                   </>
               }

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, TouchableOpacity, StyleSheet, Text } from 'react-native';
+import { View, Image, TouchableOpacity, StyleSheet, Text,FlatList, TextInput } from 'react-native';
 import { AppCommon_Font, THEME_COLORS } from '../../HelperClass/Constant';
-import { FlatList, TextInput } from 'react-native-gesture-handler';
 import ic_correct from '../../../Assets/ic_correct.png';
 import { getCountyCode } from '../../services/auth';
 import LodingJson from '../../HelperClass/LodingJson';

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, Button, StyleSheet,TouchableOpacity } from 'react-native';
 import { AppCommon_Font, THEME_COLORS } from '../../HelperClass/Constant';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 
 const OTPTimer = ({ duration, onTimeUp,resendRequestAPI }) => {
     const [timeLeft, setTimeLeft] = useState(duration);

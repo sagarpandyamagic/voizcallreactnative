@@ -42,6 +42,8 @@ const QrScanScreen = ({ navigation }) => {
       setScanned(false);    // Allow re-scanning
     });
 
+    
+
     return unsubscribe;
 
   }, [navigation])

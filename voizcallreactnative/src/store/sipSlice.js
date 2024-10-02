@@ -38,7 +38,8 @@ const initialState = {
   CallInitial:false,
   remoteStreamVideo : {},
   hasVideo:false,
-  SetlocationVideo :{}
+  SetlocationVideo :{},
+  CallerIDUpdate:false
 }
 
 const counterSlice = createSlice({

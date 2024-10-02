@@ -29,6 +29,7 @@ const VideoCallScreen = () => {
   useEffect(() => {
     if (session != {} && VideoCallScreenOpen && CallType == "InComingCall" && soketConnect && CallInitial) {
       console.log("CallAcceept --------------")
+
       session.accept();
     }
   }, [CallInitial, VideoCallScreenOpen]);
@@ -36,6 +37,7 @@ const VideoCallScreen = () => {
   useEffect(() => {
     if (session) {
       if (sesstionState == SessionState.Established) {
+        InCallManager.stopProximitySensor();
         if (session.sessionDescriptionHandler && session.sessionDescriptionHandler.peerConnection) {
           const pc = session.sessionDescriptionHandler?.peerConnection;
           const remoteStream = new MediaStream();
@@ -54,10 +56,10 @@ const VideoCallScreen = () => {
             console.log("Remote stream created with tracks:", remoteStream.getTracks().length);
             setRemoteStream(remoteStream);
 
-            setTimeout(() => {
-              setIsFrontCamera(false)
-              toggleCamera()
-            }, 1000);
+            // setTimeout(() => {
+            //   setIsFrontCamera(false)
+            //   toggleCamera()
+            // }, 2000);
 
           } else {
             console.warn("No tracks found in remote stream");
@@ -145,6 +147,8 @@ const VideoCallScreen = () => {
       const constraints = {
         audio: true,
         video: {
+          width: 640,
+          height: 480,
           facingMode: facingMode, // 'user' for front camera, 'environment' for back camera
         },
       };
@@ -156,10 +160,10 @@ const VideoCallScreen = () => {
       }
       setLocalStream(stream);
 
-      // setTimeout(() => {
-      //   setIsFrontCamera(false)
-      //   toggleCamera()
-      // }, 2000);
+      setTimeout(() => {
+        setIsFrontCamera(true)
+        toggleCamera()
+      }, 2000);
     } catch (error) {
       logError('Error getting user media', error);
     }
@@ -179,14 +183,17 @@ const VideoCallScreen = () => {
     }
   };
 
-
   // Function to toggle the camera direction
   const toggleCamera = async () => {
     setIsFrontCamera((prev) => !prev); // Toggle the state
-    const newFacingMode = isFrontCamera ? 'user' : 'environment';
+    const newFacingMode = isFrontCamera ? 'environment':'user';
     const newStream = await mediaDevices.getUserMedia({
       audio: true,
-      video: { facingMode: newFacingMode },
+      video: {
+        width: 640,
+        height: 480,
+        facingMode: newFacingMode
+      },
     });
     setLocalStream(newStream);
     updateTracks(newStream);// Restart the stream with the new camera

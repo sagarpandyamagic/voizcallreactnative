@@ -15,6 +15,7 @@ import InCallManager from 'react-native-incall-manager';
 import { useSelector } from 'react-redux';
 import incomingusebyClass from '../../services/Callkeep/incomingusebyClass';
 import RNCallKeep from 'react-native-callkeep';
+import { AppCommon_Font } from '../../HelperClass/Constant';
 
 const { width } = Dimensions.get('window')
 const imageSize = width * 0.17; // Example: 10% of screen width
@@ -35,9 +36,12 @@ const ButtonCallCut = () => {
             if(Platform.OS  == "ios") {
                 incomingusebyClass.endIncomingcallAnswer();
             }
-            SipUA.hangupCall(phoneNumber[0])
             InCallManager.setSpeakerphoneOn(false);
             InCallManager.stop();
+            
+            SipUA.hangupCall(phoneNumber[0])
+
+            
         }
     }
 
@@ -85,6 +89,7 @@ const style = StyleSheet.create({
     text: {
         fontSize: 14,
         marginTop: 5, // Set the font size of the text
+        fontFamily: AppCommon_Font.Font,
     },
     item: {
         alignItems: 'center',

@@ -4,7 +4,7 @@ import { View, Image, TouchableOpacity, StyleSheet, Text, Dimensions } from 'rea
 import ic_socket_connection from '../../../Assets/ic_socket_connection.png';
 import ic_tick_blue from '../../../Assets/ic_tick_blue.png';
 
-import { THEME_COLORS } from '../../HelperClass/Constant';
+import { AppCommon_Font, THEME_COLORS } from '../../HelperClass/Constant';
 import SipUA from '../../services/call/SipUA';
 import { useSelector } from 'react-redux';
 
@@ -39,8 +39,8 @@ const WebSocketTest = ({ navigation }) => {
                 }
             </View>
             {
-                soketConnect ? <Text style={{ alignSelf: 'center', marginTop: 25, fontWeight: 'bold' }}>Connected</Text> :
-                    <Text style={{ alignSelf: 'center', marginTop: 25, fontWeight: 'bold' }}>Connecting to web socket</Text>
+                soketConnect ? <Text style={{ alignSelf: 'center', marginTop: 25, fontWeight: 'bold',fontFamily:AppCommon_Font.Font }}>Connected</Text> :
+                    <Text style={{ alignSelf: 'center', marginTop: 25, fontWeight: 'bold',fontFamily:AppCommon_Font.Font }}>Connecting to web socket</Text>
             }
 
             <View style={{ height: 50, width: width * 0.9, alignSelf: 'center', marginTop: 15, backgroundColor: THEME_COLORS.black, borderRadius: 10, justifyContent: 'center', alignItems: 'center' }}>

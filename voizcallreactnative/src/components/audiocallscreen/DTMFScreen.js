@@ -12,13 +12,14 @@ import { updateSipState } from '../../store/sipSlice';
 import DialPad from '../dialscreen/DialPad';
 import NumberShowVw from '../dialscreen/NumberShowVw';
 
-function  DTMFScreen(){
+function  DTMFScreen({ onClose }){
   const [code, setCode] = useState([]);
   const { DTMFSCreen } = useSelector((state) => state.sip)
   const dispatch = useDispatch()
 
   const handleCloseBtn = () => {
     setCode([])
+    onClose()
     dispatch(updateSipState({key:"DTMFSCreen",value:false}))
   };
 
@@ -28,6 +29,14 @@ function  DTMFScreen(){
     }
   }, [code])
 
+  const handleRemove = () => {
+    if (code.length > 0) {
+        const updatedWords = [...code];
+        updatedWords.pop();
+        setCode(updatedWords);
+    }
+};
+
   return (
     <Modal
     visible={DTMFSCreen}
@@ -36,7 +45,7 @@ function  DTMFScreen(){
     >
     <View style={styles.container}>
       <View style={styles.buttonContainer}>
-        <NumberShowVw number = {code} showImage = {false}/>
+        <NumberShowVw number = {code} showImage = {false} onRemove={handleRemove}/>
         <DialPad dialnumber = {code} addNumber={setCode}/>
         <TouchableOpacity style={styles.callButton} onPress={handleCloseBtn}>
         <Text style={styles.callButtonText}>Close</Text>

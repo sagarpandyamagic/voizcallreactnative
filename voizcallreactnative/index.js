@@ -159,7 +159,7 @@ const firebaseListener = async (remoteMessage) => {
     }
 
     try {
-      NavigateToNativeLayout("Voizcall User", remoteMessage.from)
+      NavigateToNativeLayout("Unknown", remoteMessage.from)
     } catch (error) {
       console.error('Error calling applyFlags:', error);
     }

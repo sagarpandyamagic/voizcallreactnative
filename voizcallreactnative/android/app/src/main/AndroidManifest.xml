@@ -63,6 +63,7 @@ xmlns:tools="http://schemas.android.com/tools">
       tools:overrideLibrary="com.facebook.react"
       android:screenOrientation="portrait" 
       android:largeHeap="true"
+      android:hardwareAccelerated="true"
       >
       <activity
         android:name=".MainActivity"

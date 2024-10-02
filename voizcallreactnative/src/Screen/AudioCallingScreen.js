@@ -23,9 +23,15 @@ const { height, width } = Dimensions.get('window');
 
 function AudioCallingScreen() {
     InCallManager.start({ media: 'audio' }); // Start audio mode
-    const { CallScreenOpen, allSession, ISConfrenceTransfer ,session,CallType,soketConnect,CallInitial} = useSelector((state) => state.sip)
+    const { CallScreenOpen, allSession, ISConfrenceTransfer, session, CallType, soketConnect, CallInitial } = useSelector((state) => state.sip)
     const [showtranspercall, setshowtranspercall] = useState(false)
     const dispatch = useDispatch()
+    const [isDTMFVisible, setIsDTMFVisible] = useState(false);
+
+    const toggleDTMFScreen = () => {
+        setIsDTMFVisible(!isDTMFVisible);
+      };
+
     const transparentCall = () => {
         setshowtranspercall(!showtranspercall)
     }
@@ -37,13 +43,13 @@ function AudioCallingScreen() {
     }, [allSession])
 
     useEffect(() => {
-        if (session != {} && CallScreenOpen && CallType == "InComingCall" && soketConnect&&CallInitial) {
+        if (session != {} && CallScreenOpen && CallType == "InComingCall" && soketConnect && CallInitial) {
             session && session.accept()
         }
     }, [CallScreenOpen]);
 
     useEffect(() => {
-        if (session != {} && CallScreenOpen && CallType == "InComingCall" && soketConnect&&CallInitial) {
+        if (session != {} && CallScreenOpen && CallType == "InComingCall" && soketConnect && CallInitial) {
             session && session.accept()
         }
     }, [CallInitial]);
@@ -62,7 +68,7 @@ function AudioCallingScreen() {
                 </View>
                 <View style={{ backgroundColor: THEME_COLORS.black }}>
                     <View style={[style.container]}>
-                        <ButtonRowFirstThree />
+                        <ButtonRowFirstThree toggleDTMFScreen={toggleDTMFScreen}/>
                         <ButtonRowSecondThree transparentCall={transparentCall} />
                         <ButtonCallCut />
                         {
@@ -70,9 +76,11 @@ function AudioCallingScreen() {
                         }
                     </View>
                 </View>
-                <View>
-                    <DTMFScreen />
-                </View>
+                {isDTMFVisible && (
+                    <View style={style.dtmfContainer}>
+                        <DTMFScreen onClose={toggleDTMFScreen} />
+                    </View>
+                )}
             </Modal>
         </View>
     )
@@ -104,6 +112,14 @@ const style = StyleSheet.create({
         height: 50, // Adjust height as needed
         backgroundColor: THEME_COLORS.black, // Semi-transparent white
     },
+    dtmfContainer: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 999,
+      },
 
 })
 export default AudioCallingScreen

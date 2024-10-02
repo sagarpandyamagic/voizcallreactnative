@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, Linking, Platform } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import { View, Text, Button, StyleSheet, Linking, Platform ,TouchableOpacity} from 'react-native';
 import Modal from 'react-native-modal';
 import { THEME_COLORS } from '../../HelperClass/Constant';
 

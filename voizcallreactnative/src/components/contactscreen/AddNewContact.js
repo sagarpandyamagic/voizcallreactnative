@@ -1,10 +1,9 @@
 import React, { useRef, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, Image, Button, PermissionsAndroid, KeyboardAvoidingView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, Image, Button, PermissionsAndroid, KeyboardAvoidingView,ScrollView, TextInput } from 'react-native';
 import { AppCommon_Font, THEME_COLORS } from '../../HelperClass/Constant';
 import ic_user from '../../../Assets/ic_user.png';
 import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
 import { ActionSheetCustom as ActionSheet } from 'react-native-actionsheet'
-import { ScrollView, TextInput } from 'react-native-gesture-handler';
 
 const AddNewContact = () => {
     const [imageUri, setImageUri] = useState(null);

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import { FlatList } from 'react-native-gesture-handler';
+import { View, Image, StyleSheet, TouchableOpacity, Text,FlatList } from 'react-native';
 import CallLogList from './CallLogList';
 import { CDRLAPICALL, GETAPICALL, POSTAPICALL } from '../../services/auth';
 import { APIURL } from '../../HelperClass/APIURL';
@@ -34,7 +33,7 @@ const Calllog = ({ DataType, navigation }) => {
         try {
             const response = await POSTAPICALL(APIURL.ALLCDR, { "page_num": pageNumber, "call_direction": DataType });
             // console.log(response)
-            if (response && response.data.length > 0) {
+            if (response && response.data.length > 0) { 
                 setList(prevList => [...prevList, ...response.data]);
             } else {
                 setHasMoreData(false);

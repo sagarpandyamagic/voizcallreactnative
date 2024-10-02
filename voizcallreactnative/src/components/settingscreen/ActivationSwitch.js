@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, TouchableOpacity, StyleSheet, Text, Dimensions, Platform } from 'react-native';
+import { View, Image, TouchableOpacity, StyleSheet, Text, Dimensions, Platform,Switch } from 'react-native';
 import { AppCommon_Font, StorageKey, THEME_COLORS } from '../../HelperClass/Constant';
-import { Switch } from 'react-native-gesture-handler';
 import LinearGradient from 'react-native-linear-gradient';
 import moonsleep from '../../../Assets/moonsleep.png'
 import { AppStoreData, getStorageData } from '../utils/UserData';
@@ -68,7 +67,7 @@ const ActivationSwitch = () => {
                 >
                     <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
                         <View style={{ width: 15 }}></View>
-                        <Text style={{ fontSize: 16, color: 'white', paddingTop: 15 }}>Active</Text>
+                        <Text style={{ fontSize: 16, color: 'white', paddingTop: 15,fontFamily: AppCommon_Font.Font,fontWeight:'bold' }}>Active</Text>
                         <View style={styles.switchContainer}>
                             <Switch
                                 trackColor={{ false: '#767577', true: 'white' }}
@@ -98,7 +97,7 @@ const ActivationSwitch = () => {
                         <View style={{ height: 25, width: 25, marginTop: 15, marginRight: 5 }}>
                             <Image source={moonsleep} style={{ height: '100%', width: '100%' }} ></Image>
                         </View>
-                        <Text style={{ fontSize: 16, color: 'white', paddingTop: 15 }}>DND</Text>
+                        <Text style={{ fontSize: 16, color: 'white', paddingTop: 15,fontFamily: AppCommon_Font.Font,fontWeight:'bold' }}>DND</Text>
                         <View style={styles.switchContainer}>
                             <Switch
                                 trackColor={{ false: '#767577', true: 'white' }}

@@ -41,6 +41,7 @@ const CallLogList = ({ data,onDelete,navigation,videoCall}) => {
         const formattedDate = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
         return <Text style={{ marginLeft: 15, marginTop: 5, marginBottom: 10, fontFamily: AppCommon_Font.Font }}>{formattedDate}</Text>
     }
+    
     useEffect(()=>{
         if (data.call_direction == "OUTBOUND") {
             setImage(incoming)

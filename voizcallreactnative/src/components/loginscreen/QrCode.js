@@ -5,7 +5,7 @@ import LottieView from 'lottie-react-native';
 import { THEME_COLORS } from '../../HelperClass/Constant';
 import backarrowR from '../../../Assets/backarrowR.png';
 
-const QrCode = ({navigation}) => {
+const QrCode = ({navigation,LoginQrCode}) => {
     return (
         <>
             <View style={{height:200,width:200,alignSelf:'center',marginTop:20}}>

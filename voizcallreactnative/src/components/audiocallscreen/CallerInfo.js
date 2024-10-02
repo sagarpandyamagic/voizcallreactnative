@@ -32,7 +32,7 @@ const CallerInfo = () => {
         }}>
             <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                 <Image style={{ height: 25, width: 25, marginLeft: 15 }} source={phoneLogo} />
-                <Text style={{ color: '#fff', marginLeft: 15, flex: 1 }}>
+                <Text style={{ color: '#fff', marginLeft: 15, flex: 1, fontFamily: AppCommon_Font.Font,fontWeight:'bold' }}>
                     {allSession[item].remoteIdentity?.uri?.normal?.user}
                 </Text>
                 <TouchableOpacity onPress={() => {

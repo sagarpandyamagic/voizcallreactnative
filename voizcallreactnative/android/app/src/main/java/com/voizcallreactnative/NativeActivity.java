@@ -108,7 +108,7 @@ public class NativeActivity extends AppCompatActivity {
         txtIncomingCallName.setText(name);
         txtIncomingCallNumber.setText(number);
 
-        rlIncomingCall.setBackgroundColor(Color.parseColor(themecolor));
+        // rlIncomingCall.setBackgroundColor(Color.parseColor(themecolor));
         imgUser.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FFFFFF")));
 
         LinearLayout llIncomingAccept = findViewById(R.id.ll_incoming_accept);

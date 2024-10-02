@@ -1,10 +1,9 @@
 import React from 'react';
-import { View, Image, StyleSheet, Text, SafeAreaView } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import { View, Image, StyleSheet, Text, SafeAreaView ,TouchableOpacity} from 'react-native';
 import emailusericon from '../../../Assets/emailusericon.png'
 import otpicon from '../../../Assets/otpicon.png'
 import qrcode from '../../../Assets/qrcode.png'
-import { THEME_COLORS } from '../../HelperClass/Constant';
+import { AppCommon_Font, THEME_COLORS } from '../../HelperClass/Constant';
 
 const LoginTabBar = ({ selectedIndex, setSelectedIndex, configData }) => {
 
@@ -99,7 +98,10 @@ const styles = StyleSheet.create({
     },
     Text: {
         marginRight: 5,
-        alignSelf: 'center'
+        alignSelf: 'center',
+        fontFamily: AppCommon_Font.Font,
+        fontWeight:'bold'
+        
     }
 });
 export default LoginTabBar;
