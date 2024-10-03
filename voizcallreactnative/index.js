@@ -104,7 +104,7 @@ export const showCallNotification = (callerName) => {
   });
 };
 
-const NavigateToNativeLayout = (name, phoneNumber) => {
+const NavigateToNativeLayout = async (name, phoneNumber) => {
   console.log("NavigateToNativeLayout", name, phoneNumber)
   const { MyNativeModule } = NativeModules;
 
@@ -115,7 +115,9 @@ const NavigateToNativeLayout = (name, phoneNumber) => {
     console.log("currentTime", CurrntTime)
     if (CurrntTime - lastOpenTime > 2000) { // 5000 milliseconds = 5 seconds
       console.log("NavigateToNativeLayout", "ActiveApp")
-      MyNativeModule.openNativeLayout(name, phoneNumber, THEME_COLORS.black);
+      const username = await getNameByPhoneNumber(phoneNumber);
+      console.log("NavigateToNativeLayout", username)
+      MyNativeModule.openNativeLayout(username, phoneNumber, THEME_COLORS.black);
     } else {
       console.log("NavigateToNativeLayout", "Terminated")
       MyNativeModule.showSplashScreen();
@@ -154,6 +156,7 @@ const firebaseListener = async (remoteMessage) => {
     }
     try {
       store.dispatch(updateSipState({ key: "IncomingCallNumber", value: remoteMessage.from }));
+      store.dispatch(updateSipState({ key: "AppISBackGround", value: false }));
     } catch (error) {
       console.error('Error fetching name:', error);
     }

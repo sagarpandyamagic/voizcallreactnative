@@ -51,6 +51,7 @@ import WebSocketTest from './src/components/settingscreen/WebSocketTest';
 import XmppChat from './src/Screen/XmppChat';
 import inCallManager from 'react-native-incall-manager';
 import { findContactByNumber } from './src/HelperClass/FatchNameUseingNumber';
+import { getNameByPhoneNumber } from './src/HelperClass/ContactNameGetCallTime';
 
 
 function App() {
@@ -79,16 +80,20 @@ function App() {
       console.error('MyNativeModule is not available');
     }
   };
-
-
  
 
   useEffect(() => {
     if (AppOpenTimeRootChange === 'TabBar') {
-      NavigateToNativeLayout(findContactByNumber(IncomingCallNumber), IncomingCallNumber);
-      applyFlags();
+      NativeLayout()
     }
   }, [AppOpenTimeRootChange]);
+
+  const NativeLayout = async () => {
+    const userName = await getNameByPhoneNumber(IncomingCallNumber);
+    console.log("userNameApp", userName);
+    NavigateToNativeLayout(userName, IncomingCallNumber);
+    applyFlags();
+  };
 
   useEffect(() => {
     if (Platform.OS == 'android') {

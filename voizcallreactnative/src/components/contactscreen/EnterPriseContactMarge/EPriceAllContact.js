@@ -12,15 +12,6 @@ import { APIURL } from '../../../HelperClass/APIURL';
 import LodingJson from '../../../HelperClass/LodingJson';
 import { THEME_COLORS } from '../../../HelperClass/Constant';
 
-const db = SQLite.openDatabase(
-    {
-        name: 'myDatabase.db',
-        location: 'default',
-    },
-    () => { console.log('Database opened.'); },
-    error => { console.log(error) }
-);
-
 const EPriceAllContact = ({ navigation }) => {
     let [contactsphone, setContactsphone] = useState([]);
     const headerArray = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
@@ -41,7 +32,6 @@ const EPriceAllContact = ({ navigation }) => {
     };
 
     useEffect(() => {
-        createContactTable();
         if (Platform.OS === 'android') {
             checkContactPermission()
         } else {
@@ -98,31 +88,8 @@ const EPriceAllContact = ({ navigation }) => {
         return contactsarray
     }
 
-    const saveContactsToDatabase = (contacts) => {
-        db.transaction((tx) => {
-            contacts.forEach(contact => {
-                tx.executeSql(
-                    'INSERT INTO ContactList (name, number, recordid, thumbnail, thumbnailpath, isfavourite) VALUES (?, ?, ?, ?, ?, ?)',
-                    [contact.givenName, contact.phoneNumbers[0]?.number, contact.recordID, contact.thumbnailPath, contact.thumbnailPath, '0'],
-                    () => { console.log('Contact inserted successfully.'); },
-                    (error) => { console.error('Error inserting contact:', error); }
-                );
-            });
-        });
-    }
 
-    const createContactTable = () => {
-        db.transaction((tx) => {
-            tx.executeSql(
-                'CREATE TABLE IF NOT EXISTS ContactList (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, number TEXT, recordid TEXT, thumbnail TEXT, thumbnailpath TEXT, isfavourite TEXT)',
-                [],
-                () => {
-                    console.log('Table created successfully.');
-                },
-                (error) => { console.error('Error creating table:', error); }
-            );
-        });
-    }
+
 
     const EnterPriceListAPI = async () => {
         const value = await GETAPICALL(APIURL.GETENTERPRISEDIC);

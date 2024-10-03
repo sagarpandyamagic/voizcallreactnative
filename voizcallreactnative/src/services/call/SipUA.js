@@ -16,6 +16,7 @@ import BackgroundTimer from 'react-native-background-timer';
 import { StorageKey, THEME_COLORS } from "../../HelperClass/Constant";
 import { getStorageData } from "../../components/utils/UserData";
 import inCallManager from "react-native-incall-manager";
+import { getNameByPhoneNumber } from "../../HelperClass/ContactNameGetCallTime";
 
 const { AudioModule, MyNativeModule } = NativeModules; // Assuming you have a native module for audio playback
 
@@ -335,16 +336,15 @@ class SipClinet {
           if (AppISBackGround == true && Platform.OS == "android") {
             try {
               if (MyNativeModule) {
-                MyNativeModule.openNativeLayout("Unknown", number, THEME_COLORS.black);
+                const userName = await getNameByPhoneNumber(number);
+                MyNativeModule.openNativeLayout(userName, number, THEME_COLORS.black);
               } else {
                 console.error('MyNativeModule is not available');
               }
             } catch (error) {
               console.error('Error calling applyFlags:', error);
             }
-          } else {
-
-          }
+          } 
 
           invitation.delegate = {
             //  Handle incoming onCancel request

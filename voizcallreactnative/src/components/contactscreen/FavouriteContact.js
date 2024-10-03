@@ -108,19 +108,6 @@ const FavouriteContact = ({ navigation }) => {
     });
   }
 
-  // const createContactTable = () => {
-  //   db.transaction((tx) => {
-  //     tx.executeSql(
-  //       'CREATE TABLE IF NOT EXISTS ContactList (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, number TEXT, recordid TEXT, thumbnail TEXT, thumbnailpath TEXT, isfavourite TEXT)',
-  //       [],
-  //       () => {
-  //         console.log('Table created successfully.');
-  //       },
-  //       (error) => { console.error('Error creating table:', error); }
-  //     );
-  //   });
-  // }
-
   const requestAndroidPermissions = async () => {
     try {
       await PermissionsAndroid.request(
