@@ -8,8 +8,9 @@ import { React } from 'react';
 
 import ic_Search from '../../Assets/ic_Search.png'
 import { THEME_COLORS } from './Constant';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-const SearchBarCustom = ({ onSearch}) => {
+const SearchBarCustom = ({ onSearch,placeholderText = "Search Contact"}) => {
 
   const search = (text) => {
     onSearch(text);
@@ -20,7 +21,7 @@ const SearchBarCustom = ({ onSearch}) => {
       <Image size={20} color="#000" style={styles.icon} source={ic_Search}></Image>
       <TextInput
         onChangeText={search}
-        placeholder="Search Contact"
+        placeholder={placeholderText}
         placeholderTextColor={THEME_COLORS.black}
         style={styles.input}
       />
@@ -40,12 +41,17 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    height: 50,
   },
   icon: {
     marginLeft: 10,
     marginRight: 10,
     height: 20,
     width: 20
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
   },
 })
 

@@ -14,14 +14,11 @@ import { StorageKey, THEME_COLORS, userprofilealias } from '../../HelperClass/Co
 import flashbtn from '../../../Assets/flash-btn.png';
 import DeviceInfo from 'react-native-device-info';
 import { getProfile, Qr_login } from '../../services/auth';
-import LottieView from 'lottie-react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { access_token, AppStoreData, getStorageData, isLogin, LoginUser } from '../utils/UserData';
 import { getConfigParamValue } from '../../data/profileDatajson';
 import { inticalluserData } from '../../store/sipSlice';
 import store from '../../store/store';
 import SipUA from '../../services/call/SipUA';
-import { generateUniqueId } from '../../HelperClass/InstanceID';
 import LodingJson from '../../HelperClass/LodingJson';
 import { PushSubScribeNotificaion } from '../../services/PushSubScribeNotificaion';
 
@@ -33,6 +30,8 @@ const QrScanScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [scanned, setScanned] = useState(false); // Track scan status
+  const [invalidQR, setInvalidQR] = useState(false);
+
 
 
   useEffect(() => {
@@ -42,7 +41,7 @@ const QrScanScreen = ({ navigation }) => {
       setScanned(false);    // Allow re-scanning
     });
 
-    
+
 
     return unsubscribe;
 
@@ -129,11 +128,24 @@ const QrScanScreen = ({ navigation }) => {
         }
         setLoading(false);
       } else {
-        navigation.navigate.pop(1)
+        setInvalidQR(true);
+        setTimeout(() => {
+          setInvalidQR(false);
+          setIsCameraOn(true);
+          setScanned(false);
+        }, 3000); // Show mes
       }
     } catch (error) {
       console.log(error)
+      setInvalidQR(true);
+      setTimeout(() => {
+        setInvalidQR(false);
+        setIsCameraOn(true);
+        setScanned(false);
+      }, 3000); //
     }
+    setLoading(false);
+
   };
 
   return (
@@ -155,7 +167,7 @@ const QrScanScreen = ({ navigation }) => {
               <Text style={styles.text}>Scan the QR Code</Text>
             </View>
           </View>
-        </RNCamera>) :
+        </RNCamera>) : 
           <View style={styles.cameraOffContainer}>
             <Text style={styles.cameraOffText}>QR Code Successfully Scanned.Please Wait...</Text>
           </View>

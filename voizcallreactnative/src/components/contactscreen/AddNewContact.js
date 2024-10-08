@@ -2,7 +2,6 @@ import React, { useRef, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, Image, Button, PermissionsAndroid, KeyboardAvoidingView,ScrollView, TextInput } from 'react-native';
 import { AppCommon_Font, THEME_COLORS } from '../../HelperClass/Constant';
 import ic_user from '../../../Assets/ic_user.png';
-import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
 import { ActionSheetCustom as ActionSheet } from 'react-native-actionsheet'
 
 const AddNewContact = () => {
@@ -12,7 +11,6 @@ const AddNewContact = () => {
     const [PhoneNumber, setPhoneNumber] = useState(null);
     const [Email, setEmail] = useState(null);
     const [PostAdd, setPostAdd] = useState(null);
-
 
     const options = [
         'Cancel',

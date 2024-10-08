@@ -4,10 +4,12 @@ import backarrowR from '../../../Assets/backarrowR.png';
 import { THEME_COLORS, AppCommon_Font } from '../../HelperClass/Constant';
 import { SendOTPAPI } from '../../services/auth';
 import LodingJson from '../../HelperClass/LodingJson';
+import { useSelector } from 'react-redux';
 
 const OTPScreen = ({ navigation, configData }) => {
     const [otpnumber, setotpnumber] = useState();
     const [loading, setLoading] = useState(false);
+    const { CountyCode } = useSelector((state) => state.sip)
 
 
     const GetOTPAPICall = async () => {
@@ -15,7 +17,7 @@ const OTPScreen = ({ navigation, configData }) => {
         const data = {
             "user_type": "mobile",
             "user_data": otpnumber,
-            "usr_country_phonecode": configData.default_country.country_phonecode
+            "usr_country_phonecode": CountyCode //configData.default_country.country_phonecode
         }
         const OptApiData = await SendOTPAPI(data)
         console.log("OptApiData", OptApiData)
@@ -36,7 +38,7 @@ const OTPScreen = ({ navigation, configData }) => {
                 <TouchableOpacity style={styles.InputTextSideImgView} onPress={() => {
                     navigation.navigate('Pick Your County')
                 }}>
-                    <Text style={styles.Text} >+{configData.default_country.country_phonecode}</Text>
+                    <Text style={styles.Text} >+{CountyCode}</Text>
                 </TouchableOpacity>
                 <TextInput style={styles.InpuText} keyboardType='number-pad' placeholder='Enter mobile number'  placeholderTextColor={THEME_COLORS.black} onChangeText={(text) => setotpnumber(text)}>
                     {otpnumber}

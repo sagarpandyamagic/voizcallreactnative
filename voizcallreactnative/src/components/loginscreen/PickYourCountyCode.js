@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, TouchableOpacity, StyleSheet, Text,FlatList, TextInput } from 'react-native';
+import { View, Image, TouchableOpacity, StyleSheet, Text, FlatList, TextInput } from 'react-native';
 import { AppCommon_Font, THEME_COLORS } from '../../HelperClass/Constant';
 import ic_correct from '../../../Assets/ic_correct.png';
 import { getCountyCode } from '../../services/auth';
 import LodingJson from '../../HelperClass/LodingJson';
 import { SearchBar } from 'react-native-screens';
 import SearchBarCustom from '../../HelperClass/SearchBarCustom';
+import store from '../../store/store';
+import { updateSipState } from '../../store/sipSlice';
 
 
 const PickYourCountyCode = ({ navigation }) => {
@@ -23,15 +25,15 @@ const PickYourCountyCode = ({ navigation }) => {
         setLoading(false);
     }
 
-    const handleSearch =  (text) => {
-        const filteredData = arrayLanguages.filter(item => 
+    const handleSearch = (text) => {
+        const filteredData = arrayLanguages.filter(item =>
             item.country_code.toLowerCase().includes(text.toLowerCase())
-         );
-         if (text == "") {
+        );
+        if (text == "") {
             sefilterData(arrayLanguages)
-         }else{
+        } else {
             sefilterData(filteredData)
-         }
+        }
     }
 
     useEffect(() => {
@@ -43,15 +45,20 @@ const PickYourCountyCode = ({ navigation }) => {
         return (
             <TouchableOpacity
                 style={[styles.imageContainer, isSelected && styles.selectedImage]}
-                onPress={() => setSelectedId(item.id)} >
-                <Image source={{uri: item.country_flag}} style={styles.imag}></Image>
-                <Text style={{ fontSize: 20,color:'black' }}>{item.country_code}  (+{item.country_phonecode})</Text>
-                <View style={{ position: 'absolute', right: 10, height: 25, width: 25 }}>
+                onPress={() => {
+                    store.dispatch(updateSipState({ key: "CountyCode", value: item.country_phonecode }));
+                    console.log('item', item.country_phonecode)
+                    navigation.goBack();
+                    setSelectedId(item.id)
+                }} >
+                <Image source={{ uri: item.country_flag }} style={styles.imag}></Image>
+                <Text style={{ fontSize: 15, color: 'black' }}>{item.country_code}  (+{item.country_phonecode})</Text>
+                {/* <View style={{ position: 'absolute', right: 10, height: 25, width: 25 }}>
                     {
                         isSelected ? <Image style={{ width: "100%", height: "100%" }} source={ic_correct} resizeMode="contain" ></Image> :
                             <></>
                     }
-                </View>
+                </View> */}
             </TouchableOpacity>
         );
     };
@@ -59,9 +66,9 @@ const PickYourCountyCode = ({ navigation }) => {
     return (
         <>
             {
-                <LodingJson loading = {loading} setLoading = {setLoading} />
+                <LodingJson loading={loading} setLoading={setLoading} />
             }
-            <SearchBarCustom onSearch={handleSearch} />
+            <SearchBarCustom onSearch={handleSearch} style={{height:50}} placeholderText="Search Country Code" />
             <FlatList
                 data={filterData}
                 renderItem={renderItem}
@@ -84,16 +91,16 @@ const styles = StyleSheet.create({
     },
     selectedImage: {
         // borderWidth: 2,
-        backgroundColor: '#e8efff',
+        // backgroundColor: '#e8efff',
     },
-    imag:{
-        height:25,
-        width:25,
-        marginLeft:20 ,
-        marginRight:20,
-        borderRadius:2
+    imag: {
+        height: 25,
+        width: 25,
+        marginLeft: 15,
+        marginRight: 15,
+        borderRadius: 15
     },
-    
+
 })
 
 export default PickYourCountyCode;

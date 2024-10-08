@@ -7,8 +7,6 @@ export const THEME_COLORS = {
       black:'#EF4F4F',
       transparent: 'transparent',
       ConfrencecllListColor:'#c74242' //'#4F6EB4'
-
-
 }
 
 export const API_BASE_URL = "https://panel-api.voizcall.com/v1.50.32/api"

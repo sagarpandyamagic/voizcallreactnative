@@ -21,8 +21,9 @@ const CallButton = ({ navigation, setCode, code, voizmailAcation }) => {
     const [btnEnable, setbtnEnable] = useState(false);
     const isIPad = Platform.OS === 'ios' && Platform.isPad;
 
-
     const handleMakeCall = debounce(async (code) => {
+        navigation.navigate('ChatScreen')
+        return
         if (soketConnect == false) {
             showAlert('Sokcet is not connected!', "Call is not Going")
             return
@@ -45,7 +46,7 @@ const CallButton = ({ navigation, setCode, code, voizmailAcation }) => {
             }
             console.log("ISConfrenceTransfer", ISConfrenceTransfer)
             SipUA.makeCall(number, false)
-            navigation.navigate('AudioCallingScreen')
+            navigation.navigate('AudioCallingScreen')            
         }
     }, 300, { leading: true, trailing: false });
 

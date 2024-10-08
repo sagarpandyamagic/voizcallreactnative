@@ -16,7 +16,7 @@ const VideoCallScreen = () => {
   const [localStream, setLocalStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
   const { callTimer } = useCallTimerContext()
-  const [isFrontCamera, setIsFrontCamera] = useState(true); // State to track camera direction
+  const [isFrontCamera, setIsFrontCamera] = useState(false); // State to track camera direction
   const [isVideoEnabled, setIsVideoEnabled] = useState(false);
   const [isButtonVwVisible, setIsButtonVwVisible] = useState(true);
 
@@ -29,7 +29,6 @@ const VideoCallScreen = () => {
   useEffect(() => {
     if (session != {} && VideoCallScreenOpen && CallType == "InComingCall" && soketConnect && CallInitial) {
       console.log("CallAcceept --------------")
-
       session.accept();
     }
   }, [CallInitial, VideoCallScreenOpen]);
@@ -83,17 +82,17 @@ const VideoCallScreen = () => {
     }
   }, [remoteStream]);
 
-  // useEffect(() => {
-  //   InCallManager.start({ media: 'video' });  // Change 'audio' to 'video'
-  //   InCallManager.setForceSpeakerphoneOn(true);
-  //   return () => InCallManager.stop();
-  // }, []);
+  useEffect(() => {
+    InCallManager.start({ media: 'video' });
+    return () => InCallManager.stop();
+  }, []);
 
   useEffect(() => {
     if (session) {
       startLocalStream();
     }
   }, [session])
+
 
   const requestPermissions = async () => {
     try {
@@ -110,6 +109,30 @@ const VideoCallScreen = () => {
       return false;
     }
   };
+
+  useEffect(() => {
+    const initializeWebRTC = async () => {
+      try {
+        await mediaDevices.getUserMedia({ audio: true, video: true });
+        console.log('WebRTC initialized successfully on Android');
+      } catch (error) {
+        console.error('Failed to initialize WebRTC on Android:', error);
+      }
+    };
+  
+    if (Platform.OS === 'android') {
+      initializeWebRTC();
+    }
+  }, []);
+
+    useEffect(() => {
+    return () => {
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
 
   useEffect(() => {
     requestPermissions();
@@ -147,8 +170,11 @@ const VideoCallScreen = () => {
       const constraints = {
         audio: true,
         video: {
-          width: 640,
-          height: 480,
+          mandatory: {
+            minWidth: 640,
+            minHeight: 360,
+            minFrameRate: 30,
+          },
           facingMode: facingMode, // 'user' for front camera, 'environment' for back camera
         },
       };
@@ -164,6 +190,8 @@ const VideoCallScreen = () => {
         setIsFrontCamera(true)
         toggleCamera()
       }, 2000);
+
+
     } catch (error) {
       logError('Error getting user media', error);
     }
@@ -186,12 +214,15 @@ const VideoCallScreen = () => {
   // Function to toggle the camera direction
   const toggleCamera = async () => {
     setIsFrontCamera((prev) => !prev); // Toggle the state
-    const newFacingMode = isFrontCamera ? 'environment':'user';
+    const newFacingMode = isFrontCamera ? 'environment' : 'user';
     const newStream = await mediaDevices.getUserMedia({
       audio: true,
       video: {
-        width: 640,
-        height: 480,
+        mandatory: {
+          minWidth: 640,
+          minHeight: 360,
+          minFrameRate: 30,
+        },
         facingMode: newFacingMode
       },
     });
@@ -213,9 +244,10 @@ const VideoCallScreen = () => {
 
   const hangupCall = () => {
     if (localStream) localStream.getTracks().forEach(track => track.stop());
-
-    SipUA.hangupCall();
+    SipUA.terminate();
   };
+
+
 
   return (
     <View style={{ flex: 1 }}>
@@ -278,6 +310,7 @@ const VideoCallScreen = () => {
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -319,5 +352,4 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
 });
-
 export default VideoCallScreen;

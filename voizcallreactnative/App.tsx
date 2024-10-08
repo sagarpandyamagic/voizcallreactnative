@@ -48,10 +48,12 @@ import SipUA from './src/services/call/SipUA';
 import { getConfigParamValue } from './src/data/profileDatajson';
 import VideoCallScreen from './src/components/dialscreen/VideoCallScreen';
 import WebSocketTest from './src/components/settingscreen/WebSocketTest';
-import XmppChat from './src/Screen/XmppChat';
 import inCallManager from 'react-native-incall-manager';
 import { findContactByNumber } from './src/HelperClass/FatchNameUseingNumber';
 import { getNameByPhoneNumber } from './src/HelperClass/ContactNameGetCallTime';
+import ChatScreen from './src/Screen/ChatScreen';
+import { initializeDatabaseForChat } from './src/store/ChatDatabase';
+import UserChatScreen from './src/components/XmppChat/UserChatScreen';
 
 
 function App() {
@@ -63,10 +65,9 @@ function App() {
   const myNativeModuleEmitter = MyNativeModule ? new NativeEventEmitter(MyNativeModule) : null;
   const [userName, setUsername] = useState('Unknown');
 
-
   const NavigateToNativeLayout = (name, phoneNumber) => {
     if (MyNativeModule) {
-      MyNativeModule.openNativeLayout(name, phoneNumber,THEME_COLORS.black);
+      MyNativeModule.openNativeLayout(name, phoneNumber, THEME_COLORS.black);
       //  showCallNotification("John Doe");
     } else {
       console.error('MyNativeModule is not available');
@@ -80,7 +81,7 @@ function App() {
       console.error('MyNativeModule is not available');
     }
   };
- 
+
 
   useEffect(() => {
     if (AppOpenTimeRootChange === 'TabBar') {
@@ -144,11 +145,13 @@ function App() {
 
 
   useEffect(() => {
+    // Call this in your main component or app entry point
+    initializeDatabaseForChat();
     permissionSetup()
   }, [])
 
   const permissionSetup = async () => {
-     await requestUserPermission()
+    await requestUserPermission()
     if (Platform.OS != "android") {
       voipConfig();
       VoipPushNotification.registerVoipToken();
@@ -183,8 +186,8 @@ function App() {
   return (
     <SafeAreaProvider>
       <CallTimerDuraionProvider>
-      <NavigationContainer>
-        
+        <NavigationContainer>
+
           <Stack.Navigator initialRouteName={AppOpenTimeRootChange}>
             <Stack.Screen options={{ headerShown: false }} name="SplashScreen" component={SplashScreen} />
             <Stack.Screen options={{ headerShown: false }} name="Login" component={Login} />
@@ -267,6 +270,18 @@ function App() {
               },
               headerTintColor: '#fff', // Change the header text color if needed
             }} />
+
+            <Stack.Screen name="ChatScreen" component={ChatScreen} options={{
+              title: "Qr Code Scanner",
+              headerStyle: {
+                backgroundColor: THEME_COLORS.black, // Change the background color
+                shadowColor: THEME_COLORS.transparent, // Remove the shadow
+                elevation: 0
+              },
+              headerTintColor: '#fff', // Change the header text color if needed
+            }} />
+
+
           </Stack.Navigator>
           <View>
             <IncomingCall />
@@ -279,8 +294,8 @@ function App() {
           </View> */}
           {/* <View>
             <XmppChat navigation={undefined}/>
-          </View> */}
-      </NavigationContainer>
+          </View>  */}
+        </NavigationContainer>
       </CallTimerDuraionProvider>
     </SafeAreaProvider>
   );

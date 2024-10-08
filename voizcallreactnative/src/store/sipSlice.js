@@ -39,7 +39,8 @@ const initialState = {
   remoteStreamVideo : {},
   hasVideo:false,
   SetlocationVideo :{},
-  CallerIDUpdate:false
+  CallerIDUpdate:false,
+  CountyCode:'91'
 }
 
 const counterSlice = createSlice({
