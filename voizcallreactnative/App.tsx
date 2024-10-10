@@ -51,9 +51,10 @@ import WebSocketTest from './src/components/settingscreen/WebSocketTest';
 import inCallManager from 'react-native-incall-manager';
 import { findContactByNumber } from './src/HelperClass/FatchNameUseingNumber';
 import { getNameByPhoneNumber } from './src/HelperClass/ContactNameGetCallTime';
-import ChatScreen from './src/Screen/ChatScreen';
-import { initializeDatabaseForChat } from './src/store/ChatDatabase';
-import UserChatScreen from './src/components/XmppChat/UserChatScreen';
+import XmppUSerList from './src/Screen/XmppUSerList';
+import ChatScreen from './src/components/xmppchatscrren/ChatScreen';
+import { XMPPProvider } from './src/components/xmppchatscrren/XMPPProvider';
+import GroupChatScreen from './src/components/xmppchatscrren/GroupChatScreen';
 
 
 function App() {
@@ -146,7 +147,6 @@ function App() {
 
   useEffect(() => {
     // Call this in your main component or app entry point
-    initializeDatabaseForChat();
     permissionSetup()
   }, [])
 
@@ -185,118 +185,132 @@ function App() {
 
   return (
     <SafeAreaProvider>
-      <CallTimerDuraionProvider>
-        <NavigationContainer>
+      <XMPPProvider>
+        <CallTimerDuraionProvider>
+          <NavigationContainer>
+            <Stack.Navigator initialRouteName={AppOpenTimeRootChange}>
+              <Stack.Screen options={{ headerShown: false }} name="SplashScreen" component={SplashScreen} />
+              <Stack.Screen options={{ headerShown: false }} name="Login" component={Login} />
+              <Stack.Screen
+                name="TabBar"
+                component={TabBar}
+                options={{ headerShown: false }} />
+              <Stack.Screen name="App language" component={LanguagesSelecaion} options={{
+                headerStyle: {
+                  backgroundColor: THEME_COLORS.black, // Change the background color
+                  shadowColor: THEME_COLORS.transparent, // Remove the shadow
+                  elevation: 0
+                },
+                headerTintColor: '#fff', // Change the header text color if needed
+              }} />
+              <Stack.Screen name="Privacy & Policy" component={privacyPoilcyScreen} options={{
+                headerStyle: {
+                  backgroundColor: THEME_COLORS.black, // Change the background color
+                  shadowColor: THEME_COLORS.transparent, // Remove the shadow
+                  elevation: 0
+                },
+                headerTintColor: '#fff', // Change the header text color if needed
+              }} />
+              <Stack.Screen name="WebSocket Test" component={WebSocketTest} options={{
+                headerStyle: {
+                  backgroundColor: THEME_COLORS.black, // Change the background color
+                  shadowColor: THEME_COLORS.transparent, // Remove the shadow
+                  elevation: 0
+                },
+                headerTintColor: '#fff', // Change the header text color if needed
+              }} />
+              <Stack.Screen name="Contact Detail" component={ContactDetailScreen} options={{
+                headerStyle: {
+                  backgroundColor: THEME_COLORS.black, // Change the background color
+                  shadowColor: THEME_COLORS.transparent, // Remove the shadow
+                  elevation: 0
+                },
+                headerTintColor: '#fff', // Change the header text color if needed
+              }} />
+              <Stack.Screen name="AddNewContact" component={AddNewContact} options={{
+                headerStyle: {
+                  backgroundColor: THEME_COLORS.black, // Change the background color
+                  shadowColor: THEME_COLORS.transparent, // Remove the shadow
+                  elevation: 0
+                },
+                headerTintColor: '#fff', // Change the header text color if needed
+              }} />
+              <Stack.Screen name="ForgotPasswordScreen" component={ForgotPasswordScreen} options={{
+                title: "",
+                headerStyle: {
+                  backgroundColor: THEME_COLORS.black, // Change the background color
+                  shadowColor: THEME_COLORS.transparent, // Remove the shadow
+                  elevation: 0
+                },
+                headerTintColor: '#fff', // Change the header text color if needed
+              }} />
+              <Stack.Screen name="Pick Your County" component={PickYourCountyCode} options={{
+                headerStyle: {
+                  backgroundColor: THEME_COLORS.black, // Change the background color
+                  shadowColor: THEME_COLORS.transparent, // Remove the shadow
+                  elevation: 0
+                },
+                headerTintColor: '#fff', // Change the header text color if needed
+              }} />
+              <Stack.Screen name="OTPFillScreen" component={OTPFillScreen} options={{
+                title: "",
+                headerStyle: {
+                  backgroundColor: THEME_COLORS.black, // Change the background color
+                  shadowColor: THEME_COLORS.transparent, // Remove the shadow
+                  elevation: 0
+                },
+                headerTintColor: '#fff', // Change the header text color if needed
+              }} />
+              <Stack.Screen name="QrScanScreen" component={QrScanScreen} options={{
+                title: "Qr Code Scanner",
+                headerStyle: {
+                  backgroundColor: THEME_COLORS.black, // Change the background color
+                  shadowColor: THEME_COLORS.transparent, // Remove the shadow
+                  elevation: 0
+                },
+                headerTintColor: '#fff', // Change the header text color if needed
+              }} />
 
-          <Stack.Navigator initialRouteName={AppOpenTimeRootChange}>
-            <Stack.Screen options={{ headerShown: false }} name="SplashScreen" component={SplashScreen} />
-            <Stack.Screen options={{ headerShown: false }} name="Login" component={Login} />
-            <Stack.Screen
-              name="TabBar"
-              component={TabBar}
-              options={{ headerShown: false }} />
-            <Stack.Screen name="App language" component={LanguagesSelecaion} options={{
-              headerStyle: {
-                backgroundColor: THEME_COLORS.black, // Change the background color
-                shadowColor: THEME_COLORS.transparent, // Remove the shadow
-                elevation: 0
-              },
-              headerTintColor: '#fff', // Change the header text color if needed
-            }} />
-            <Stack.Screen name="Privacy & Policy" component={privacyPoilcyScreen} options={{
-              headerStyle: {
-                backgroundColor: THEME_COLORS.black, // Change the background color
-                shadowColor: THEME_COLORS.transparent, // Remove the shadow
-                elevation: 0
-              },
-              headerTintColor: '#fff', // Change the header text color if needed
-            }} />
-            <Stack.Screen name="WebSocket Test" component={WebSocketTest} options={{
-              headerStyle: {
-                backgroundColor: THEME_COLORS.black, // Change the background color
-                shadowColor: THEME_COLORS.transparent, // Remove the shadow
-                elevation: 0
-              },
-              headerTintColor: '#fff', // Change the header text color if needed
-            }} />
-            <Stack.Screen name="Contact Detail" component={ContactDetailScreen} options={{
-              headerStyle: {
-                backgroundColor: THEME_COLORS.black, // Change the background color
-                shadowColor: THEME_COLORS.transparent, // Remove the shadow
-                elevation: 0
-              },
-              headerTintColor: '#fff', // Change the header text color if needed
-            }} />
-            <Stack.Screen name="AddNewContact" component={AddNewContact} options={{
-              headerStyle: {
-                backgroundColor: THEME_COLORS.black, // Change the background color
-                shadowColor: THEME_COLORS.transparent, // Remove the shadow
-                elevation: 0
-              },
-              headerTintColor: '#fff', // Change the header text color if needed
-            }} />
-            <Stack.Screen name="ForgotPasswordScreen" component={ForgotPasswordScreen} options={{
-              title: "",
-              headerStyle: {
-                backgroundColor: THEME_COLORS.black, // Change the background color
-                shadowColor: THEME_COLORS.transparent, // Remove the shadow
-                elevation: 0
-              },
-              headerTintColor: '#fff', // Change the header text color if needed
-            }} />
-            <Stack.Screen name="Pick Your County" component={PickYourCountyCode} options={{
-              headerStyle: {
-                backgroundColor: THEME_COLORS.black, // Change the background color
-                shadowColor: THEME_COLORS.transparent, // Remove the shadow
-                elevation: 0
-              },
-              headerTintColor: '#fff', // Change the header text color if needed
-            }} />
-            <Stack.Screen name="OTPFillScreen" component={OTPFillScreen} options={{
-              title: "",
-              headerStyle: {
-                backgroundColor: THEME_COLORS.black, // Change the background color
-                shadowColor: THEME_COLORS.transparent, // Remove the shadow
-                elevation: 0
-              },
-              headerTintColor: '#fff', // Change the header text color if needed
-            }} />
-            <Stack.Screen name="QrScanScreen" component={QrScanScreen} options={{
-              title: "Qr Code Scanner",
-              headerStyle: {
-                backgroundColor: THEME_COLORS.black, // Change the background color
-                shadowColor: THEME_COLORS.transparent, // Remove the shadow
-                elevation: 0
-              },
-              headerTintColor: '#fff', // Change the header text color if needed
-            }} />
+              <Stack.Screen name="XmppUSerList" component={XmppUSerList} options={{
+                title: "User Xmpp List",
+                headerStyle: {
+                  backgroundColor: THEME_COLORS.black, // Change the background color
+                  shadowColor: THEME_COLORS.transparent, // Remove the shadow
+                  elevation: 0
+                },
+                headerTintColor: '#fff', // Change the header text color if needed
+              }} />
 
-            <Stack.Screen name="ChatScreen" component={ChatScreen} options={{
-              title: "Qr Code Scanner",
-              headerStyle: {
-                backgroundColor: THEME_COLORS.black, // Change the background color
-                shadowColor: THEME_COLORS.transparent, // Remove the shadow
-                elevation: 0
-              },
-              headerTintColor: '#fff', // Change the header text color if needed
-            }} />
+              <Stack.Screen name="ChatScreen" component={ChatScreen} options={{
+                title: "Qr Code Scanner",
+                headerStyle: {
+                  backgroundColor: THEME_COLORS.black, // Change the background color
+                  shadowColor: THEME_COLORS.transparent, // Remove the shadow
+                  elevation: 0
+                },
+                headerTintColor: '#fff', // Change the header text color if needed
+              }} />
+              <Stack.Screen name="GroupChatScreen" component={GroupChatScreen} />
 
 
-          </Stack.Navigator>
-          <View>
-            <IncomingCall />
-          </View>
-          <View>
-            <AudioCallingScreen />
-          </View>
-          {/* <View>
+
+
+            </Stack.Navigator>
+            <View>
+              <IncomingCall />
+            </View>
+            <View>
+              <AudioCallingScreen />
+            </View>
+            {/* <View>
             <VideoCallScreen />
           </View> */}
-          {/* <View>
+            {/* <View>
             <XmppChat navigation={undefined}/>
           </View>  */}
-        </NavigationContainer>
-      </CallTimerDuraionProvider>
+          </NavigationContainer>
+        </CallTimerDuraionProvider>
+      </XMPPProvider>
     </SafeAreaProvider>
   );
 }

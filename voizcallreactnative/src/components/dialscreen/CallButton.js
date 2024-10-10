@@ -22,7 +22,7 @@ const CallButton = ({ navigation, setCode, code, voizmailAcation }) => {
     const isIPad = Platform.OS === 'ios' && Platform.isPad;
 
     const handleMakeCall = debounce(async (code) => {
-        navigation.navigate('ChatScreen')
+        navigation.navigate('XmppUSerList')
         return
         if (soketConnect == false) {
             showAlert('Sokcet is not connected!', "Call is not Going")

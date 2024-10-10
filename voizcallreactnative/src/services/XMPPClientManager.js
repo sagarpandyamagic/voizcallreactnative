@@ -1,7 +1,7 @@
 import { client, xml } from '@xmpp/client';
 import { Platform } from 'react-native';
 
-const XMPPClientManager = ({ username, password, onMessageReceived, onRosterUpdate }) => {
+const XMPPClientManager = ({ username, password, onMessageReceived, onRosterUpdate, onPresenceUpdate }) => {
     const xmpp = client({
         service: 'wss://xmpp.voizcall.com:5443/ws',
         domain: 'xmpp.voizcall.com',
@@ -39,17 +39,74 @@ const XMPPClientManager = ({ username, password, onMessageReceived, onRosterUpda
     };
 
     xmpp.on('stanza', (stanza) => {
-        if (stanza.is('message') && stanza.attrs.type === 'chat') {
+        if (stanza.is('message')) {
             const body = stanza.getChildText('body');
             if (body) {
-                onMessageReceived({ from: stanza.attrs.from, text: body, time: new Date().toLocaleString() });
+                const from = stanza.attrs.from;
+                const type = stanza.attrs.type;
+                const time = new Date().toLocaleString();
+
+                if (type === 'groupchat') {
+                    onGroupMessageReceived({ from, text: body, time, roomJid: from.split('/')[0] });
+                } else if (type === 'chat') {
+                    onMessageReceived({ from, text: body, time });
+                }
             }
         }
+        if (stanza.is('presence')) {
+            console.log('Received presence:', stanza.toString());
+            const from = stanza.attrs.from;
+            const bareJid = from.split('/')[0]; // Get the bare JID
+            const type = stanza.attrs.type || 'available';
+            const show = stanza.getChildText('show') || 'online';
+            const status = stanza.getChildText('status') || '';
+
+            let presenceStatus;
+            if (type === 'unavailable') {
+                presenceStatus = 'offline';
+            } else if (show === 'away' || show === 'xa') {
+                presenceStatus = 'away';
+            } else if (show === 'dnd') {
+                presenceStatus = 'dnd';
+            } else {
+                presenceStatus = 'online';
+            }
+
+            onPresenceUpdate({ from: bareJid, fullJid: from, status: presenceStatus, statusMessage: status });
+        }
+
     });
+
 
     xmpp.on('error', (error) => {
         console.error('Error:', error);
     });
+
+
+    const sendGroupMessage = (roomJid, messageText) => {
+        if (!roomJid || !messageText.trim()) {
+            console.log('Invalid room JID or empty message');
+            return;
+        }
+
+        const message = xml(
+            'message',
+            { to: roomJid, type: 'groupchat' },
+            xml('body', {}, messageText)
+        );
+
+        xmpp.send(message);
+    };
+
+    const joinRoom = (roomJid, nickname) => {
+        const presence = xml(
+            'presence',
+            { to: `${roomJid}/${nickname}` },
+            xml('x', { xmlns: 'http://jabber.org/protocol/muc' })
+        );
+
+        xmpp.send(presence);
+    };
 
     const disconnect = async () => {
         if (!isConnected) {
@@ -77,7 +134,7 @@ const XMPPClientManager = ({ username, password, onMessageReceived, onRosterUpda
 
         const timestamp = new Date().toISOString();
         const message = xml(
-            'message', 
+            'message',
             { to: selectedRecipient, id: timestamp, type: 'chat' },
             xml('body', {}, messageText),
             xml('TIME', { xmlns: 'urn:xmpp:time' },
@@ -89,7 +146,7 @@ const XMPPClientManager = ({ username, password, onMessageReceived, onRosterUpda
         xmpp.send(message);
     };
 
-    return { connect, disconnect, sendMessage };
+    return { connect, disconnect, sendMessage , sendGroupMessage, joinRoom,};
 };
 
 export default XMPPClientManager;
