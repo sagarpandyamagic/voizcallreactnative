@@ -49,6 +49,7 @@ export const XMPPProvider = ({ children }) => {
 
 
     const sendImage = useCallback(async (to, imageUri) => {
+        console.log('imageUri', imageUri)
         if (xmppManager) {
             try {
                 const uploadedUrl = await xmppManager.sendImage(to, imageUri);
@@ -71,6 +72,34 @@ export const XMPPProvider = ({ children }) => {
             }
         }
     }, [xmppManager]);
+
+
+    const sendFile = useCallback(async (dic) => {
+        const {to} = dic
+        if (xmppManager) {
+            try {
+                const uploadedUrl = await xmppManager.sendFile(dic);
+                console.log("fileURL:",uploadedUrl)
+                setMessages(prevMessages => ({
+                    ...prevMessages,
+                    [to]: [
+                        ...(prevMessages[to] || []),
+                        {
+                            from: 'Me',
+                            type: 'image',
+                            text: uploadedUrl,
+                            content: uploadedUrl,
+                            time: new Date().toLocaleString()
+                        }
+                    ]
+                }));
+            } catch (error) {
+                console.error('Error sending image:', error);
+                // Handle error (e.g., show an error message to the user)
+            }
+        }
+    }, [xmppManager]);
+
 
     const onGroupMessageReceived = useCallback((message) => {
         console.log('Group message received:', message);
@@ -176,6 +205,7 @@ export const XMPPProvider = ({ children }) => {
             joinRoom,
             sendMediaMessage,
             sendImage,
+            sendFile,
             fetchRoster: xmppManager?.fetchRoster
         }}>
             {children}

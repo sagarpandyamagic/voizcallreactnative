@@ -1,3 +1,11 @@
+import ic_chaticon_Pdf from '../../Assets/ic_chaticon_Pdf.png';
+import ic_chaticon_Vector from '../../Assets/ic_chaticon_Vector.png';
+import ic_chaticon_Ppt from '../../Assets/ic_chaticon_Ppt.png';
+import ic_chaticon_Txt from '../../Assets/ic_chaticon_Txt.png';
+import ic_chaticon_Xls from '../../Assets/ic_chaticon_Xls.png';
+import ic_chaticon_Doc from '../../Assets/ic_chaticon_Doc.png';
+import ic_chaticon_Csv from '../../Assets/ic_chaticon_Csv.png';
+
 export const AppCommon_Font = {
     Font: 'Arial'//'RobotoMono-Regular'
 }
@@ -94,3 +102,45 @@ export const userprofilealias = {
     "dnd_visibility": "dnd.visibility",
     "auto_answer_visibility": "auto.answer.visibility"
 }
+
+export const getDocumentIcon = (extension) => {
+    switch (extension.toLowerCase()) {
+      case 'pdf':
+        return ic_chaticon_Pdf 
+      case 'html':
+        return ic_chaticon_Vector
+      case 'ppt':
+      case 'pptx':
+        return ic_chaticon_Ppt
+      case 'txt':
+      case 'rft':
+        return ic_chaticon_Txt
+      case 'xls':
+      case 'xlsx':
+        return ic_chaticon_Xls
+      case 'doc':
+      case 'docx':
+        return ic_chaticon_Doc
+      case 'csv':
+        return ic_chaticon_Csv
+      default:
+        return ic_chaticon_Csv
+    }
+  };
+
+  export const identifyMessageType = (text) => {
+    // List of common image extensions
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
+    // List of common document extensions
+    const documentExtensions = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'txt', 'csv', 'rft'];
+  
+    const extension = text.split('.').pop().toLowerCase();
+  
+    if (imageExtensions.includes(extension)) {
+      return 'image';
+    } else if (documentExtensions.includes(extension)) {
+      return 'document';
+    } else {
+      return 'text';
+    }
+  };

@@ -244,6 +244,19 @@ const XMPPClientManager = ({ username, password, onMessageReceived, onRosterUpda
         }
     };
 
+    const sendFile = async (dic) => {
+        const {to, base64, mimeType, name,size} = dic
+        const uploadResponse = await requestUploadSlot('upload.xmpp.voizcall.com', name, size);
+        // console.log('uploadResponse', uploadResponse)
+        if (uploadResponse) {
+            console.log('putUrl', uploadResponse.putUrl)
+            if (uploadResponse.putUrl) {
+                await uploadFile(uploadResponse.putUrl, base64, to,mimeType);
+                return uploadResponse.putUrl
+            }
+        }
+    };
+
     const uploadImage = async (uploadUrl, imagePath, recipient) => {
         try {
             // Read the image file as binary data (base64 is not needed here)
@@ -258,6 +271,37 @@ const XMPPClientManager = ({ username, password, onMessageReceived, onRosterUpda
                 body: binaryData, // Send binary data
                 headers: {
                     'Content-Type': 'image/jpeg', // Set appropriate content type
+                    'Content-Length': binaryData.length, // Set content length of binary data
+                },
+            });
+
+            // Check if the upload was successful
+            if (response.ok) {
+                const imageUrl = uploadUrl; // Use the same URL to access the image
+                console.log('Image uploaded successfully:', imageUrl);
+
+                // Send the image URL in the message
+                sendMessageImage(imageUrl, recipient);
+            } else {
+                // Log the error if the upload fails
+                console.error('Error uploading image:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error uploading image:', error);
+        }
+    };
+
+    const uploadFile = async (uploadUrl, Base64, recipient,mintype) => {
+        try {
+            // Convert the Base64 data to a Blob to handle the PUT request properly
+            const binaryData = Uint8Array.from(decode(Base64), c => c.charCodeAt(0));
+
+            // Make the PUT request to upload the image
+            const response = await fetch(uploadUrl, {
+                method: 'PUT',
+                body: binaryData, // Send binary data
+                headers: {
+                    'Content-Type': mintype, // Set appropriate content type
                     'Content-Length': binaryData.length, // Set content length of binary data
                 },
             });
@@ -356,7 +400,7 @@ const XMPPClientManager = ({ username, password, onMessageReceived, onRosterUpda
         xmpp.send(message);
     };
 
-    return { connect, disconnect, sendMessage, sendGroupMessage, joinRoom, sendImage };
+    return { connect, disconnect, sendMessage, sendGroupMessage, joinRoom, sendImage ,sendFile};
 };
 
 export default XMPPClientManager;

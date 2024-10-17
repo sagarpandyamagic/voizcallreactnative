@@ -64,6 +64,8 @@ xmlns:tools="http://schemas.android.com/tools">
       android:screenOrientation="portrait" 
       android:largeHeap="true"
       android:hardwareAccelerated="true"
+      android:requestLegacyExternalStorage="true"
+
       >
       <activity
         android:name=".MainActivity"
