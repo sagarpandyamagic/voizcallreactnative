@@ -11,6 +11,67 @@ export const XMPPProvider = ({ children }) => {
     const [groupMessages, setGroupMessages] = useState({});
 
 
+    const sendMediaMessage = useCallback((to, base64Data, mimeType) => {
+        if (xmppManager) {
+            const cid = `image_${Date.now()}`;
+            const message = xml(
+                'message',
+                { to, type: 'chat' },
+                xml('body', {}, 'Sent an image'),
+                xml(
+                    'x',
+                    { xmlns: 'jabber:x:oob' },
+                    xml('url', {}, `cid:${cid}`)
+                ),
+                xml(
+                    'data',
+                    { xmlns: 'urn:xmpp:bob', cid, type: mimeType },
+                    base64Data
+                )
+            );
+
+            xmppManager.sendStanza(message);
+
+            setMessages(prevMessages => ({
+                ...prevMessages,
+                [to]: [
+                    ...(prevMessages[to] || []),
+                    {
+                        from: 'Me',
+                        type: 'test',
+                        content: `data:${mimeType};base64,${base64Data}`,
+                        time: new Date().toLocaleString(),
+                    }
+                ]
+            }));
+        }
+    }, [xmppManager]);
+
+
+    const sendImage = useCallback(async (to, imageUri) => {
+        if (xmppManager) {
+            try {
+                const uploadedUrl = await xmppManager.sendImage(to, imageUri);
+                setMessages(prevMessages => ({
+                    ...prevMessages,
+                    [to]: [
+                        ...(prevMessages[to] || []),
+                        {
+                            from: 'Me',
+                            type: 'image',
+                            text: uploadedUrl,
+                            content: uploadedUrl,
+                            time: new Date().toLocaleString()
+                        }
+                    ]
+                }));
+            } catch (error) {
+                console.error('Error sending image:', error);
+                // Handle error (e.g., show an error message to the user)
+            }
+        }
+    }, [xmppManager]);
+
     const onGroupMessageReceived = useCallback((message) => {
         console.log('Group message received:', message);
         setGroupMessages(prevMessages => ({
@@ -39,16 +100,16 @@ export const XMPPProvider = ({ children }) => {
     const onMessageReceived = useCallback((message) => {
         console.log('Message received:', message);
         setMessages(prevMessages => {
-            const fromJID = message.from.split('/')[0]; // Remove resource part if present
+            const fromJID = message.from.split('/')[0];
+            const isImage = message.text.startsWith('https://') && message.text.includes('/upload/');
+            const newMessage = isImage
+                ? { ...message, type: 'image', content: message.text }
+                : message;
             return {
                 ...prevMessages,
                 [fromJID]: [
                     ...(prevMessages[fromJID] || []),
-                    {
-                        from: fromJID,
-                        text: message.text,
-                        time: new Date().toLocaleTimeString(),
-                    }
+                    newMessage
                 ]
             };
         });
@@ -74,6 +135,7 @@ export const XMPPProvider = ({ children }) => {
             onMessageReceived,
             onRosterUpdate,
             onPresenceUpdate,
+            sendMediaMessage,
         });
         setXmppManager(manager);
         manager.connect();
@@ -103,17 +165,19 @@ export const XMPPProvider = ({ children }) => {
     }, [xmppManager]);
 
     return (
-        <XMPPContext.Provider value={{ 
+        <XMPPContext.Provider value={{
             roster,
             presences,
             messages,
             sendMessage,
-            groupMessages, 
-            sendMessage, 
-            sendGroupMessage, 
+            groupMessages,
+            sendMessage,
+            sendGroupMessage,
             joinRoom,
-            fetchRoster: xmppManager?.fetchRoster 
-          }}>
+            sendMediaMessage,
+            sendImage,
+            fetchRoster: xmppManager?.fetchRoster
+        }}>
             {children}
         </XMPPContext.Provider>
     );

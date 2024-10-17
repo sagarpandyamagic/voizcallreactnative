@@ -8,7 +8,7 @@ const XmppUSerList = ({ navigation }) => {
   const { roster, messages, presences } = useContext(XMPPContext);
 
   const getStatus = (jid) => {
-    console.log('getStatus', presences);
+    // console.log('getStatus', presences);
     if (!presences || !presences[jid]) return 'Offline';
 
     const status = presences[jid];
